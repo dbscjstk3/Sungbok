@@ -22,11 +22,13 @@ export default function RoulettePage() {
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
+      if (e.origin !== 'https://dbscjstk3.github.io') return
       if (e.data?.type !== 'roulette-result') return
       const rankings: string[] = e.data.rankings ?? []
+      const half = Math.ceil(rankings.length / 2)
       setResult({
-        team1: rankings.slice(0, 5),
-        team2: rankings.slice(5, 10),
+        team1: rankings.slice(0, half),
+        team2: rankings.slice(half),
       })
     }
     window.addEventListener('message', onMessage)
@@ -83,7 +85,7 @@ function TeamCard({ title, players, color }: { title: string; players: string[];
       <ul className="flex flex-col gap-2 w-full">
         {players.map((name, i) => (
           <li
-            key={name}
+            key={`${i}-${name}`}
             className="flex items-center gap-3 px-4 py-2 rounded-lg"
             style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
           >
