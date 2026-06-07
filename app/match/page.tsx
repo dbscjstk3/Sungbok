@@ -34,6 +34,25 @@ function computeStats(players: Player[], rounds: Round[]): Stat[] {
 
 type Phase = 'select' | 'playing' | 'ended'
 
+const STORAGE_KEY = 'sungbok_match_session'
+
+interface StoredSession {
+  phase: Phase
+  sessionId: string
+  sessionPlayerIds: string[]
+  team1Ids: string[]
+  team2Ids: string[]
+  betAmount: number
+}
+
+function saveSession(data: StoredSession) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
 export default function MatchPage() {
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -49,6 +68,7 @@ export default function MatchPage() {
   const [showRoulette, setShowRoulette] = useState(false)
   const [rouletteKey, setRouletteKey] = useState(0)
   const sessionPlayersRef = useRef<Player[]>([])
+  const restoredRef = useRef(false)
 
   useEffect(() => {
     insforge.database
@@ -57,6 +77,42 @@ export default function MatchPage() {
       .order('created_at', { ascending: true })
       .then(({ data }) => { if (data) setAllPlayers(data as Player[]) })
   }, [])
+
+  // 새로고침 후 세션 복원
+  useEffect(() => {
+    if (allPlayers.length === 0 || restoredRef.current) return
+    restoredRef.current = true
+
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    try {
+      const stored: StoredSession = JSON.parse(raw)
+      const pool = stored.sessionPlayerIds
+        .map(id => allPlayers.find(p => p.id === id))
+        .filter(Boolean) as Player[]
+      if (pool.length === 0) { clearSession(); return }
+
+      insforge.database.from('rounds')
+        .select('id, session_id, team1_ids, team2_ids, winner_team')
+        .eq('session_id', stored.sessionId)
+        .then(({ data }) => {
+          const fetchedRounds = (data as Round[]) ?? []
+          const t1 = stored.team1Ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+          const t2 = stored.team2Ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+          setSessionId(stored.sessionId)
+          setSessionPlayers(pool)
+          sessionPlayersRef.current = pool
+          setRounds(fetchedRounds)
+          setStats(computeStats(pool, fetchedRounds))
+          setTeam1(t1)
+          setTeam2(t2)
+          setBetAmount(stored.betAmount || '')
+          setPhase(stored.phase)
+        })
+    } catch {
+      clearSession()
+    }
+  }, [allPlayers])
 
   // 마블 룰렛 postMessage 수신
   useEffect(() => {
@@ -70,6 +126,13 @@ export default function MatchPage() {
       setTeam1(t1)
       setTeam2(t2)
       setShowRoulette(false)
+      const storedRaw = localStorage.getItem(STORAGE_KEY)
+      if (storedRaw) {
+        try {
+          const prev: StoredSession = JSON.parse(storedRaw)
+          saveSession({ ...prev, team1Ids: t1.map(p => p.id), team2Ids: t2.map(p => p.id) })
+        } catch {}
+      }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -105,6 +168,14 @@ export default function MatchPage() {
     setRounds([])
     setStats(pool.map(p => ({ player: p, wins: 0, losses: 0 })))
     setPhase('playing')
+    saveSession({
+      phase: 'playing',
+      sessionId: sid,
+      sessionPlayerIds: pool.map(p => p.id),
+      team1Ids: [],
+      team2Ids: [],
+      betAmount: betAmount === '' ? 0 : betAmount,
+    })
     openRoulette()
   }
 
@@ -130,6 +201,7 @@ export default function MatchPage() {
     const newRounds = [...rounds, data[0] as Round]
     setRounds(newRounds)
     setStats(computeStats(sessionPlayersRef.current, newRounds))
+    openRoulette()
   }
 
   async function endSession() {
@@ -137,6 +209,7 @@ export default function MatchPage() {
     await insforge.database.from('sessions').update({ ended_at: new Date().toISOString() }).eq('id', sessionId)
     setStats(computeStats(sessionPlayersRef.current, rounds))
     setPhase('ended')
+    clearSession()
   }
 
   function reset() {
@@ -150,6 +223,7 @@ export default function MatchPage() {
     setTeam1([])
     setTeam2([])
     setShowRoulette(false)
+    clearSession()
   }
 
   const teamSize = sessionPlayers.length / 2
@@ -187,7 +261,7 @@ export default function MatchPage() {
         style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
         <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
         <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록']].map(([href, label]) => (
+          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
             <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
           ))}
         </div>
@@ -283,14 +357,12 @@ export default function MatchPage() {
               <div className="grid grid-cols-2 gap-6 mb-6">
                 {[{ team: team1, num: 1 }, { team: team2, num: 2 }].map(({ team, num }) => (
                   <div key={num} className="rounded-2xl p-6"
-                    style={{ backgroundColor: num === 1 ? '#202020' : '#DEE0E2' }}>
-                    <h2 className="text-base font-bold mb-4"
-                      style={{ color: num === 1 ? '#ECEEF0' : '#202020' }}>{num}팀</h2>
+                    style={{ backgroundColor: num === 1 ? '#1e3a8a' : '#991b1b' }}>
+                    <h2 className="text-base font-bold mb-4" style={{ color: '#ffffff' }}>{num}팀</h2>
                     <ul className="flex flex-col gap-2">
                       {team.map(p => (
                         <li key={p.id}>
-                          <span className="text-sm font-medium"
-                            style={{ color: num === 1 ? '#ECEEF0' : '#202020' }}>{p.real_name}</span>
+                          <span className="text-lg font-bold" style={{ color: '#ffffff' }}>{p.real_name}</span>
                         </li>
                       ))}
                     </ul>
@@ -302,7 +374,7 @@ export default function MatchPage() {
             <div className="mb-4">
               <button onClick={openRoulette}
                 className="w-full py-3 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85"
-                style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
+                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
                 팀 다시 섞기
               </button>
             </div>
@@ -310,12 +382,12 @@ export default function MatchPage() {
             <div className="flex gap-3 mb-12">
               <button onClick={() => recordWin(1)} disabled={saving || team1.length === 0}
                 className="flex-1 py-4 rounded-2xl text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
-                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                style={{ backgroundColor: '#1e3a8a', color: '#ffffff' }}>
                 1팀 승리
               </button>
               <button onClick={() => recordWin(2)} disabled={saving || team2.length === 0}
                 className="flex-1 py-4 rounded-2xl text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
-                style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
+                style={{ backgroundColor: '#991b1b', color: '#ffffff' }}>
                 2팀 승리
               </button>
             </div>

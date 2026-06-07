@@ -97,7 +97,7 @@ export default function HistoryPage() {
         style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
         <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
         <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록']].map(([href, label]) => (
+          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
             <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
           ))}
         </div>
