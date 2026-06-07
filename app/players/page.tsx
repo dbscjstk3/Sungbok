@@ -83,11 +83,33 @@ export default function PlayersPage() {
       </a>
 
       <h1 className="text-3xl font-bold mt-8 mb-2" style={{ color: '#202020' }}>
-        참가자 명단
+        선수 명단
       </h1>
       <p className="text-sm mb-10" style={{ color: '#202020', opacity: 0.5 }}>
         {players.length}명 등록됨
       </p>
+
+      {/* 등록 폼 */}
+      <section className="mb-10">
+        <h2 className="text-lg font-bold mb-5" style={{ color: '#202020' }}>선수 등록</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="text"
+            placeholder="이름 (예: 윤현석)"
+            value={realName}
+            onChange={(e) => setRealName(e.target.value)}
+            required
+            className="px-4 py-3 rounded-xl text-sm outline-none w-full"
+            style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+          />
+          {error && <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>}
+          <button type="submit" disabled={loading}
+            className="px-6 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-40"
+            style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+            {loading ? '등록 중...' : '등록하기'}
+          </button>
+        </form>
+      </section>
 
       {/* 목록 */}
       <section className="mb-12">
@@ -143,28 +165,6 @@ export default function PlayersPage() {
             )}
           </ul>
         )}
-      </section>
-
-      {/* 등록 폼 */}
-      <section>
-        <h2 className="text-lg font-bold mb-5" style={{ color: '#202020' }}>참가자 등록</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <input
-            type="text"
-            placeholder="이름 (예: 윤현석)"
-            value={realName}
-            onChange={(e) => setRealName(e.target.value)}
-            required
-            className="px-4 py-3 rounded-xl text-sm outline-none w-full"
-            style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
-          />
-          {error && <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>}
-          <button type="submit" disabled={loading}
-            className="px-6 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-40"
-            style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
-            {loading ? '등록 중...' : '등록하기'}
-          </button>
-        </form>
       </section>
     </main>
   )

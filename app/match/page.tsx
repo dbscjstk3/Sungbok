@@ -21,7 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+      ;[a[i], a[j]] = [a[j], a[i]]
   }
   return a
 }
@@ -314,7 +314,7 @@ export default function MatchPage() {
         style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
         <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
         <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '참가자 명단'], ['/match', '내전'], ['/history', '기록'], ['/roulette', '룰렛']].map(([href, label]) => (
+          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/roulette', '룰렛']].map(([href, label]) => (
             <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
           ))}
         </div>
@@ -325,7 +325,7 @@ export default function MatchPage() {
         {/* 선택 */}
         {phase === 'select' && (
           <div>
-            <h1 className="text-3xl font-bold mb-2">내전 시작</h1>
+            <h1 className="text-3xl font-bold mb-2">내전 생성</h1>
             <p className="text-sm mb-8" style={{ opacity: 0.5 }}>오늘 내전에 참가할 10명을 선택하세요.</p>
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium" style={{ opacity: 0.6 }}>{selected.size}/10명 선택됨</span>

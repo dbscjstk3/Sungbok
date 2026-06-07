@@ -10,7 +10,13 @@ export default function RoulettePage() {
             홈
           </a>
           <a href="/players" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#ECEEF0' }}>
-            참가자 명단
+            선수명단
+          </a>
+          <a href="/match" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#ECEEF0' }}>
+            내전생성
+          </a>
+          <a href="/history" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#ECEEF0' }}>
+            기록
           </a>
           <a href="/roulette" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#ECEEF0' }}>
             룰렛
