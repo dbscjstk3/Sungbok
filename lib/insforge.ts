@@ -8,6 +8,5 @@ export const insforge = createClient({
 export interface Player {
   id: string
   real_name: string
-  summoner_name: string
   created_at: string
 }

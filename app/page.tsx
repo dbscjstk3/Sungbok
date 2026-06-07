@@ -15,20 +15,13 @@ export default function Home() {
             참가자 명단
           </a>
           <a href="/match" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
-            내전 기록
+            내전
           </a>
-          <a href="/teams" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
-            팀 배정
+          <a href="/history" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            기록
           </a>
           <a href="/roulette" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
             룰렛
-          </a>
-          <a
-            href="/players"
-            className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-80"
-            style={{ backgroundColor: "#202020", color: "#ECEEF0" }}
-          >
-            시작하기
           </a>
         </div>
       </nav>
