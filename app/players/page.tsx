@@ -16,7 +16,7 @@ export default function PlayersPage() {
     const { data } = await insforge.database
       .from('players')
       .select('id, real_name, created_at')
-      .order('created_at', { ascending: true })
+      .order('real_name', { ascending: true })
     if (data) setPlayers(data as Player[])
   }
 

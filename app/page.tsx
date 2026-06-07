@@ -7,7 +7,7 @@ export default function Home() {
       <nav className="px-8 py-5 flex justify-between items-center" style={{ backgroundColor: '#ECEEF0' }}>
         <span className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</span>
         <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/roulette', '룰렛']].map(([href, label]) => (
+          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록']].map(([href, label]) => (
             <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>
               {label}
             </a>
@@ -23,7 +23,8 @@ export default function Home() {
               alt={`성복내전 ${i + 1}`}
               fill
               className="object-cover"
-              sizes="20vw"
+              sizes="(max-width: 768px) 100vw, 20vw"
+              quality={90}
               priority={i === 0}
             />
           </div>

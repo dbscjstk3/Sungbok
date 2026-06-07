@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy": "npm run build && npx @insforge/cli deployments deploy ."
   },
   "dependencies": {
     "@insforge/sdk": "^1.3.1",
