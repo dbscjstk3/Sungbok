@@ -9,6 +9,10 @@ export default function PlayersPage() {
   const [summonerName, setSummonerName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editRealName, setEditRealName] = useState('')
+  const [editSummonerName, setEditSummonerName] = useState('')
+  const [editError, setEditError] = useState('')
 
   async function fetchPlayers() {
     const { data } = await insforge.database
@@ -46,6 +50,44 @@ export default function PlayersPage() {
     fetchPlayers()
   }
 
+  function startEdit(p: Player) {
+    setEditingId(p.id)
+    setEditRealName(p.real_name)
+    setEditSummonerName(p.summoner_name)
+    setEditError('')
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditError('')
+  }
+
+  async function handleUpdate(id: string) {
+    setEditError('')
+    const { error: updateError } = await insforge.database
+      .from('players')
+      .update({ real_name: editRealName.trim(), summoner_name: editSummonerName.trim() })
+      .eq('id', id)
+
+    if (updateError) {
+      if (updateError.message?.includes('unique') || updateError.message?.includes('duplicate')) {
+        setEditError('이미 등록된 소환사명입니다.')
+      } else {
+        setEditError('수정 중 오류가 발생했습니다.')
+      }
+      return
+    }
+
+    setEditingId(null)
+    fetchPlayers()
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm('정말 삭제하시겠습니까?')) return
+    await insforge.database.from('players').delete().eq('id', id)
+    fetchPlayers()
+  }
+
   return (
     <main className="min-h-screen px-6 py-16 max-w-2xl mx-auto" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
       <a href="/" className="text-sm hover:underline" style={{ color: '#202020', opacity: 0.5 }}>
@@ -67,20 +109,78 @@ export default function PlayersPage() {
           </p>
         ) : (
           <ul className="flex flex-col gap-3">
-            {players.map((p) => (
-              <li
-                key={p.id}
-                className="flex justify-between items-center px-5 py-4 rounded-xl"
-                style={{ backgroundColor: '#DEE0E2' }}
-              >
-                <span className="font-medium" style={{ color: '#202020' }}>
-                  {p.real_name}
-                </span>
-                <span className="text-sm" style={{ color: '#202020', opacity: 0.55 }}>
-                  {p.summoner_name}
-                </span>
-              </li>
-            ))}
+            {players.map((p) =>
+              editingId === p.id ? (
+                <li
+                  key={p.id}
+                  className="flex flex-col gap-2 px-5 py-4 rounded-xl"
+                  style={{ backgroundColor: '#DEE0E2' }}
+                >
+                  <div className="flex gap-2">
+                    <input
+                      value={editRealName}
+                      onChange={(e) => setEditRealName(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                      style={{ backgroundColor: '#ECEEF0', color: '#202020', border: 'none' }}
+                      placeholder="실명"
+                    />
+                    <input
+                      value={editSummonerName}
+                      onChange={(e) => setEditSummonerName(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                      style={{ backgroundColor: '#ECEEF0', color: '#202020', border: 'none' }}
+                      placeholder="소환사명"
+                    />
+                  </div>
+                  {editError && (
+                    <p className="text-xs" style={{ color: '#e53e3e' }}>{editError}</p>
+                  )}
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={cancelEdit}
+                      className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
+                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={() => handleUpdate(p.id)}
+                      className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-80"
+                      style={{ backgroundColor: '#202020', color: '#ECEEF0' }}
+                    >
+                      저장
+                    </button>
+                  </div>
+                </li>
+              ) : (
+                <li
+                  key={p.id}
+                  className="flex justify-between items-center px-5 py-4 rounded-xl"
+                  style={{ backgroundColor: '#DEE0E2' }}
+                >
+                  <div>
+                    <span className="font-medium" style={{ color: '#202020' }}>{p.real_name}</span>
+                    <span className="text-sm ml-3" style={{ color: '#202020', opacity: 0.55 }}>{p.summoner_name}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEdit(p)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
+                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
+                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </li>
+              )
+            )}
           </ul>
         )}
       </section>
