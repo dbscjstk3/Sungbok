@@ -89,7 +89,7 @@ export default function PlayersPage() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-16 max-w-2xl mx-auto" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main className="min-h-screen px-12 py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
       <a href="/" className="text-sm hover:underline" style={{ color: '#202020', opacity: 0.5 }}>
         ← 홈으로
       </a>

@@ -4,15 +4,33 @@ export default function Home() {
 
       {/* Nav */}
       <nav className="px-8 py-5 flex justify-between items-center" style={{ backgroundColor: "#ECEEF0" }}>
-        <span className="text-xl font-bold tracking-tight" style={{ color: "#202020" }}>
-          성복
-        </span>
-        <button
-          className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-80"
-          style={{ backgroundColor: "#202020", color: "#ECEEF0" }}
-        >
-          시작하기
-        </button>
+        <a href="/" className="text-xl font-bold tracking-tight" style={{ color: "#202020" }}>
+          성복내전
+        </a>
+        <div className="flex items-center gap-6">
+          <a href="/" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            홈
+          </a>
+          <a href="/players" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            참가자 명단
+          </a>
+          <a href="/match" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            내전 기록
+          </a>
+          <a href="/teams" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            팀 배정
+          </a>
+          <a href="/roulette" className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: "#202020" }}>
+            룰렛
+          </a>
+          <a
+            href="/players"
+            className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-80"
+            style={{ backgroundColor: "#202020", color: "#ECEEF0" }}
+          >
+            시작하기
+          </a>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -28,18 +46,20 @@ export default function Home() {
           매 내전이 기억에 남는 경험이 됩니다.
         </p>
         <div className="flex gap-3 justify-center flex-wrap">
-          <button
+          <a
+            href="/players"
             className="px-8 py-3 text-base font-semibold rounded-full transition-opacity hover:opacity-85"
             style={{ backgroundColor: "#202020", color: "#ECEEF0" }}
           >
             무료로 시작하기
-          </button>
-          <button
+          </a>
+          <a
+            href="/players"
             className="px-8 py-3 text-base font-semibold rounded-full transition-opacity hover:opacity-80"
             style={{ backgroundColor: "#DEE0E2", color: "#202020" }}
           >
             둘러보기
-          </button>
+          </a>
         </div>
       </section>
 
@@ -138,12 +158,13 @@ export default function Home() {
         <p className="text-base mb-10 max-w-sm mx-auto" style={{ color: "#ECEEF0", opacity: 0.5 }}>
           지금 바로 무료로 시작하고, 친구들에게 공유하세요.
         </p>
-        <button
+        <a
+          href="/players"
           className="px-8 py-3 text-base font-semibold rounded-full transition-opacity hover:opacity-85"
           style={{ backgroundColor: "#ECEEF0", color: "#202020" }}
         >
           무료로 시작하기
-        </button>
+        </a>
       </section>
 
       {/* Footer */}
