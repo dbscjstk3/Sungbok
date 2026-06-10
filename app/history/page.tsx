@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
+import NavBar from '@/app/components/NavBar'
+import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
 
 interface Session {
   id: string
@@ -58,6 +60,20 @@ export default function HistoryPage() {
 
   useEffect(() => {
     async function load() {
+      if (IS_MOCK) {
+        const playerMap = new Map(samplePlayers.map(p => [p.id, p]))
+        const result: SessionDetail[] = [...sampleSessions].reverse().map(session => {
+          const sessionRounds = sampleRounds.filter(r => r.session_id === session.id)
+          const allIds = new Set<string>()
+          sessionRounds.forEach(r => { r.team1_ids.forEach(id => allIds.add(id)); r.team2_ids.forEach(id => allIds.add(id)) })
+          const sessionPlayers = [...allIds].map(id => playerMap.get(id)).filter(Boolean) as Player[]
+          return { session, rounds: sessionRounds as Round[], stats: computeStats(sessionPlayers, sessionRounds as Round[]) }
+        })
+        setDetails(result)
+        setLoading(false)
+        return
+      }
+
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
         insforge.database.from('sessions').select('id, created_at, ended_at, bet_amount')
           .not('ended_at', 'is', null).order('created_at', { ascending: false }),
@@ -92,16 +108,8 @@ export default function HistoryPage() {
   }
 
   return (
-    <main className="min-h-screen px-12 py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
-      <nav className="fixed top-0 left-0 right-0 px-8 py-4 flex justify-between items-center z-10"
-        style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
-        <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
-        <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
-            <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
-          ))}
-        </div>
-      </nav>
+    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+      <NavBar />
 
       <div className="pt-16">
         <h1 className="text-3xl font-bold mb-2">내전 기록</h1>
@@ -131,15 +139,15 @@ export default function HistoryPage() {
                 {/* 세션 헤더 */}
                 <button
                   onClick={() => toggleExpand(session.id)}
-                  className="w-full px-6 py-5 flex items-center justify-between transition-opacity hover:opacity-80"
+                  className="w-full px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between transition-opacity hover:opacity-80"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="text-base font-bold">{formatDate(session.created_at)}</span>
-                    <span className="text-sm" style={{ opacity: 0.5 }}>{totalRounds}판</span>
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <span className="text-sm sm:text-base font-bold">{formatDate(session.created_at)}</span>
+                    <span className="text-xs sm:text-sm" style={{ opacity: 0.5 }}>{totalRounds}판</span>
                     {showMoney && (
-                      <span className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                         style={{ backgroundColor: '#ECEEF0', color: '#202020', opacity: 0.7 }}>
-                        판당 {session.bet_amount.toLocaleString()}원
+                        {session.bet_amount.toLocaleString()}원
                       </span>
                     )}
                   </div>
@@ -148,17 +156,17 @@ export default function HistoryPage() {
 
                 {/* 세션 상세 */}
                 {isOpen && (
-                  <div className="px-6 pb-6">
+                  <div className="px-3 sm:px-6 pb-5 sm:pb-6">
                     <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#ECEEF0' }}>
-                      <table className="w-full text-sm">
+                      <table className="w-full text-xs sm:text-sm">
                         <thead>
                           <tr style={{ borderBottom: '1px solid #DEE0E2' }}>
-                            <th className="text-left px-5 py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                            <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
-                            <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
-                            <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
-                            <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>
-                              {showMoney ? '손익' : '손익(판)'}
+                            <th className="text-left px-3 sm:px-5 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
+                            <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
+                            <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
+                            <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
+                            <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>
+                              손익
                             </th>
                           </tr>
                         </thead>
@@ -170,13 +178,13 @@ export default function HistoryPage() {
                             const money = net * session.bet_amount
                             return (
                               <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #DEE0E2' : undefined }}>
-                                <td className="px-5 py-3">
+                                <td className="px-3 sm:px-5 py-2 sm:py-3">
                                   <span className="font-medium">{s.player.real_name}</span>
                                 </td>
-                                <td className="text-center px-4 py-3 font-bold">{s.wins}</td>
-                                <td className="text-center px-4 py-3 font-bold">{s.losses}</td>
-                                <td className="text-center px-4 py-3" style={{ opacity: 0.7 }}>{rate}%</td>
-                                <td className="text-center px-4 py-3 font-bold"
+                                <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.wins}</td>
+                                <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.losses}</td>
+                                <td className="text-center px-2 sm:px-4 py-2 sm:py-3" style={{ opacity: 0.7 }}>{rate}%</td>
+                                <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold"
                                   style={{ color: net > 0 ? '#2d7a3a' : net < 0 ? '#c0392b' : '#202020' }}>
                                   {showMoney
                                     ? `${money > 0 ? '+' : ''}${money.toLocaleString()}원`

@@ -4,26 +4,26 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col" style={{ backgroundColor: '#ECEEF0' }}>
 
-      <nav className="px-8 py-5 flex justify-between items-center" style={{ backgroundColor: '#ECEEF0' }}>
-        <span className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</span>
-        <div className="flex items-center gap-6">
+      <nav className="px-4 sm:px-8 py-4 flex justify-between items-center" style={{ backgroundColor: '#ECEEF0' }}>
+        <span className="text-xl font-bold tracking-tight shrink-0 mr-2" style={{ color: '#202020' }}>성복내전</span>
+        <div className="flex items-center gap-3 sm:gap-6">
           {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
-            <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>
+            <a key={href} href={href} className="text-xs sm:text-sm font-medium transition-opacity hover:opacity-60 whitespace-nowrap" style={{ color: '#202020' }}>
               {label}
             </a>
           ))}
         </div>
       </nav>
 
-      <div className="flex-1 grid grid-cols-5" style={{ height: 'calc(100vh - 72px)' }}>
+      <div className="flex-1 grid grid-cols-2 sm:grid-cols-5">
         {['/hero1.jpeg', '/hero2.JPG', '/hero3.JPG', '/hero4.jpeg', '/hero5.jpeg'].map((src, i) => (
-          <div key={src} className="relative overflow-hidden">
+          <div key={src} className={`relative overflow-hidden h-[45vw] sm:h-auto${i >= 2 ? ' hidden sm:block' : ''}`}>
             <Image
               src={src}
               alt={`성복내전 ${i + 1}`}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 20vw"
+              sizes="(max-width: 640px) 50vw, 20vw"
               quality={90}
               priority={i === 0}
             />

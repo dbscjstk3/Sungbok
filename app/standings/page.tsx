@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
+import NavBar from '@/app/components/NavBar'
+import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
 
 interface Session {
   id: string
@@ -23,7 +25,6 @@ interface PlayerStat {
   profit: number
 }
 
-const NAV = [['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']] as const
 
 export default function StandingsPage() {
   const [stats, setStats] = useState<PlayerStat[]>([])
@@ -31,6 +32,32 @@ export default function StandingsPage() {
 
   useEffect(() => {
     async function load() {
+      if (IS_MOCK) {
+        const totals = new Map<string, { wins: number; losses: number; profit: number }>()
+        for (const round of sampleRounds) {
+          if (round.winner_team === null) continue
+          const session = sampleSessions.find(s => s.id === round.session_id)
+          const bet = session?.bet_amount ?? 0
+          const winners = round.winner_team === 1 ? round.team1_ids : round.team2_ids
+          const losers = round.winner_team === 1 ? round.team2_ids : round.team1_ids
+          for (const id of winners) {
+            const prev = totals.get(id) ?? { wins: 0, losses: 0, profit: 0 }
+            totals.set(id, { ...prev, wins: prev.wins + 1, profit: prev.profit + bet })
+          }
+          for (const id of losers) {
+            const prev = totals.get(id) ?? { wins: 0, losses: 0, profit: 0 }
+            totals.set(id, { ...prev, losses: prev.losses + 1, profit: prev.profit - bet })
+          }
+        }
+        const result: PlayerStat[] = samplePlayers
+          .filter(p => totals.has(p.id))
+          .map(p => { const t = totals.get(p.id)!; return { player: p, wins: t.wins, losses: t.losses, profit: t.profit } })
+          .sort((a, b) => b.profit - a.profit)
+        setStats(result)
+        setLoading(false)
+        return
+      }
+
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
         insforge.database.from('sessions').select('id, bet_amount').not('ended_at', 'is', null),
         insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team'),
@@ -75,16 +102,8 @@ export default function StandingsPage() {
   }, [])
 
   return (
-    <main className="min-h-screen px-12 py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
-      <nav className="fixed top-0 left-0 right-0 px-8 py-4 flex justify-between items-center z-10"
-        style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
-        <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
-        <div className="flex items-center gap-6">
-          {NAV.map(([href, label]) => (
-            <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
-          ))}
-        </div>
-      </nav>
+    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+      <NavBar />
 
       <div className="pt-16">
         <h1 className="text-3xl font-bold mb-2">전적</h1>
@@ -100,7 +119,7 @@ export default function StandingsPage() {
 
         {!loading && stats.length > 0 && (
           <>
-          <div className="flex gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
             {/* 가장 많이 빤 사람 */}
             <div className="flex-1 rounded-2xl px-7 py-6" style={{ backgroundColor: '#2d7a3a' }}>
               <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>가장 많이 빤 사람</p>
@@ -125,15 +144,15 @@ export default function StandingsPage() {
           </div>
 
           <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#DEE0E2' }}>
-            <table className="w-full text-sm">
+            <table className="w-full text-xs sm:text-sm">
               <thead>
                 <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
-                  <th className="text-center px-5 py-4 font-semibold w-12" style={{ opacity: 0.5 }}>#</th>
-                  <th className="text-left px-5 py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                  <th className="text-center px-4 py-4 font-semibold" style={{ opacity: 0.5 }}>승</th>
-                  <th className="text-center px-4 py-4 font-semibold" style={{ opacity: 0.5 }}>패</th>
-                  <th className="text-center px-4 py-4 font-semibold" style={{ opacity: 0.5 }}>승률</th>
-                  <th className="text-center px-4 py-4 font-semibold" style={{ opacity: 0.5 }}>누적 수익</th>
+                  <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
+                  <th className="text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
+                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>승</th>
+                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>패</th>
+                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>승률</th>
+                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>수익</th>
                 </tr>
               </thead>
               <tbody>
@@ -143,12 +162,12 @@ export default function StandingsPage() {
                   const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'
                   return (
                     <tr key={s.player.id} style={{ borderTop: '1px solid #ECEEF0' }}>
-                      <td className="text-center px-5 py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
-                      <td className="px-5 py-4 font-bold">{s.player.real_name}</td>
-                      <td className="text-center px-4 py-4 font-bold">{s.wins}</td>
-                      <td className="text-center px-4 py-4 font-bold">{s.losses}</td>
-                      <td className="text-center px-4 py-4" style={{ opacity: 0.7 }}>{rate}%</td>
-                      <td className="text-center px-4 py-4 font-bold" style={{ color: profitColor }}>
+                      <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
+                      <td className="px-2 sm:px-5 py-2.5 sm:py-4 font-bold">{s.player.real_name}</td>
+                      <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
+                      <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
+                      <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
+                      <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
                         {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}원
                       </td>
                     </tr>

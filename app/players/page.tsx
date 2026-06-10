@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
+import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -13,6 +14,7 @@ export default function PlayersPage() {
   const [editError, setEditError] = useState('')
 
   async function fetchPlayers() {
+    if (IS_MOCK) { setPlayers([...samplePlayers].sort((a, b) => a.real_name.localeCompare(b.real_name))); return }
     const { data } = await insforge.database
       .from('players')
       .select('id, real_name, created_at')
@@ -77,7 +79,7 @@ export default function PlayersPage() {
   }
 
   return (
-    <main className="min-h-screen px-12 py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
       <a href="/" className="text-sm hover:underline" style={{ color: '#202020', opacity: 0.5 }}>
         ← 홈으로
       </a>

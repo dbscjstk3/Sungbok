@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
+import NavBar from '@/app/components/NavBar'
+import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
 
 interface Round {
   id: string
@@ -71,6 +73,7 @@ export default function MatchPage() {
   const restoredRef = useRef(false)
 
   useEffect(() => {
+    if (IS_MOCK) { setAllPlayers(samplePlayers); return }
     insforge.database
       .from('players')
       .select('id, real_name, created_at')
@@ -156,12 +159,16 @@ export default function MatchPage() {
     if (!canStart) return
     const pool = allPlayers.filter(p => selected.has(p.id))
 
-    const { data } = await insforge.database.from('sessions').insert([{
-      bet_amount: betAmount === '' ? 0 : betAmount,
-    }]).select()
-    if (!data?.[0]) return
-
-    const sid = (data[0] as { id: string }).id
+    let sid: string
+    if (IS_MOCK) {
+      sid = 'mock-session-' + Date.now()
+    } else {
+      const { data } = await insforge.database.from('sessions').insert([{
+        bet_amount: betAmount === '' ? 0 : betAmount,
+      }]).select()
+      if (!data?.[0]) return
+      sid = (data[0] as { id: string }).id
+    }
     setSessionId(sid)
     setSessionPlayers(pool)
     sessionPlayersRef.current = pool
@@ -188,17 +195,28 @@ export default function MatchPage() {
     if (!sessionId || saving) return
     setSaving(true)
 
-    const { data } = await insforge.database.from('rounds').insert([{
-      session_id: sessionId,
-      team1_ids: team1.map(p => p.id),
-      team2_ids: team2.map(p => p.id),
-      winner_team: winner,
-    }]).select()
+    let newRound: Round
+    if (IS_MOCK) {
+      newRound = {
+        id: 'mock-round-' + Date.now(),
+        session_id: sessionId,
+        team1_ids: team1.map(p => p.id),
+        team2_ids: team2.map(p => p.id),
+        winner_team: winner,
+      }
+    } else {
+      const { data } = await insforge.database.from('rounds').insert([{
+        session_id: sessionId,
+        team1_ids: team1.map(p => p.id),
+        team2_ids: team2.map(p => p.id),
+        winner_team: winner,
+      }]).select()
+      if (!data?.[0]) { setSaving(false); return }
+      newRound = data[0] as Round
+    }
 
     setSaving(false)
-    if (!data?.[0]) return
-
-    const newRounds = [...rounds, data[0] as Round]
+    const newRounds = [...rounds, newRound]
     setRounds(newRounds)
     setStats(computeStats(sessionPlayersRef.current, newRounds))
     openRoulette()
@@ -206,7 +224,9 @@ export default function MatchPage() {
 
   async function endSession() {
     if (!sessionId) return
-    await insforge.database.from('sessions').update({ ended_at: new Date().toISOString() }).eq('id', sessionId)
+    if (!IS_MOCK) {
+      await insforge.database.from('sessions').update({ ended_at: new Date().toISOString() }).eq('id', sessionId)
+    }
     setStats(computeStats(sessionPlayersRef.current, rounds))
     setPhase('ended')
     clearSession()
@@ -234,7 +254,7 @@ export default function MatchPage() {
   const roundCount = rounds.length
 
   return (
-    <main className="min-h-screen px-12 py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
 
       {/* 마블 룰렛 오버레이 */}
       {showRoulette && rouletteSrc && (
@@ -257,15 +277,7 @@ export default function MatchPage() {
         </div>
       )}
 
-      <nav className="fixed top-0 left-0 right-0 px-8 py-4 flex justify-between items-center z-10"
-        style={{ backgroundColor: '#ECEEF0', borderBottom: '1px solid #DEE0E2' }}>
-        <a href="/" className="text-xl font-bold tracking-tight" style={{ color: '#202020' }}>성복내전</a>
-        <div className="flex items-center gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
-            <a key={href} href={href} className="text-sm font-medium transition-opacity hover:opacity-60" style={{ color: '#202020' }}>{label}</a>
-          ))}
-        </div>
-      </nav>
+      <NavBar />
 
       <div className="pt-16">
 
@@ -305,21 +317,21 @@ export default function MatchPage() {
               })}
             </div>
 
-            <div className="flex items-center gap-3 mb-8">
-              <label className="text-sm font-medium shrink-0" style={{ opacity: 0.6 }}>판당 금액</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={betAmount}
-                  onChange={e => setBetAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-36 pl-4 pr-9 py-2 rounded-xl text-sm font-medium text-right outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>원</span>
-              </div>
-              <div className="flex gap-2">
+            <div className="flex flex-col gap-2 mb-8">
+              <label className="text-sm font-medium" style={{ opacity: 0.6 }}>판당 금액</label>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    value={betAmount}
+                    onChange={e => setBetAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-32 pl-4 pr-9 py-2 rounded-xl text-sm font-medium text-right outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>원</span>
+                </div>
                 {[1000, 2000, 3000, 5000].map(v => (
                   <button key={v} onClick={() => setBetAmount(v)}
                     className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
@@ -426,16 +438,16 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
     <div>
       <h2 className="text-lg font-bold mb-4">{showSettlement ? '최종 전적' : '현재 전적'}</h2>
       <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#DEE0E2' }}>
-        <table className="w-full text-sm">
+        <table className="w-full text-xs sm:text-sm">
           <thead>
             <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
-              <th className="text-left px-5 py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-              <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
-              <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
-              <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
+              <th className="text-left px-3 sm:px-5 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
+              <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
+              <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
+              <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
               {showSettlement && (
-                <th className="text-center px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>
-                  {showMoney ? '손익' : '손익(판)'}
+                <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>
+                  손익
                 </th>
               )}
             </tr>
@@ -448,14 +460,14 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
               const money = net * betAmount
               return (
                 <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #ECEEF0' : undefined }}>
-                  <td className="px-5 py-3">
+                  <td className="px-3 sm:px-5 py-2 sm:py-3">
                     <span className="font-medium">{s.player.real_name}</span>
                   </td>
-                  <td className="text-center px-4 py-3 font-bold">{s.wins}</td>
-                  <td className="text-center px-4 py-3 font-bold">{s.losses}</td>
-                  <td className="text-center px-4 py-3" style={{ opacity: 0.7 }}>{rate}%</td>
+                  <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.wins}</td>
+                  <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.losses}</td>
+                  <td className="text-center px-2 sm:px-4 py-2 sm:py-3" style={{ opacity: 0.7 }}>{rate}%</td>
                   {showSettlement && (
-                    <td className="text-center px-4 py-3 font-bold"
+                    <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold"
                       style={{ color: net > 0 ? '#2d7a3a' : net < 0 ? '#c0392b' : '#202020' }}>
                       {showMoney
                         ? `${money > 0 ? '+' : ''}${money.toLocaleString()}원`
