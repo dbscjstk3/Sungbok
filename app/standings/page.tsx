@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
 import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
@@ -25,10 +25,30 @@ interface PlayerStat {
   profit: number
 }
 
+type SortKey = 'profit' | 'wins' | 'losses' | 'rate'
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'profit', label: '수익' },
+  { key: 'rate',   label: '승률' },
+  { key: 'wins',   label: '승리' },
+  { key: 'losses', label: '패배' },
+]
 
 export default function StandingsPage() {
   const [stats, setStats] = useState<PlayerStat[]>([])
   const [loading, setLoading] = useState(true)
+  const [sortBy, setSortBy] = useState<SortKey>('profit')
+
+  const sortedStats = useMemo(() => [...stats].sort((a, b) => {
+    const ra = (a.wins + a.losses) > 0 ? a.wins / (a.wins + a.losses) : 0
+    const rb = (b.wins + b.losses) > 0 ? b.wins / (b.wins + b.losses) : 0
+    switch (sortBy) {
+      case 'profit':  return b.profit - a.profit
+      case 'wins':    return b.wins - a.wins
+      case 'losses':  return b.losses - a.losses
+      case 'rate':    return rb - ra
+    }
+  }), [stats, sortBy])
 
   useEffect(() => {
     async function load() {
@@ -107,7 +127,25 @@ export default function StandingsPage() {
 
       <div className="pt-16">
         <h1 className="text-3xl font-bold mb-2">전적</h1>
-        <p className="text-sm mb-10" style={{ opacity: 0.5 }}>누적 수익금 순으로 정렬됩니다.</p>
+        <p className="text-sm mb-6" style={{ opacity: 0.5 }}>
+          {{ profit: '누적 수익', rate: '승률', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
+        </p>
+
+        <div className="flex gap-2 mb-8 flex-wrap">
+          {SORT_OPTIONS.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setSortBy(key)}
+              className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
+              style={{
+                backgroundColor: sortBy === key ? '#202020' : '#DEE0E2',
+                color: sortBy === key ? '#ECEEF0' : '#202020',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         {loading && <p className="text-sm" style={{ opacity: 0.4 }}>불러오는 중...</p>}
 
@@ -149,14 +187,19 @@ export default function StandingsPage() {
                 <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
                   <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
                   <th className="text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>승</th>
-                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>패</th>
-                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>승률</th>
-                  <th className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>수익</th>
+                  {([['wins', '승'], ['losses', '패'], ['rate', '승률'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
+                    <th key={key}
+                      onClick={() => setSortBy(key)}
+                      className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
+                      style={{ opacity: sortBy === key ? 1 : 0.5 }}
+                    >
+                      {label}{sortBy === key && ' ↓'}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {stats.map((s, i) => {
+                {sortedStats.map((s, i) => {
                   const total = s.wins + s.losses
                   const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
                   const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'

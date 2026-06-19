@@ -34,7 +34,7 @@ function computeStats(players: Player[], rounds: Round[]): Stat[] {
   }).sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))
 }
 
-type Phase = 'select' | 'playing' | 'ended'
+type Phase = 'select' | 'assign' | 'playing' | 'ended'
 
 const STORAGE_KEY = 'sungbok_match_session'
 
@@ -45,6 +45,8 @@ interface StoredSession {
   team1Ids: string[]
   team2Ids: string[]
   betAmount: number
+  fixedTeam1Ids: string[]
+  fixedTeam2Ids: string[]
 }
 
 function saveSession(data: StoredSession) {
@@ -69,8 +71,12 @@ export default function MatchPage() {
   const [saving, setSaving] = useState(false)
   const [showRoulette, setShowRoulette] = useState(false)
   const [rouletteKey, setRouletteKey] = useState(0)
+  const [assignments, setAssignments] = useState<Map<string, 1 | 2>>(new Map())
   const sessionPlayersRef = useRef<Player[]>([])
+  const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
   const restoredRef = useRef(false)
+
+  useEffect(() => { assignmentsRef.current = assignments }, [assignments])
 
   useEffect(() => {
     if (IS_MOCK) { setAllPlayers(samplePlayers); return }
@@ -102,6 +108,12 @@ export default function MatchPage() {
           const fetchedRounds = (data as Round[]) ?? []
           const t1 = stored.team1Ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
           const t2 = stored.team2Ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+          const restoredAssignments = new Map<string, 1 | 2>([
+            ...(stored.fixedTeam1Ids ?? []).map(id => [id, 1] as [string, 1 | 2]),
+            ...(stored.fixedTeam2Ids ?? []).map(id => [id, 2] as [string, 1 | 2]),
+          ])
+          setAssignments(restoredAssignments)
+          assignmentsRef.current = restoredAssignments
           setSessionId(stored.sessionId)
           setSessionPlayers(pool)
           sessionPlayersRef.current = pool
@@ -122,10 +134,16 @@ export default function MatchPage() {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
       if (e.data?.type !== 'roulette-result') return
-      const team1Names: string[] = e.data.rankings ?? []
+      const rouletteTeam1Names: string[] = e.data.rankings ?? []
       const pool = sessionPlayersRef.current
-      const t1 = pool.filter(p => team1Names.includes(p.real_name))
-      const t2 = pool.filter(p => !team1Names.includes(p.real_name))
+      const asgn = assignmentsRef.current
+      const fixed1 = pool.filter(p => asgn.get(p.id) === 1)
+      const fixed2 = pool.filter(p => asgn.get(p.id) === 2)
+      const roulettePool = pool.filter(p => !asgn.has(p.id))
+      const rouletteT1 = roulettePool.filter(p => rouletteTeam1Names.includes(p.real_name))
+      const rouletteT2 = roulettePool.filter(p => !rouletteTeam1Names.includes(p.real_name))
+      const t1 = [...fixed1, ...rouletteT1]
+      const t2 = [...fixed2, ...rouletteT2]
       setTeam1(t1)
       setTeam2(t2)
       setShowRoulette(false)
@@ -155,9 +173,27 @@ export default function MatchPage() {
 
   const canStart = selected.size === 8 || selected.size === 10
 
+  function goToAssign() {
+    if (!canStart) return
+    setAssignments(new Map())
+    setPhase('assign')
+  }
+
+  function toggleAssignment(id: string, team: 1 | 2) {
+    setAssignments(prev => {
+      const next = new Map(prev)
+      if (next.get(id) === team) { next.delete(id) } else { next.set(id, team) }
+      return next
+    })
+  }
+
   async function startSession() {
     if (!canStart) return
     const pool = allPlayers.filter(p => selected.has(p.id))
+    const asgn = assignments
+    const fixed1 = pool.filter(p => asgn.get(p.id) === 1)
+    const fixed2 = pool.filter(p => asgn.get(p.id) === 2)
+    const roulettePool = pool.filter(p => !asgn.has(p.id))
 
     let sid: string
     if (IS_MOCK) {
@@ -182,8 +218,16 @@ export default function MatchPage() {
       team1Ids: [],
       team2Ids: [],
       betAmount: betAmount === '' ? 0 : betAmount,
+      fixedTeam1Ids: fixed1.map(p => p.id),
+      fixedTeam2Ids: fixed2.map(p => p.id),
     })
-    openRoulette()
+
+    if (roulettePool.length === 0) {
+      setTeam1(fixed1)
+      setTeam2(fixed2)
+    } else {
+      openRoulette()
+    }
   }
 
   function openRoulette() {
@@ -236,6 +280,7 @@ export default function MatchPage() {
     setPhase('select')
     setSessionId(null)
     setSelected(new Set())
+    setAssignments(new Map())
     setSessionPlayers([])
     sessionPlayersRef.current = []
     setRounds([])
@@ -246,9 +291,10 @@ export default function MatchPage() {
     clearSession()
   }
 
-  const teamSize = sessionPlayers.length / 2
-  const rouletteSrc = sessionPlayers.length > 0
-    ? `/roulette/index.html?names=${encodeURIComponent(sessionPlayers.map(p => p.real_name).join(','))}&teamSize=${teamSize}`
+  const roulettePool = sessionPlayers.filter(p => !assignments.has(p.id))
+  const rouletteTeamSize = roulettePool.length / 2
+  const rouletteSrc = roulettePool.length >= 2
+    ? `/roulette/index.html?names=${encodeURIComponent(roulettePool.map(p => p.real_name).join(','))}&teamSize=${rouletteTeamSize}`
     : ''
 
   const roundCount = rounds.length
@@ -342,13 +388,82 @@ export default function MatchPage() {
               </div>
             </div>
 
-            <button onClick={startSession} disabled={!canStart}
+            <button onClick={goToAssign} disabled={!canStart}
               className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
               style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
-              룰렛으로 팀 정하기 {canStart && `(${selected.size / 2}:${selected.size / 2})`}
+              다음 — 팀 배정 {canStart && `(${selected.size / 2}:${selected.size / 2})`}
             </button>
           </div>
         )}
+
+        {/* 팀 배정 */}
+        {phase === 'assign' && (() => {
+          const pool = allPlayers.filter(p => selected.has(p.id))
+          const teamSize = selected.size / 2
+          const f1 = pool.filter(p => assignments.get(p.id) === 1)
+          const f2 = pool.filter(p => assignments.get(p.id) === 2)
+          const remaining = pool.length - f1.length - f2.length
+          const balanced = f1.length === f2.length
+          const allFixed = remaining === 0
+          const canConfirm = balanced && f1.length <= teamSize
+
+          return (
+            <div>
+              <button onClick={() => setPhase('select')} className="text-sm mb-6 transition-opacity hover:opacity-60" style={{ opacity: 0.5 }}>
+                ← 뒤로
+              </button>
+              <h1 className="text-3xl font-bold mb-2">팀 고정 배치</h1>
+              <p className="text-sm mb-8" style={{ opacity: 0.5 }}>
+                팀에 고정할 선수를 선택하세요. 나머지 {remaining}명은 룰렛으로 배정됩니다.
+              </p>
+
+              <div className="flex flex-col gap-2 mb-8">
+                {pool.map(p => {
+                  const assigned = assignments.get(p.id)
+                  return (
+                    <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded-xl"
+                      style={{ backgroundColor: '#DEE0E2' }}>
+                      <span className="font-medium text-sm">{p.real_name}</span>
+                      <div className="flex gap-2">
+                        {([1, 2] as const).map(team => {
+                          const active = assigned === team
+                          return (
+                            <button key={team} onClick={() => toggleAssignment(p.id, team)}
+                              className="px-3 py-1 rounded-lg text-xs font-bold transition-all"
+                              style={{
+                                backgroundColor: active ? (team === 1 ? '#1e3a8a' : '#991b1b') : '#ECEEF0',
+                                color: active ? '#ffffff' : '#202020',
+                              }}>
+                              {team}팀
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex gap-3 mb-6 text-sm" style={{ opacity: 0.6 }}>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#1e3a8a', color: '#fff' }}>1팀 고정 {f1.length}명</span>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#991b1b', color: '#fff' }}>2팀 고정 {f2.length}명</span>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>룰렛 {remaining}명</span>
+              </div>
+
+              {!balanced && f1.length + f2.length > 0 && (
+                <p className="text-xs mb-4" style={{ color: '#c0392b' }}>
+                  1팀과 2팀 고정 인원이 같아야 합니다. (현재 {f1.length}명 vs {f2.length}명)
+                </p>
+              )}
+
+              <button onClick={startSession} disabled={!canConfirm}
+                className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
+                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                {allFixed ? '팀 확정하기' : `룰렛으로 나머지 ${remaining}명 배정`}
+              </button>
+            </div>
+          )
+        })()}
 
         {/* 진행 중 */}
         {phase === 'playing' && (
