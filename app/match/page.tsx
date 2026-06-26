@@ -266,6 +266,23 @@ export default function MatchPage() {
     openRoulette()
   }
 
+  async function undoLastRound() {
+    if (rounds.length === 0) return
+    const last = rounds[rounds.length - 1]
+    if (!IS_MOCK) {
+      await insforge.database.from('rounds').delete().eq('id', last.id)
+    }
+    const pool = sessionPlayersRef.current
+    const t1 = last.team1_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+    const t2 = last.team2_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+    setTeam1(t1)
+    setTeam2(t2)
+    setShowRoulette(false)
+    const newRounds = rounds.slice(0, -1)
+    setRounds(newRounds)
+    setStats(computeStats(pool, newRounds))
+  }
+
   async function endSession() {
     if (!sessionId) return
     if (!IS_MOCK) {
@@ -305,7 +322,16 @@ export default function MatchPage() {
       {/* 마블 룰렛 오버레이 */}
       {showRoulette && rouletteSrc && (
         <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: '#202020' }}>
-          <div className="shrink-0 px-6 py-3 flex justify-end">
+          <div className="shrink-0 px-6 py-3 flex justify-end gap-2">
+            {roundCount > 0 && (
+              <button
+                onClick={() => { if (window.confirm('마지막 판 결과를 취소할까요?')) undoLastRound() }}
+                className="text-sm px-4 py-2 rounded-lg transition-opacity hover:opacity-70"
+                style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#f87171' }}
+              >
+                전판 취소
+              </button>
+            )}
             <button
               onClick={() => setShowRoulette(false)}
               className="text-sm px-4 py-2 rounded-lg transition-opacity hover:opacity-70"
@@ -473,11 +499,20 @@ export default function MatchPage() {
                 <h1 className="text-3xl font-bold">{roundCount + 1}번째 판</h1>
                 <p className="text-sm mt-1" style={{ opacity: 0.5 }}>총 {roundCount}판 완료</p>
               </div>
-              <button onClick={endSession}
-                className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-70"
-                style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
-                내전 종료
-              </button>
+              <div className="flex gap-2">
+                {roundCount > 0 && (
+                  <button onClick={() => { if (window.confirm('마지막 판 결과를 취소할까요?')) undoLastRound() }}
+                    className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-70"
+                    style={{ backgroundColor: '#DEE0E2', color: '#c0392b' }}>
+                    마지막 판 취소
+                  </button>
+                )}
+                <button onClick={endSession}
+                  className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-70"
+                  style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
+                  내전 종료
+                </button>
+              </div>
             </div>
 
             {team1.length > 0 && (
