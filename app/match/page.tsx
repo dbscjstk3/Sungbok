@@ -11,6 +11,8 @@ interface Round {
   team1_ids: string[]
   team2_ids: string[]
   winner_team: 1 | 2 | null
+  team1_champions: string[] | null
+  team2_champions: string[] | null
 }
 
 interface Stat {
@@ -72,6 +74,8 @@ export default function MatchPage() {
   const [showRoulette, setShowRoulette] = useState(false)
   const [rouletteKey, setRouletteKey] = useState(0)
   const [assignments, setAssignments] = useState<Map<string, 1 | 2>>(new Map())
+  const [champions, setChampions] = useState<Map<string, string>>(new Map())
+  const [championLoading, setChampionLoading] = useState(false)
   const sessionPlayersRef = useRef<Player[]>([])
   const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
   const restoredRef = useRef(false)
@@ -82,7 +86,7 @@ export default function MatchPage() {
     if (IS_MOCK) { setAllPlayers(samplePlayers); return }
     insforge.database
       .from('players')
-      .select('id, real_name, created_at')
+      .select('id, real_name, summoner_name, created_at')
       .order('created_at', { ascending: true })
       .then(({ data }) => { if (data) setAllPlayers(data as Player[]) })
   }, [])
@@ -152,7 +156,7 @@ export default function MatchPage() {
         try {
           const prev: StoredSession = JSON.parse(storedRaw)
           saveSession({ ...prev, team1Ids: t1.map(p => p.id), team2Ids: t2.map(p => p.id) })
-        } catch {}
+        } catch { }
       }
     }
     window.addEventListener('message', onMessage)
@@ -230,6 +234,29 @@ export default function MatchPage() {
     }
   }
 
+  async function fetchChampions() {
+    setChampionLoading(true)
+    try {
+      const res = await fetch('https://127.0.0.1:2999/liveclientdata/playerlist')
+      const data = await res.json()
+      const map = new Map<string, string>()
+      const pool = sessionPlayersRef.current
+      console.log('API 응답:', data.map((p: { riotIdGameName?: string; summonerName?: string; championName?: string }) => ({ name: p.riotIdGameName ?? p.summonerName, champ: p.championName })))
+      console.log('등록된 소환사명:', pool.map(p => p.summoner_name))
+      for (const p of data) {
+        const name = p.riotIdGameName ?? p.summonerName ?? ''
+        const champ = p.championName ?? ''
+        const matched = pool.find(pl => pl.summoner_name === name)
+        if (matched && champ) map.set(matched.id, champ)
+      }
+      console.log('매칭 결과:', map.size, '명')
+      setChampions(map)
+    } catch {
+      alert('게임 클라이언트에 연결할 수 없습니다. 게임이 진행 중인지 확인해주세요.')
+    }
+    setChampionLoading(false)
+  }
+
   function openRoulette() {
     setRouletteKey(k => k + 1)
     setShowRoulette(true)
@@ -239,6 +266,10 @@ export default function MatchPage() {
     if (!sessionId || saving) return
     setSaving(true)
 
+    const t1Champs = team1.map(p => champions.get(p.id) ?? '')
+    const t2Champs = team2.map(p => champions.get(p.id) ?? '')
+    const hasChamps = t1Champs.some(c => c) || t2Champs.some(c => c)
+
     let newRound: Round
     if (IS_MOCK) {
       newRound = {
@@ -247,6 +278,8 @@ export default function MatchPage() {
         team1_ids: team1.map(p => p.id),
         team2_ids: team2.map(p => p.id),
         winner_team: winner,
+        team1_champions: hasChamps ? t1Champs : null,
+        team2_champions: hasChamps ? t2Champs : null,
       }
     } else {
       const { data } = await insforge.database.from('rounds').insert([{
@@ -254,12 +287,14 @@ export default function MatchPage() {
         team1_ids: team1.map(p => p.id),
         team2_ids: team2.map(p => p.id),
         winner_team: winner,
+        ...(hasChamps ? { team1_champions: t1Champs, team2_champions: t2Champs } : {}),
       }]).select()
       if (!data?.[0]) { setSaving(false); return }
       newRound = data[0] as Round
     }
 
     setSaving(false)
+    setChampions(new Map())
     const newRounds = [...rounds, newRound]
     setRounds(newRounds)
     setStats(computeStats(sessionPlayersRef.current, newRounds))
@@ -523,8 +558,11 @@ export default function MatchPage() {
                     <h2 className="text-base font-bold mb-4" style={{ color: '#ffffff' }}>{num}팀</h2>
                     <ul className="flex flex-col gap-2">
                       {team.map(p => (
-                        <li key={p.id}>
+                        <li key={p.id} className="flex items-center gap-2">
                           <span className="text-lg font-bold" style={{ color: '#ffffff' }}>{p.real_name}</span>
+                          {champions.get(p.id) && (
+                            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{champions.get(p.id)}</span>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -533,11 +571,16 @@ export default function MatchPage() {
               </div>
             )}
 
-            <div className="mb-4">
+            <div className="flex gap-3 mb-4">
               <button onClick={openRoulette}
-                className="w-full py-3 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85"
+                className="flex-1 py-3 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85"
                 style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
                 팀 다시 섞기
+              </button>
+              <button onClick={fetchChampions} disabled={championLoading}
+                className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
+                style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
+                {championLoading ? '가져오는 중...' : champions.size > 0 ? '챔피언 다시 가져오기' : '챔피언 가져오기'}
               </button>
             </div>
 

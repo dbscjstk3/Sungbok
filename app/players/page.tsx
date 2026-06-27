@@ -7,17 +7,19 @@ import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [realName, setRealName] = useState('')
+  const [summonerName, setSummonerName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editRealName, setEditRealName] = useState('')
+  const [editSummonerName, setEditSummonerName] = useState('')
   const [editError, setEditError] = useState('')
 
   async function fetchPlayers() {
     if (IS_MOCK) { setPlayers([...samplePlayers].sort((a, b) => a.real_name.localeCompare(b.real_name))); return }
     const { data } = await insforge.database
       .from('players')
-      .select('id, real_name, created_at')
+      .select('id, real_name, summoner_name, created_at')
       .order('real_name', { ascending: true })
     if (data) setPlayers(data as Player[])
   }
@@ -31,7 +33,7 @@ export default function PlayersPage() {
 
     const { error: insertError } = await insforge.database
       .from('players')
-      .insert([{ real_name: realName.trim() }])
+      .insert([{ real_name: realName.trim(), summoner_name: summonerName.trim() || null }])
       .select()
 
     setLoading(false)
@@ -42,12 +44,14 @@ export default function PlayersPage() {
     }
 
     setRealName('')
+    setSummonerName('')
     fetchPlayers()
   }
 
   function startEdit(p: Player) {
     setEditingId(p.id)
     setEditRealName(p.real_name)
+    setEditSummonerName(p.summoner_name ?? '')
     setEditError('')
   }
 
@@ -60,7 +64,7 @@ export default function PlayersPage() {
     setEditError('')
     const { error: updateError } = await insforge.database
       .from('players')
-      .update({ real_name: editRealName.trim() })
+      .update({ real_name: editRealName.trim(), summoner_name: editSummonerName.trim() || null })
       .eq('id', id)
 
     if (updateError) {
@@ -104,6 +108,14 @@ export default function PlayersPage() {
             className="px-4 py-3 rounded-xl text-sm outline-none w-full"
             style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
           />
+          <input
+            type="text"
+            placeholder="소환사명 (선택)"
+            value={summonerName}
+            onChange={(e) => setSummonerName(e.target.value)}
+            className="px-4 py-3 rounded-xl text-sm outline-none w-full"
+            style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+          />
           {error && <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>}
           <button type="submit" disabled={loading}
             className="px-6 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-40"
@@ -132,6 +144,13 @@ export default function PlayersPage() {
                     style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
                     placeholder="이름"
                   />
+                  <input
+                    value={editSummonerName}
+                    onChange={(e) => setEditSummonerName(e.target.value)}
+                    className="px-3 py-2 rounded-lg text-sm outline-none"
+                    style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    placeholder="소환사명 (선택)"
+                  />
                   {editError && <p className="text-xs" style={{ color: '#e53e3e' }}>{editError}</p>}
                   <div className="flex gap-2 justify-end">
                     <button onClick={cancelEdit}
@@ -149,7 +168,12 @@ export default function PlayersPage() {
               ) : (
                 <li key={p.id} className="flex justify-between items-center px-5 py-4 rounded-xl"
                   style={{ backgroundColor: '#DEE0E2' }}>
-                  <span className="font-medium" style={{ color: '#202020' }}>{p.real_name}</span>
+                  <div>
+                    <span className="font-medium" style={{ color: '#202020' }}>{p.real_name}</span>
+                    {p.summoner_name && (
+                      <span className="ml-2 text-xs" style={{ opacity: 0.4 }}>{p.summoner_name}</span>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => startEdit(p)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"

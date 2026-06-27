@@ -1,16 +1,16 @@
 export const IS_MOCK = !process.env.NEXT_PUBLIC_INSFORGE_URL
 
 export const samplePlayers = [
-  { id: 'p1',  real_name: '김민준', created_at: '2026-01-01T00:00:00Z' },
-  { id: 'p2',  real_name: '이서준', created_at: '2026-01-02T00:00:00Z' },
-  { id: 'p3',  real_name: '박도윤', created_at: '2026-01-03T00:00:00Z' },
-  { id: 'p4',  real_name: '정시우', created_at: '2026-01-04T00:00:00Z' },
-  { id: 'p5',  real_name: '최주원', created_at: '2026-01-05T00:00:00Z' },
-  { id: 'p6',  real_name: '윤현우', created_at: '2026-01-06T00:00:00Z' },
-  { id: 'p7',  real_name: '임지호', created_at: '2026-01-07T00:00:00Z' },
-  { id: 'p8',  real_name: '한준서', created_at: '2026-01-08T00:00:00Z' },
-  { id: 'p9',  real_name: '오건우', created_at: '2026-01-09T00:00:00Z' },
-  { id: 'p10', real_name: '신예준', created_at: '2026-01-10T00:00:00Z' },
+  { id: 'p1',  real_name: '김민준', summoner_name: null, created_at: '2026-01-01T00:00:00Z' },
+  { id: 'p2',  real_name: '이서준', summoner_name: null, created_at: '2026-01-02T00:00:00Z' },
+  { id: 'p3',  real_name: '박도윤', summoner_name: null, created_at: '2026-01-03T00:00:00Z' },
+  { id: 'p4',  real_name: '정시우', summoner_name: null, created_at: '2026-01-04T00:00:00Z' },
+  { id: 'p5',  real_name: '최주원', summoner_name: null, created_at: '2026-01-05T00:00:00Z' },
+  { id: 'p6',  real_name: '윤현우', summoner_name: null, created_at: '2026-01-06T00:00:00Z' },
+  { id: 'p7',  real_name: '임지호', summoner_name: null, created_at: '2026-01-07T00:00:00Z' },
+  { id: 'p8',  real_name: '한준서', summoner_name: null, created_at: '2026-01-08T00:00:00Z' },
+  { id: 'p9',  real_name: '오건우', summoner_name: null, created_at: '2026-01-09T00:00:00Z' },
+  { id: 'p10', real_name: '신예준', summoner_name: null, created_at: '2026-01-10T00:00:00Z' },
 ]
 
 export const sampleSessions = [

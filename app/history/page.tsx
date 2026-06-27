@@ -18,6 +18,8 @@ interface Round {
   team1_ids: string[]
   team2_ids: string[]
   winner_team: 1 | 2 | null
+  team1_champions: string[] | null
+  team2_champions: string[] | null
 }
 
 interface PlayerStat {
@@ -53,10 +55,26 @@ function computeStats(players: Player[], rounds: Round[]): PlayerStat[] {
     .sort((a, b) => (b.wins - b.losses) - (a.wins - a.losses))
 }
 
+function getPlayerChampions(playerId: string, rounds: Round[]): { champion: string; won: boolean }[] {
+  const result: { champion: string; won: boolean }[] = []
+  for (const r of rounds) {
+    if (r.winner_team === null) continue
+    const t1Idx = r.team1_ids.indexOf(playerId)
+    const t2Idx = r.team2_ids.indexOf(playerId)
+    if (t1Idx >= 0 && r.team1_champions?.[t1Idx]) {
+      result.push({ champion: r.team1_champions[t1Idx], won: r.winner_team === 1 })
+    } else if (t2Idx >= 0 && r.team2_champions?.[t2Idx]) {
+      result.push({ champion: r.team2_champions[t2Idx], won: r.winner_team === 2 })
+    }
+  }
+  return result
+}
+
 export default function HistoryPage() {
   const [details, setDetails] = useState<SessionDetail[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [championModal, setChampionModal] = useState<{ playerName: string; champions: { champion: string; won: boolean }[] } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -77,7 +95,7 @@ export default function HistoryPage() {
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
         insforge.database.from('sessions').select('id, created_at, ended_at, bet_amount')
           .not('ended_at', 'is', null).order('created_at', { ascending: false }),
-        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team'),
+        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions'),
         insforge.database.from('players').select('id, real_name, created_at'),
       ])
 
@@ -110,6 +128,35 @@ export default function HistoryPage() {
   return (
     <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
       <NavBar />
+
+      {championModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setChampionModal(null)}>
+          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 pb-8"
+            style={{ backgroundColor: '#ECEEF0' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-xl font-bold">{championModal.playerName}</h2>
+              <button onClick={() => setChampionModal(null)}
+                className="text-sm px-3 py-1 rounded-lg transition-opacity hover:opacity-60"
+                style={{ backgroundColor: '#DEE0E2' }}>
+                닫기
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {championModal.champions.map((c, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2.5 rounded-xl"
+                  style={{ backgroundColor: '#DEE0E2' }}>
+                  <span className="text-sm font-medium">{i + 1}판 — {c.champion}</span>
+                  <span className="text-xs font-bold" style={{ color: c.won ? '#2d7a3a' : '#c0392b' }}>
+                    {c.won ? '승' : '패'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pt-16">
         <h1 className="text-3xl font-bold mb-2">내전 기록</h1>
@@ -179,7 +226,18 @@ export default function HistoryPage() {
                             return (
                               <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #DEE0E2' : undefined }}>
                                 <td className="px-3 sm:px-5 py-2 sm:py-3">
-                                  <span className="font-medium">{s.player.real_name}</span>
+                                  {(() => {
+                                    const champs = getPlayerChampions(s.player.id, rounds)
+                                    if (champs.length > 0) {
+                                      return (
+                                        <button onClick={() => setChampionModal({ playerName: s.player.real_name, champions: champs })}
+                                          className="font-medium underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
+                                          {s.player.real_name}
+                                        </button>
+                                      )
+                                    }
+                                    return <span className="font-medium">{s.player.real_name}</span>
+                                  })()}
                                 </td>
                                 <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.wins}</td>
                                 <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold">{s.losses}</td>

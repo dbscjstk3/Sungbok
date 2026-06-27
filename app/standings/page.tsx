@@ -16,6 +16,8 @@ interface Round {
   team1_ids: string[]
   team2_ids: string[]
   winner_team: 1 | 2 | null
+  team1_champions: string[] | null
+  team2_champions: string[] | null
   created_at: string
 }
 
@@ -45,6 +47,7 @@ interface PersonalDetail {
   longestLossStreak: number
   sessionCount: number
   topTeammate: { player: Player; games: number; wins: number } | null
+  topChampions: { name: string; games: number; wins: number; winRate: number }[]
 }
 
 type SortKey = 'profit' | 'wins' | 'losses' | 'rate'
@@ -125,6 +128,31 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     if (tmPlayer) topTeammate = { player: tmPlayer, ...tmStat }
   }
 
+  const champMap = new Map<string, { games: number; wins: number }>()
+  for (const r of playerRounds) {
+    const t1Idx = r.team1_ids.indexOf(playerId)
+    const t2Idx = r.team2_ids.indexOf(playerId)
+    let champ = ''
+    let won = false
+    if (t1Idx >= 0 && r.team1_champions?.[t1Idx]) {
+      champ = r.team1_champions[t1Idx]
+      won = r.winner_team === 1
+    } else if (t2Idx >= 0 && r.team2_champions?.[t2Idx]) {
+      champ = r.team2_champions[t2Idx]
+      won = r.winner_team === 2
+    }
+    if (champ) {
+      const prev = champMap.get(champ) ?? { games: 0, wins: 0 }
+      prev.games++
+      if (won) prev.wins++
+      champMap.set(champ, prev)
+    }
+  }
+  const topChampions = [...champMap.entries()]
+    .sort((a, b) => (b[1].wins / b[1].games) - (a[1].wins / a[1].games) || b[1].games - a[1].games)
+    .slice(0, 5)
+    .map(([name, s]) => ({ name, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }))
+
   return {
     player,
     totalGames: playerRounds.length,
@@ -136,6 +164,7 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     longestLossStreak: maxLoss,
     sessionCount: new Set(playerRounds.map(r => r.session_id)).size,
     topTeammate,
+    topChampions,
   }
 }
 
@@ -157,6 +186,25 @@ export default function StandingsPage() {
       case 'rate': return rb - ra
     }
   }), [stats, sortBy])
+
+  const recentForm = useMemo(() => {
+    const map = new Map<string, boolean[]>()
+    const sorted = [...allRounds].filter(r => r.winner_team !== null).sort((a, b) => a.created_at.localeCompare(b.created_at))
+    for (const r of sorted) {
+      const allIds = [...r.team1_ids, ...r.team2_ids]
+      for (const id of allIds) {
+        const won = (r.team1_ids.includes(id) && r.winner_team === 1) || (r.team2_ids.includes(id) && r.winner_team === 2)
+        const arr = map.get(id) ?? []
+        arr.push(won)
+        map.set(id, arr)
+      }
+    }
+    const result = new Map<string, boolean[]>()
+    for (const [id, arr] of map) {
+      result.set(id, arr.slice(-5))
+    }
+    return result
+  }, [allRounds])
 
   const duoStats = useMemo(() => computeDuoStats(allPlayers, allRounds), [allPlayers, allRounds])
 
@@ -197,7 +245,7 @@ export default function StandingsPage() {
 
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
         insforge.database.from('sessions').select('id, bet_amount').not('ended_at', 'is', null),
-        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, created_at'),
+        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at'),
         insforge.database.from('players').select('id, real_name, created_at'),
       ])
 
@@ -278,7 +326,7 @@ export default function StandingsPage() {
             </div>
 
             {personalDetail.topTeammate && (
-              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#DEE0E2' }}>
+              <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
                 <p className="text-xs mb-1" style={{ opacity: 0.5 }}>베스트 파트너</p>
                 <p className="text-sm font-bold">
                   {personalDetail.topTeammate.player.real_name}
@@ -286,6 +334,22 @@ export default function StandingsPage() {
                     {personalDetail.topTeammate.games}판 함께 · 승률 {Math.round((personalDetail.topTeammate.wins / personalDetail.topTeammate.games) * 100)}%
                   </span>
                 </p>
+              </div>
+            )}
+
+            {personalDetail.topChampions.length > 0 && (
+              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#DEE0E2' }}>
+                <p className="text-xs mb-2" style={{ opacity: 0.5 }}>승률 높은 챔피언 TOP5</p>
+                <div className="flex flex-col gap-1.5">
+                  {personalDetail.topChampions.map((c, i) => (
+                    <div key={c.name} className="flex items-center justify-between">
+                      <span className="text-sm font-bold">{i + 1}. {c.name}</span>
+                      <span className="text-xs" style={{ opacity: 0.5 }}>
+                        {c.games}판 · <span style={{ color: c.winRate >= 50 ? '#2d7a3a' : '#c0392b', opacity: 1 }}>{c.winRate}%</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -377,6 +441,13 @@ export default function StandingsPage() {
                             className="underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
                             {s.player.real_name}
                           </button>
+                          {recentForm.has(s.player.id) && (
+                            <span className="ml-2 inline-flex gap-0.5 align-middle">
+                              {recentForm.get(s.player.id)!.map((won, j) => (
+                                <span key={j} className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: won ? '#2d7a3a' : '#c0392b' }} />
+                              ))}
+                            </span>
+                          )}
                         </td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
