@@ -149,7 +149,7 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     }
   }
   const topChampions = [...champMap.entries()]
-    .sort((a, b) => (b[1].wins / b[1].games) - (a[1].wins / a[1].games) || b[1].games - a[1].games)
+    .sort((a, b) => b[1].games - a[1].games || (b[1].wins / b[1].games) - (a[1].wins / a[1].games))
     .slice(0, 5)
     .map(([name, s]) => ({ name, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }))
 
@@ -339,7 +339,7 @@ export default function StandingsPage() {
 
             {personalDetail.topChampions.length > 0 && (
               <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#DEE0E2' }}>
-                <p className="text-xs mb-2" style={{ opacity: 0.5 }}>승률 높은 챔피언 TOP5</p>
+                <p className="text-xs mb-2" style={{ opacity: 0.5 }}>많이 플레이한 챔피언 TOP5</p>
                 <div className="flex flex-col gap-1.5">
                   {personalDetail.topChampions.map((c, i) => (
                     <div key={c.name} className="flex items-center justify-between">
