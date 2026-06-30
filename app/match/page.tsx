@@ -243,15 +243,12 @@ export default function MatchPage() {
       const data = await res.json()
       const map = new Map<string, string>()
       const pool = sessionPlayersRef.current
-      console.log('API 응답:', data.map((p: { riotIdGameName?: string; summonerName?: string; championName?: string }) => ({ name: p.riotIdGameName ?? p.summonerName, champ: p.championName })))
-      console.log('등록된 소환사명:', pool.map(p => p.summoner_name))
       for (const p of data) {
         const name = p.riotIdGameName ?? p.summonerName ?? ''
         const champ = p.championName ?? ''
         const matched = pool.find(pl => pl.summoner_name === name)
         if (matched && champ) map.set(matched.id, champ)
       }
-      console.log('매칭 결과:', map.size, '명')
       setChampions(map)
     } catch {
       setShowCorsGuide(true)
@@ -269,20 +266,16 @@ export default function MatchPage() {
       for (const player of candidates) {
         const res = await fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(player.summoner_name!)}`)
         if (res.ok) { data = await res.json(); break }
-        console.log(`[Spectator] ${player.summoner_name} 실패, 다음 시도...`)
       }
       if (!data) {
-        console.error('[Spectator] 모든 선수 검색 실패')
         alert('검색 가능한 선수를 찾을 수 없습니다.')
       } else {
-        console.log('[Spectator] 응답:', data.participants)
         const map = new Map<string, string>()
         for (const p of data.participants) {
           const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
           if (matched) map.set(matched.id, p.championName)
         }
-        console.log('[Spectator] 매칭 결과:', map.size, '명', Object.fromEntries(map))
-        alert(`[Spectator 테스트] ${map.size}명 매칭됨. 콘솔 확인.`)
+        setChampions(map)
       }
     } catch {
       alert('Spectator API 호출 실패')
