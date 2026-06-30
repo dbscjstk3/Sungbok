@@ -261,21 +261,29 @@ export default function MatchPage() {
 
   async function fetchChampionsSpectator() {
     const pool = sessionPlayersRef.current
-    const firstPlayer = pool.find(p => p.summoner_name)
-    if (!firstPlayer?.summoner_name) return alert('소환사명이 등록된 선수가 없습니다.')
+    const candidates = pool.filter(p => p.summoner_name)
+    if (candidates.length === 0) { alert('소환사명이 등록된 선수가 없습니다.'); return }
     setSpectatorLoading(true)
     try {
-      const res = await fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(firstPlayer.summoner_name)}`)
-      const data = await res.json()
-      if (!res.ok) return alert(data.error)
-      console.log('[Spectator] 응답:', data.participants)
-      const map = new Map<string, string>()
-      for (const p of data.participants) {
-        const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
-        if (matched) map.set(matched.id, p.championName)
+      let data = null
+      for (const player of candidates) {
+        const res = await fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(player.summoner_name!)}`)
+        if (res.ok) { data = await res.json(); break }
+        console.log(`[Spectator] ${player.summoner_name} 실패, 다음 시도...`)
       }
-      console.log('[Spectator] 매칭 결과:', map.size, '명', Object.fromEntries(map))
-      alert(`[Spectator 테스트] ${map.size}명 매칭됨. 콘솔 확인.`)
+      if (!data) {
+        console.error('[Spectator] 모든 선수 검색 실패')
+        alert('검색 가능한 선수를 찾을 수 없습니다.')
+      } else {
+        console.log('[Spectator] 응답:', data.participants)
+        const map = new Map<string, string>()
+        for (const p of data.participants) {
+          const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
+          if (matched) map.set(matched.id, p.championName)
+        }
+        console.log('[Spectator] 매칭 결과:', map.size, '명', Object.fromEntries(map))
+        alert(`[Spectator 테스트] ${map.size}명 매칭됨. 콘솔 확인.`)
+      }
     } catch {
       alert('Spectator API 호출 실패')
     }
