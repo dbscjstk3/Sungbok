@@ -77,6 +77,7 @@ export default function MatchPage() {
   const [champions, setChampions] = useState<Map<string, string>>(new Map())
   const [championLoading, setChampionLoading] = useState(false)
   const [showCorsGuide, setShowCorsGuide] = useState(false)
+  const [spectatorLoading, setSpectatorLoading] = useState(false)
   const sessionPlayersRef = useRef<Player[]>([])
   const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
   const restoredRef = useRef(false)
@@ -256,6 +257,29 @@ export default function MatchPage() {
       setShowCorsGuide(true)
     }
     setChampionLoading(false)
+  }
+
+  async function fetchChampionsSpectator() {
+    const pool = sessionPlayersRef.current
+    const firstPlayer = pool.find(p => p.summoner_name)
+    if (!firstPlayer?.summoner_name) return alert('소환사명이 등록된 선수가 없습니다.')
+    setSpectatorLoading(true)
+    try {
+      const res = await fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(firstPlayer.summoner_name)}`)
+      const data = await res.json()
+      if (!res.ok) return alert(data.error)
+      console.log('[Spectator] 응답:', data.participants)
+      const map = new Map<string, string>()
+      for (const p of data.participants) {
+        const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
+        if (matched) map.set(matched.id, p.championName)
+      }
+      console.log('[Spectator] 매칭 결과:', map.size, '명', Object.fromEntries(map))
+      alert(`[Spectator 테스트] ${map.size}명 매칭됨. 콘솔 확인.`)
+    } catch {
+      alert('Spectator API 호출 실패')
+    }
+    setSpectatorLoading(false)
   }
 
   function openRoulette() {
@@ -635,6 +659,11 @@ export default function MatchPage() {
                 className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
                 style={{ backgroundColor: 'green', color: 'white' }}>
                 {championLoading ? '가져오는 중...' : champions.size > 0 ? '챔피언 다시 가져오기' : '챔피언 가져오기'}
+              </button>
+              <button onClick={fetchChampionsSpectator} disabled={spectatorLoading}
+                className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
+                style={{ backgroundColor: '#6b7280', color: 'white' }}>
+                {spectatorLoading ? '테스트 중...' : '컴맹 전용(테스트중)'}
               </button>
             </div>
 
