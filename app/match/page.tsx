@@ -76,8 +76,6 @@ export default function MatchPage() {
   const [assignments, setAssignments] = useState<Map<string, 1 | 2>>(new Map())
   const [champions, setChampions] = useState<Map<string, string>>(new Map())
   const [championLoading, setChampionLoading] = useState(false)
-  const [showCorsGuide, setShowCorsGuide] = useState(false)
-  const [spectatorLoading, setSpectatorLoading] = useState(false)
   const sessionPlayersRef = useRef<Player[]>([])
   const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
   const restoredRef = useRef(false)
@@ -237,30 +235,10 @@ export default function MatchPage() {
   }
 
   async function fetchChampions() {
-    setChampionLoading(true)
-    try {
-      const res = await fetch('https://127.0.0.1:2999/liveclientdata/playerlist')
-      const data = await res.json()
-      const map = new Map<string, string>()
-      const pool = sessionPlayersRef.current
-      for (const p of data) {
-        const name = p.riotIdGameName ?? p.summonerName ?? ''
-        const champ = p.championName ?? ''
-        const matched = pool.find(pl => pl.summoner_name === name)
-        if (matched && champ) map.set(matched.id, champ)
-      }
-      setChampions(map)
-    } catch {
-      setShowCorsGuide(true)
-    }
-    setChampionLoading(false)
-  }
-
-  async function fetchChampionsSpectator() {
     const pool = sessionPlayersRef.current
     const candidates = pool.filter(p => p.summoner_name)
     if (candidates.length === 0) { alert('소환사명이 등록된 선수가 없습니다.'); return }
-    setSpectatorLoading(true)
+    setChampionLoading(true)
     try {
       let data = null
       for (const player of candidates) {
@@ -278,9 +256,9 @@ export default function MatchPage() {
         setChampions(map)
       }
     } catch {
-      alert('Spectator API 호출 실패')
+      alert('챔피언 정보를 가져오지 못했습니다.')
     }
-    setSpectatorLoading(false)
+    setChampionLoading(false)
   }
 
   function openRoulette() {
@@ -379,59 +357,6 @@ export default function MatchPage() {
 
   return (
     <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
-
-      {/* CORS Unblock 설치 안내 모달 */}
-      {showCorsGuide && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => setShowCorsGuide(false)}>
-          <div className="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold mb-2" style={{ color: '#202020' }}>챔피언 정보를 가져올 수 없습니다</h2>
-            <p className="text-sm mb-6" style={{ color: '#202020', opacity: 0.6 }}>
-              게임 클라이언트 API에 접근하려면 크롬 확장 프로그램이 필요합니다.
-              아래 순서대로 진행해주세요.
-            </p>
-            <ol className="text-sm mb-6 flex flex-col gap-3" style={{ color: '#202020' }}>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#202020', color: '#fff' }}>0</span>
-                <span><strong>선수명단</strong> 페이지에 소환사명이 등록된 사용자만 챔피언 정보를 불러올 수 있습니다.</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#202020', color: '#fff' }}>1</span>
-                <span>
-                  <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank" rel="noopener noreferrer"
-                    className="font-bold underline" style={{ color: '#1e3a8a' }}>
-                    CORS Unblock
-                  </a>
-                  {' '}확장 프로그램을 설치합니다.
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#202020', color: '#fff' }}>2</span>
-                <span>확장 프로그램 아이콘을 클릭하여 <strong>활성화</strong>합니다.</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#202020', color: '#fff' }}>3</span>
-                <span>확장 프로그램 아이콘 클릭 → Scope에 <code className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ backgroundColor: '#DEE0E2' }}>https://127.0.0.1:2999/*</code> 를 입력하고 start를 누릅니다.</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: '#202020', color: '#fff' }}>4</span>
-                <span>게임이 진행 중인 상태에서 <strong>챔피언 가져오기</strong> 버튼을 다시 눌러주세요.</span>
-              </li>
-            </ol>
-            <div className="flex gap-2">
-              <a href="https://chromewebstore.google.com/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank" rel="noopener noreferrer"
-                className="flex-1 py-3 rounded-xl text-sm font-bold text-center transition-opacity hover:opacity-85"
-                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
-                확장 프로그램 설치
-              </a>
-              <button onClick={() => setShowCorsGuide(false)}
-                className="px-5 py-3 rounded-xl text-sm font-medium transition-opacity hover:opacity-70"
-                style={{ backgroundColor: '#DEE0E2', color: '#202020' }}>
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 마블 룰렛 오버레이 */}
       {showRoulette && rouletteSrc && (
@@ -660,11 +585,6 @@ export default function MatchPage() {
                 className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
                 style={{ backgroundColor: 'green', color: 'white' }}>
                 {championLoading ? '가져오는 중...' : champions.size > 0 ? '챔피언 다시 가져오기' : '챔피언 가져오기'}
-              </button>
-              <button onClick={fetchChampionsSpectator} disabled={spectatorLoading}
-                className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
-                style={{ backgroundColor: '#6b7280', color: 'white' }}>
-                {spectatorLoading ? '테스트 중...' : '컴맹 전용(테스트중)'}
               </button>
             </div>
 
