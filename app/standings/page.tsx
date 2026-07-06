@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
 import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 
 interface Session {
   id: string
@@ -48,6 +49,7 @@ interface PersonalDetail {
   sessionCount: number
   topTeammate: { player: Player; games: number; wins: number } | null
   topChampions: { name: string; games: number; wins: number; winRate: number }[]
+  profitTrend: { game: number; profit: number }[]
 }
 
 type SortKey = 'profit' | 'wins' | 'losses' | 'rate'
@@ -88,7 +90,7 @@ function computeDuoStats(players: Player[], rounds: Round[]): DuoStat[] {
     .sort((a, b) => b.winRate - a.winRate || b.games - a.games)
 }
 
-function computePersonalDetail(playerId: string, players: Player[], rounds: Round[], stats: PlayerStat[]): PersonalDetail | null {
+function computePersonalDetail(playerId: string, players: Player[], rounds: Round[], stats: PlayerStat[], sessions: Session[]): PersonalDetail | null {
   const player = players.find(p => p.id === playerId)
   if (!player) return null
 
@@ -153,6 +155,15 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     .slice(0, 5)
     .map(([name, s]) => ({ name, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }))
 
+  const sessionBetMap = new Map(sessions.map(s => [s.id, s.bet_amount]))
+  let cumProfit = 0
+  const profitTrend = playerRounds.map((r, i) => {
+    const bet = sessionBetMap.get(r.session_id) ?? 0
+    const won = (r.team1_ids.includes(playerId) && r.winner_team === 1) || (r.team2_ids.includes(playerId) && r.winner_team === 2)
+    cumProfit += won ? bet : -bet
+    return { game: i + 1, profit: cumProfit }
+  })
+
   return {
     player,
     totalGames: playerRounds.length,
@@ -165,6 +176,7 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     sessionCount: new Set(playerRounds.map(r => r.session_id)).size,
     topTeammate,
     topChampions,
+    profitTrend,
   }
 }
 
@@ -172,6 +184,7 @@ export default function StandingsPage() {
   const [stats, setStats] = useState<PlayerStat[]>([])
   const [allRounds, setAllRounds] = useState<Round[]>([])
   const [allPlayers, setAllPlayers] = useState<Player[]>([])
+  const [allSessions, setAllSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortKey>('profit')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
@@ -210,13 +223,14 @@ export default function StandingsPage() {
 
   const personalDetail = useMemo(() => {
     if (!selectedPlayerId) return null
-    return computePersonalDetail(selectedPlayerId, allPlayers, allRounds, stats)
-  }, [selectedPlayerId, allPlayers, allRounds, stats])
+    return computePersonalDetail(selectedPlayerId, allPlayers, allRounds, stats, allSessions)
+  }, [selectedPlayerId, allPlayers, allRounds, stats, allSessions])
 
   useEffect(() => {
     async function load() {
       if (IS_MOCK) {
         setAllPlayers(samplePlayers)
+        setAllSessions(sampleSessions)
         setAllRounds(sampleRounds.map(r => ({ ...r, created_at: '' })) as Round[])
         const totals = new Map<string, { wins: number; losses: number; profit: number }>()
         for (const round of sampleRounds) {
@@ -253,6 +267,7 @@ export default function StandingsPage() {
 
       setAllPlayers(players as Player[])
       setAllRounds(rounds as Round[])
+      setAllSessions(sessions as Session[])
 
       const sessionMap = new Map((sessions as Session[]).map(s => [s.id, s]))
       const totals = new Map<string, { wins: number; losses: number; profit: number }>()
@@ -292,7 +307,7 @@ export default function StandingsPage() {
       {personalDetail && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={() => setSelectedPlayerId(null)}>
-          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 pb-8"
+          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 pb-8 overflow-y-auto max-h-[90vh]"
             style={{ backgroundColor: '#ECEEF0' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
@@ -324,6 +339,45 @@ export default function StandingsPage() {
                 {personalDetail.profit > 0 ? '+' : ''}{personalDetail.profit.toLocaleString()}원
               </p>
             </div>
+
+            {personalDetail.profitTrend.length > 1 && (() => {
+              const trend = personalDetail.profitTrend
+              const maxVal = Math.max(0, ...trend.map(d => d.profit))
+              const minVal = Math.min(0, ...trend.map(d => d.profit))
+              const range = maxVal - minVal
+              const zeroOffset = range > 0 ? Math.round((maxVal / range) * 100) : 50
+              const gradId = `pg-${selectedPlayerId}`
+              return (
+                <div className="rounded-xl px-4 pt-3 pb-2 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
+                  <p className="text-xs mb-3" style={{ opacity: 0.5 }}>수익 추이</p>
+                  <ResponsiveContainer width="100%" height={120}>
+                    <LineChart data={trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset={`${zeroOffset}%`} stopColor="#2d7a3a" />
+                          <stop offset={`${zeroOffset}%`} stopColor="#c0392b" />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="game" tick={{ fontSize: 10, fill: '#20202066' }} tickLine={false} axisLine={false} />
+                      <YAxis hide domain={[minVal, maxVal]} />
+                      <Tooltip
+                        formatter={(v) => [`${Number(v) > 0 ? '+' : ''}${Number(v).toLocaleString()}원`, '수익']}
+                        contentStyle={{ backgroundColor: '#ECEEF0', border: 'none', borderRadius: 8, fontSize: 12 }}
+                        cursor={{ stroke: '#20202033' }}
+                      />
+                      <ReferenceLine y={0} stroke="#20202033" strokeDasharray="3 3" />
+                      <Line
+                        type="monotone"
+                        dataKey="profit"
+                        dot={false}
+                        strokeWidth={2}
+                        stroke={`url(#${gradId})`}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )
+            })()}
 
             {personalDetail.topTeammate && (
               <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
