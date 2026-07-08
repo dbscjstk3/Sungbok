@@ -9,6 +9,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContai
 interface Session {
   id: string
   bet_amount: number
+  created_at: string
 }
 
 interface Round {
@@ -49,7 +50,7 @@ interface PersonalDetail {
   sessionCount: number
   topTeammate: { player: Player; games: number; wins: number } | null
   topChampions: { name: string; games: number; wins: number; winRate: number }[]
-  profitTrend: { game: number; profit: number }[]
+  profitTrend: { session: number; profit: number }[]
 }
 
 type SortKey = 'profit' | 'wins' | 'losses' | 'rate'
@@ -121,9 +122,12 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
   }
 
   let topTeammate: PersonalDetail['topTeammate'] = null
-  const qualified = [...teammateCount.entries()]
-    .filter(([, s]) => s.games >= 3)
-    .sort((a, b) => (b[1].wins / b[1].games) - (a[1].wins / a[1].games) || b[1].games - a[1].games)
+  const threshold = playerRounds.length >= 20 ? 20 : 3
+  const allEntries = [...teammateCount.entries()]
+  const qualified = (allEntries.filter(([, s]) => s.games >= threshold).length > 0
+    ? allEntries.filter(([, s]) => s.games >= threshold)
+    : allEntries.filter(([, s]) => s.games >= 5)
+  ).sort((a, b) => (b[1].wins / b[1].games) - (a[1].wins / a[1].games) || b[1].games - a[1].games)
   if (qualified.length > 0) {
     const [tmId, tmStat] = qualified[0]
     const tmPlayer = players.find(p => p.id === tmId)
@@ -156,12 +160,17 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     .map(([name, s]) => ({ name, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }))
 
   const sessionBetMap = new Map(sessions.map(s => [s.id, s.bet_amount]))
+  const sortedSessions = [...sessions].sort((a, b) => a.created_at.localeCompare(b.created_at))
   let cumProfit = 0
-  const profitTrend = playerRounds.map((r, i) => {
-    const bet = sessionBetMap.get(r.session_id) ?? 0
-    const won = (r.team1_ids.includes(playerId) && r.winner_team === 1) || (r.team2_ids.includes(playerId) && r.winner_team === 2)
-    cumProfit += won ? bet : -bet
-    return { game: i + 1, profit: cumProfit }
+  const profitTrend = sortedSessions.flatMap((s, i) => {
+    const sRounds = playerRounds.filter(r => r.session_id === s.id)
+    if (sRounds.length === 0) return []
+    const bet = sessionBetMap.get(s.id) ?? 0
+    for (const r of sRounds) {
+      const won = (r.team1_ids.includes(playerId) && r.winner_team === 1) || (r.team2_ids.includes(playerId) && r.winner_team === 2)
+      cumProfit += won ? bet : -bet
+    }
+    return [{ session: i + 1, profit: cumProfit }]
   })
 
   return {
@@ -258,7 +267,7 @@ export default function StandingsPage() {
       }
 
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
-        insforge.database.from('sessions').select('id, bet_amount').not('ended_at', 'is', null),
+        insforge.database.from('sessions').select('id, bet_amount, created_at').not('ended_at', 'is', null),
         insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at'),
         insforge.database.from('players').select('id, real_name, created_at'),
       ])
@@ -358,7 +367,7 @@ export default function StandingsPage() {
                           <stop offset={`${zeroOffset}%`} stopColor="#c0392b" />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="game" tick={{ fontSize: 10, fill: '#20202066' }} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="session" tick={{ fontSize: 10, fill: '#20202066' }} tickLine={false} axisLine={false} />
                       <YAxis hide domain={[minVal, maxVal]} />
                       <Tooltip
                         formatter={(v) => [`${Number(v) > 0 ? '+' : ''}${Number(v).toLocaleString()}원`, '수익']}

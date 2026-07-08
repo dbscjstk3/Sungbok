@@ -240,16 +240,28 @@ export default function MatchPage() {
     if (candidates.length === 0) { alert('소환사명이 등록된 선수가 없습니다.'); return }
     setChampionLoading(true)
     try {
-      let data = null
-      for (const player of candidates) {
-        const res = await fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(player.summoner_name!)}`)
-        if (res.ok) { data = await res.json(); break }
+      const results = await Promise.allSettled(
+        candidates.map(player =>
+          fetch(`${window.location.origin}/api/spectator?summoner=${encodeURIComponent(player.summoner_name!)}`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+        )
+      )
+
+      let bestData = null
+      let bestCount = 0
+      for (const r of results) {
+        if (r.status !== 'fulfilled') continue
+        const count = r.value.participants.filter((p: { riotId: string }) =>
+          pool.some(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
+        ).length
+        if (count > bestCount) { bestCount = count; bestData = r.value }
       }
-      if (!data) {
-        alert('검색 가능한 선수를 찾을 수 없습니다.')
+
+      if (!bestData) {
+        alert('진행 중인 게임을 찾을 수 없습니다.')
       } else {
         const map = new Map<string, string>()
-        for (const p of data.participants) {
+        for (const p of bestData.participants) {
           const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
           if (matched) map.set(matched.id, p.championName)
         }
