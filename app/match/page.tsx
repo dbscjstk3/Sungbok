@@ -76,9 +76,12 @@ export default function MatchPage() {
   const [assignments, setAssignments] = useState<Map<string, 1 | 2>>(new Map())
   const [champions, setChampions] = useState<Map<string, string>>(new Map())
   const [championLoading, setChampionLoading] = useState(false)
+  const [nextFetchIn, setNextFetchIn] = useState<number | null>(null)
   const sessionPlayersRef = useRef<Player[]>([])
   const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
   const restoredRef = useRef(false)
+  const autoTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => { assignmentsRef.current = assignments }, [assignments])
 
@@ -234,10 +237,21 @@ export default function MatchPage() {
     }
   }
 
-  async function fetchChampions() {
+  function clearAutoFetch() {
+    autoTimersRef.current.forEach(t => clearTimeout(t))
+    autoTimersRef.current = []
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+    countdownIntervalRef.current = null
+    setNextFetchIn(null)
+  }
+
+  async function fetchChampions(silent = false): Promise<boolean> {
     const pool = sessionPlayersRef.current
     const candidates = pool.filter(p => p.summoner_name)
-    if (candidates.length === 0) { alert('소환사명이 등록된 선수가 없습니다.'); return }
+    if (candidates.length === 0) {
+      if (!silent) alert('소환사명이 등록된 선수가 없습니다.')
+      return false
+    }
     setChampionLoading(true)
     try {
       const results = await Promise.allSettled(
@@ -258,20 +272,52 @@ export default function MatchPage() {
       }
 
       if (!bestData) {
-        alert('진행 중인 게임을 찾을 수 없습니다.')
-      } else {
-        const map = new Map<string, string>()
-        for (const p of bestData.participants) {
-          const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
-          if (matched) map.set(matched.id, p.championName)
-        }
-        setChampions(map)
+        if (!silent) alert('진행 중인 게임을 찾을 수 없습니다.')
+        setChampionLoading(false)
+        return false
       }
+
+      const map = new Map<string, string>()
+      for (const p of bestData.participants) {
+        const matched = pool.find(pl => pl.summoner_name === p.riotId || pl.summoner_name === p.riotId.split('#')[0])
+        if (matched) map.set(matched.id, p.championName)
+      }
+      setChampions(map)
+      setChampionLoading(false)
+      return map.size > 0
     } catch {
-      alert('챔피언 정보를 가져오지 못했습니다.')
+      if (!silent) alert('챔피언 정보를 가져오지 못했습니다.')
+      setChampionLoading(false)
+      return false
     }
-    setChampionLoading(false)
   }
+
+  useEffect(() => {
+    if (phase !== 'playing' || showRoulette || team1.length === 0 || champions.size > 0) return
+    clearAutoFetch()
+
+    const DELAYS = [6 * 60, 8 * 60, 10 * 60]
+    const startedAt = Date.now()
+
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000)
+      const next = DELAYS.find(d => d > elapsed)
+      setNextFetchIn(next !== undefined ? next - elapsed : null)
+    }
+    tick()
+    countdownIntervalRef.current = setInterval(tick, 1000)
+
+    DELAYS.forEach((delay, i) => {
+      const t = setTimeout(async () => {
+        const ok = await fetchChampions(true)
+        if (ok || i === DELAYS.length - 1) clearAutoFetch()
+      }, delay * 1000)
+      autoTimersRef.current.push(t)
+    })
+
+    return clearAutoFetch
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, showRoulette, team1, champions.size])
 
   function openRoulette() {
     setRouletteKey(k => k + 1)
@@ -593,12 +639,20 @@ export default function MatchPage() {
                 style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
                 팀 다시 섞기
               </button>
-              <button onClick={fetchChampions} disabled={championLoading}
+              <button onClick={() => { clearAutoFetch(); fetchChampions() }} disabled={championLoading}
                 className="py-3 px-5 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-50"
                 style={{ backgroundColor: 'green', color: 'white' }}>
                 {championLoading ? '가져오는 중...' : champions.size > 0 ? '챔피언 다시 가져오기' : '챔피언 가져오기'}
               </button>
             </div>
+
+            {nextFetchIn !== null && (
+              <p className="text-xs text-center mb-3" style={{ opacity: 0.4 }}>
+                {nextFetchIn >= 60
+                  ? `${Math.floor(nextFetchIn / 60)}분 ${nextFetchIn % 60}초 후 자동으로 챔피언을 가져옵니다`
+                  : `${nextFetchIn}초 후 자동으로 챔피언을 가져옵니다`}
+              </p>
+            )}
 
             <div className="flex gap-3 mb-12">
               <button onClick={() => recordWin(1)} disabled={saving || team1.length === 0}
