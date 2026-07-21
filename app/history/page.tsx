@@ -20,6 +20,7 @@ interface Round {
   winner_team: 1 | 2 | null
   team1_champions: string[] | null
   team2_champions: string[] | null
+  created_at?: string
 }
 
 interface PlayerStat {
@@ -75,6 +76,14 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [championModal, setChampionModal] = useState<{ playerName: string; champions: { champion: string; won: boolean }[] } | null>(null)
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
+  const [editBetAmount, setEditBetAmount] = useState<number | ''>('')
+  const [savingSessionId, setSavingSessionId] = useState<string | null>(null)
+  const [editError, setEditError] = useState('')
+  const [mergeSelection, setMergeSelection] = useState<Set<string>>(new Set())
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null)
+  const [merging, setMerging] = useState(false)
+  const [mergeError, setMergeError] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -95,7 +104,9 @@ export default function HistoryPage() {
       const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
         insforge.database.from('sessions').select('id, created_at, ended_at, bet_amount')
           .not('ended_at', 'is', null).order('created_at', { ascending: false }),
-        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions'),
+        insforge.database.from('rounds')
+          .select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at')
+          .order('created_at', { ascending: true }),
         insforge.database.from('players').select('id, real_name, created_at'),
       ])
 
@@ -123,6 +134,138 @@ export default function HistoryPage() {
       if (next.has(id)) { next.delete(id) } else { next.add(id) }
       return next
     })
+  }
+
+  function startAmountEdit(session: Session) {
+    setEditingSessionId(session.id)
+    setEditBetAmount(session.bet_amount)
+    setEditError('')
+  }
+
+  function cancelAmountEdit() {
+    if (savingSessionId) return
+    setEditingSessionId(null)
+    setEditBetAmount('')
+    setEditError('')
+  }
+
+  async function saveAmount(sessionId: string) {
+    if (savingSessionId || editBetAmount === '') return
+    const amount = Number(editBetAmount)
+    if (!Number.isSafeInteger(amount) || amount < 0) {
+      setEditError('금액은 0 이상의 정수로 입력해 주세요.')
+      return
+    }
+
+    setSavingSessionId(sessionId)
+    setEditError('')
+    try {
+      if (!IS_MOCK) {
+        const { error } = await insforge.database
+          .from('sessions')
+          .update({ bet_amount: amount })
+          .eq('id', sessionId)
+        if (error) {
+          console.error('내전 금액 수정 실패:', error)
+          setEditError(`금액을 수정하지 못했습니다. ${error.message ?? ''}`.trim())
+          return
+        }
+      }
+
+      setDetails(previous => previous.map(detail =>
+        detail.session.id === sessionId
+          ? { ...detail, session: { ...detail.session, bet_amount: amount } }
+          : detail
+      ))
+      setEditingSessionId(null)
+      setEditBetAmount('')
+    } catch (error) {
+      console.error('내전 금액 수정 중 예외 발생:', error)
+      setEditError('네트워크 오류로 금액을 수정하지 못했습니다.')
+    } finally {
+      setSavingSessionId(null)
+    }
+  }
+
+  function toggleMergeSelection(sessionId: string) {
+    if (merging) return
+    setMergeError('')
+    const next = new Set(mergeSelection)
+    if (next.has(sessionId)) {
+      next.delete(sessionId)
+      if (mergeTargetId === sessionId) setMergeTargetId(null)
+    } else {
+      next.add(sessionId)
+      if (!mergeTargetId) setMergeTargetId(sessionId)
+    }
+    setMergeSelection(next)
+  }
+
+  function applyMergedDetails(targetSessionId: string, selectedIds: Set<string>) {
+    setDetails(previous => {
+      const selectedDetails = previous.filter(detail => selectedIds.has(detail.session.id))
+      const targetDetail = selectedDetails.find(detail => detail.session.id === targetSessionId)
+      if (!targetDetail) return previous
+
+      const mergedRounds = selectedDetails
+        .flatMap(detail => detail.rounds)
+        .map(round => ({ ...round, session_id: targetSessionId }))
+        .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))
+      const playerMap = new Map<string, Player>()
+      selectedDetails.forEach(detail => detail.stats.forEach(stat => playerMap.set(stat.player.id, stat.player)))
+      const mergedTarget: SessionDetail = {
+        ...targetDetail,
+        rounds: mergedRounds,
+        stats: computeStats([...playerMap.values()], mergedRounds),
+      }
+
+      return previous
+        .filter(detail => !selectedIds.has(detail.session.id) || detail.session.id === targetSessionId)
+        .map(detail => detail.session.id === targetSessionId ? mergedTarget : detail)
+    })
+  }
+
+  async function mergeSessions() {
+    if (merging || mergeSelection.size < 2 || !mergeTargetId || !mergeSelection.has(mergeTargetId)) return
+    const target = details.find(detail => detail.session.id === mergeTargetId)
+    if (!target) return
+    const sourceIds = [...mergeSelection].filter(id => id !== mergeTargetId)
+    const confirmed = window.confirm(
+      `${mergeSelection.size}개 기록을 ${formatDate(target.session.created_at)} 기록으로 합칠까요?\n` +
+      `금액은 ${target.session.bet_amount.toLocaleString()}원으로 통일되며 이 작업은 되돌릴 수 없습니다.`
+    )
+    if (!confirmed) return
+
+    setMerging(true)
+    setMergeError('')
+    try {
+      if (!IS_MOCK) {
+        const { error } = await insforge.database.rpc('merge_match_sessions', {
+          p_target_session_id: mergeTargetId,
+          p_source_session_ids: sourceIds,
+        })
+        if (error) {
+          console.error('내전 기록 합치기 실패:', error)
+          setMergeError(`기록을 합치지 못했습니다. ${error.message ?? ''}`.trim())
+          return
+        }
+      }
+
+      applyMergedDetails(mergeTargetId, mergeSelection)
+      setExpanded(previous => {
+        const next = new Set(previous)
+        sourceIds.forEach(id => next.delete(id))
+        next.add(mergeTargetId)
+        return next
+      })
+      setMergeSelection(new Set())
+      setMergeTargetId(null)
+    } catch (error) {
+      console.error('내전 기록 합치기 중 예외 발생:', error)
+      setMergeError('네트워크 오류로 기록을 합치지 못했습니다.')
+    } finally {
+      setMerging(false)
+    }
   }
 
   return (
@@ -162,6 +305,39 @@ export default function HistoryPage() {
         <h1 className="text-3xl font-bold mb-2">내전 기록</h1>
         <p className="text-sm mb-10" style={{ opacity: 0.5 }}>완료된 내전 목록입니다.</p>
 
+        {!loading && details.length >= 2 && (
+          <div className="mb-6 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            style={{ backgroundColor: '#DEE0E2' }}>
+            <div>
+              <p className="text-sm font-semibold">기록 합치기</p>
+              <p className="text-xs mt-0.5" style={{ opacity: 0.55 }}>
+                기록을 2개 이상 선택하고 유지할 기준 기록을 지정하세요.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {mergeSelection.size > 0 && (
+                <button onClick={() => { setMergeSelection(new Set()); setMergeTargetId(null); setMergeError('') }} disabled={merging}
+                  className="px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-40"
+                  style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                  선택 해제
+                </button>
+              )}
+              <button onClick={mergeSessions}
+                disabled={merging || mergeSelection.size < 2 || !mergeTargetId || !mergeSelection.has(mergeTargetId)}
+                className="px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-30"
+                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                {merging ? '합치는 중...' : `선택 기록 합치기 (${mergeSelection.size})`}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {mergeError && (
+          <p className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: '#f8d7da', color: '#842029' }}>
+            {mergeError}
+          </p>
+        )}
+
         {loading && (
           <p className="text-sm" style={{ opacity: 0.4 }}>불러오는 중...</p>
         )}
@@ -184,22 +360,83 @@ export default function HistoryPage() {
                 style={{ backgroundColor: '#DEE0E2' }}>
 
                 {/* 세션 헤더 */}
-                <button
-                  onClick={() => toggleExpand(session.id)}
-                  className="w-full px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between transition-opacity hover:opacity-80"
-                >
-                  <div className="flex items-center gap-2 sm:gap-4">
-                    <span className="text-sm sm:text-base font-bold">{formatDate(session.created_at)}</span>
-                    <span className="text-xs sm:text-sm" style={{ opacity: 0.5 }}>{totalRounds}판</span>
-                    {showMoney && (
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                        style={{ backgroundColor: '#ECEEF0', color: '#202020', opacity: 0.7 }}>
-                        {session.bet_amount.toLocaleString()}원
-                      </span>
+                <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <label className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
+                      <input type="checkbox" checked={mergeSelection.has(session.id)}
+                        onChange={() => toggleMergeSelection(session.id)} disabled={merging}
+                        className="w-4 h-4 accent-[#202020]" />
+                      선택
+                    </label>
+                    {mergeSelection.has(session.id) && (
+                      <label className="flex items-center gap-1 text-xs cursor-pointer" style={{ opacity: 0.7 }}>
+                        <input type="radio" name="merge-target" checked={mergeTargetId === session.id}
+                          onChange={() => { setMergeTargetId(session.id); setMergeError('') }} disabled={merging}
+                          className="accent-[#202020]" />
+                        기준
+                      </label>
                     )}
                   </div>
-                  <span className="text-sm" style={{ opacity: 0.35 }}>{isOpen ? '▲' : '▼'}</span>
-                </button>
+                  <button
+                    onClick={() => toggleExpand(session.id)}
+                    className="flex-1 flex items-center justify-between transition-opacity hover:opacity-80"
+                  >
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <span className="text-sm sm:text-base font-bold">{formatDate(session.created_at)}</span>
+                      <span className="text-xs sm:text-sm" style={{ opacity: 0.5 }}>{totalRounds}판</span>
+                    </div>
+                    <span className="text-sm sm:mr-2" style={{ opacity: 0.35 }}>{isOpen ? '▲' : '▼'}</span>
+                  </button>
+
+                  {editingSessionId === session.id ? (
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="0"
+                          step="1000"
+                          value={editBetAmount}
+                          onChange={event => setEditBetAmount(event.target.value === '' ? '' : Number(event.target.value))}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter') saveAmount(session.id)
+                            if (event.key === 'Escape') cancelAmountEdit()
+                          }}
+                          autoFocus
+                          disabled={savingSessionId === session.id}
+                          className="w-28 pl-3 pr-7 py-2 rounded-lg text-sm text-right outline-none disabled:opacity-50"
+                          style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none" style={{ opacity: 0.5 }}>원</span>
+                      </div>
+                      <button onClick={() => saveAmount(session.id)} disabled={savingSessionId === session.id || editBetAmount === ''}
+                        className="px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-40"
+                        style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                        {savingSessionId === session.id ? '저장 중' : '저장'}
+                      </button>
+                      <button onClick={cancelAmountEdit} disabled={savingSessionId === session.id}
+                        className="px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-40"
+                        style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs px-2 py-1 rounded-full font-medium"
+                        style={{ backgroundColor: '#ECEEF0', color: '#202020', opacity: 0.75 }}>
+                        {session.bet_amount.toLocaleString()}원
+                      </span>
+                      <button onClick={() => startAmountEdit(session)} disabled={savingSessionId !== null || merging}
+                        className="px-3 py-2 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
+                        style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                        금액 수정
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {editingSessionId === session.id && editError && (
+                  <p className="px-4 sm:px-6 pb-3 text-xs" style={{ color: '#c0392b' }}>{editError}</p>
+                )}
 
                 {/* 세션 상세 */}
                 {isOpen && (

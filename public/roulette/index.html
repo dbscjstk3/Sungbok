@@ -92,4 +92,22 @@
 <div class=copyright>© 2022-2026.<a href=https://lazygyu.net target=_blank>lazygyu</a> <span data-trans>This program is freeware and may be used freely anywhere, including in broadcasts and videos.</span>
 </div>
 
+<script>
+  // The bundled roulette only posts rankings when the final marble wins.
+  // Forward custom-rank results as soon as the requested team size is reached.
+  (function attachCustomRankResult() {
+    if (!window.roulette || !window.roulette.isReady) {
+      window.setTimeout(attachCustomRankResult, 100)
+      return
+    }
+    window.roulette.addEventListener('goal', function () {
+      if (window.roulette._winnerRank >= window.roulette._totalMarbleCount - 1) return
+      window.parent.postMessage({
+        type: 'roulette-result',
+        rankings: window.roulette._winners.map(function (marble) { return marble.name }),
+      }, window.location.origin)
+    })
+  })()
+</script>
+
 
