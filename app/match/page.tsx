@@ -511,6 +511,14 @@ export default function MatchPage() {
     setShowRoulette(true)
   }
 
+  function swapFixedAssignments(source: Map<string, 1 | 2>) {
+    const swapped = new Map<string, 1 | 2>()
+    source.forEach((team, playerId) => {
+      swapped.set(playerId, team === 1 ? 2 : 1)
+    })
+    return swapped
+  }
+
   async function recordWin(winner: 1 | 2) {
     if (!sessionId || savingRef.current) return
     if (team1.length === 0 || team2.length === 0 || team1.length !== team2.length) {
@@ -567,11 +575,44 @@ export default function MatchPage() {
       setRounds(newRounds)
       setStats(computeStats(sessionPlayersRef.current, newRounds))
 
-      const hasRoulettePlayers = sessionPlayersRef.current.some(p => !assignmentsRef.current.has(p.id))
+      const pool = sessionPlayersRef.current
+      const nextAssignments = swapFixedAssignments(assignmentsRef.current)
+      const hasFixedPlayers = nextAssignments.size > 0
+      const hasRoulettePlayers = pool.some(p => !nextAssignments.has(p.id))
+      const nextFixedTeam1Ids = pool.filter(p => nextAssignments.get(p.id) === 1).map(p => p.id)
+      const nextFixedTeam2Ids = pool.filter(p => nextAssignments.get(p.id) === 2).map(p => p.id)
+      const nextTeam1 = hasRoulettePlayers ? team1 : team2
+      const nextTeam2 = hasRoulettePlayers ? team2 : team1
+
+      setAssignments(nextAssignments)
+      assignmentsRef.current = nextAssignments
+
+      try {
+        const storedRaw = localStorage.getItem(STORAGE_KEY)
+        if (storedRaw) {
+          const previous: StoredSession = JSON.parse(storedRaw)
+          saveSession({
+            ...previous,
+            fixedTeam1Ids: nextFixedTeam1Ids,
+            fixedTeam2Ids: nextFixedTeam2Ids,
+            team1Ids: nextTeam1.map(player => player.id),
+            team2Ids: nextTeam2.map(player => player.id),
+          })
+        }
+      } catch (storageError) {
+        console.error('고정 선수 진영 변경 상태 저장 실패:', storageError)
+        setSaveError('결과는 저장했지만 고정 선수 진영의 복구 정보를 저장하지 못했습니다.')
+      }
+
       if (hasRoulettePlayers) {
+        setSaveMessage(hasFixedPlayers
+          ? `${newRounds.length}번째 판 결과를 저장했습니다. 고정 선수의 진영을 바꿨습니다.`
+          : `${newRounds.length}번째 판 결과를 저장했습니다.`)
         openRoulette()
       } else {
-        setSaveMessage(`${newRounds.length}번째 판 결과를 저장했습니다. 고정된 팀으로 다음 판을 진행합니다.`)
+        setTeam1(nextTeam1)
+        setTeam2(nextTeam2)
+        setSaveMessage(`${newRounds.length}번째 판 결과를 저장하고 양 팀의 진영을 바꿨습니다.`)
       }
     } catch (error) {
       console.error('라운드 저장 중 예외 발생:', error)
@@ -602,8 +643,20 @@ export default function MatchPage() {
       const pool = sessionPlayersRef.current
       const t1 = last.team1_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
       const t2 = last.team2_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+      const restoredAssignments = new Map<string, 1 | 2>()
+      assignmentsRef.current.forEach((currentTeam, playerId) => {
+        if (last.team1_ids.includes(playerId)) {
+          restoredAssignments.set(playerId, 1)
+        } else if (last.team2_ids.includes(playerId)) {
+          restoredAssignments.set(playerId, 2)
+        } else {
+          restoredAssignments.set(playerId, currentTeam)
+        }
+      })
       setTeam1(t1)
       setTeam2(t2)
+      setAssignments(restoredAssignments)
+      assignmentsRef.current = restoredAssignments
       setAutoFetchMessage('')
       setShowRoulette(false)
       const newRounds = rounds.slice(0, -1)
@@ -616,8 +669,8 @@ export default function MatchPage() {
         if (storedRaw) {
           try { previous = JSON.parse(storedRaw) as StoredSession } catch { }
         }
-        const fixedTeam1Ids = pool.filter(player => assignmentsRef.current.get(player.id) === 1).map(player => player.id)
-        const fixedTeam2Ids = pool.filter(player => assignmentsRef.current.get(player.id) === 2).map(player => player.id)
+        const fixedTeam1Ids = pool.filter(player => restoredAssignments.get(player.id) === 1).map(player => player.id)
+        const fixedTeam2Ids = pool.filter(player => restoredAssignments.get(player.id) === 2).map(player => player.id)
         saveSession({
           ...(previous ?? {}),
           phase: 'playing',
