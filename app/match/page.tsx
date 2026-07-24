@@ -88,11 +88,14 @@ class SpectatorRequestError extends Error {
   }
 }
 
-async function requestSpectator(summonerName: string): Promise<SpectatorData> {
+async function requestSpectator(summonerNames: string[]): Promise<SpectatorData> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 12_000)
+  const timeout = setTimeout(() => controller.abort(), 45_000)
   try {
-    const response = await fetch(`/api/spectator?summoner=${encodeURIComponent(summonerName)}`, {
+    const response = await fetch('/api/spectator', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ summoners: summonerNames }),
       signal: controller.signal,
     })
     const body = await response.json().catch(() => null)
@@ -367,62 +370,12 @@ export default function MatchPage() {
     championFetchRef.current = true
     setChampionLoading(true)
     try {
-      let bestData: SpectatorData | null = null
-      let bestCount = 0
-      let requestError: SpectatorRequestError | null = null
-      let stopRequests = false
-      const registeredIds = new Set(
-        pool
-          .map(p => p.summoner_name)
-          .filter((name): name is string => Boolean(name))
-          .flatMap(name => {
-            const normalized = normalizeRiotId(name)
-            return [normalized, normalized.split('#')[0]]
-          })
+      const spectatorData = await requestSpectator(
+        candidates.map(player => player.summoner_name!)
       )
 
-      // 한 게임의 참가자 정보만 있으면 충분하므로 두 명씩 조회하고 성공 즉시 중단한다.
-      for (let i = 0; i < candidates.length && !bestData && !stopRequests; i += 2) {
-        const batch = candidates.slice(i, i + 2)
-        const results = await Promise.allSettled(
-          batch.map(player => requestSpectator(player.summoner_name!))
-        )
-
-        for (const result of results) {
-          if (result.status === 'rejected') {
-            if (result.reason instanceof SpectatorRequestError && result.reason.status !== 404) {
-              requestError = result.reason
-              if ([401, 403, 429].includes(result.reason.status)) stopRequests = true
-            }
-            continue
-          }
-          const count = result.value.participants.filter(p => {
-            const participantId = normalizeRiotId(p.riotId)
-            return registeredIds.has(participantId) || registeredIds.has(participantId.split('#')[0])
-          }).length
-          if (count > bestCount) {
-            bestCount = count
-            bestData = result.value
-          }
-        }
-      }
-
-      if (!bestData) {
-        if (requestError) {
-          const result: ChampionFetchResult = requestError.status === 401 || requestError.status === 403
-            ? { status: 'fatal', message: requestError.message }
-            : requestError.status === 429
-              ? { status: 'rate_limited', message: requestError.message }
-              : { status: 'error', message: requestError.message }
-          if (!silent) alert(result.message)
-          return result
-        }
-        if (!silent) alert('진행 중인 게임을 찾을 수 없습니다.')
-        return { status: 'not_found' }
-      }
-
       const map = new Map<string, string>()
-      for (const p of bestData.participants) {
+      for (const p of spectatorData.participants) {
         const participantId = normalizeRiotId(p.riotId)
         const participantName = participantId.split('#')[0]
         const matched = pool.find(pl => {
@@ -439,8 +392,19 @@ export default function MatchPage() {
         : { status: 'not_found' }
     } catch (error) {
       const message = getErrorMessage(error)
-      if (!silent) alert(`챔피언 정보를 가져오지 못했습니다. ${message}`)
-      return { status: 'error', message }
+      const result: ChampionFetchResult = error instanceof SpectatorRequestError
+        ? error.status === 404
+          ? { status: 'not_found' }
+          : error.status === 401 || error.status === 403
+            ? { status: 'fatal', message: error.message }
+            : error.status === 429
+              ? { status: 'rate_limited', message: error.message }
+              : { status: 'error', message: error.message }
+        : { status: 'error', message }
+      if (!silent) {
+        alert(result.status === 'not_found' ? '진행 중인 게임을 찾을 수 없습니다.' : `챔피언 정보를 가져오지 못했습니다. ${message}`)
+      }
+      return result
     } finally {
       championFetchRef.current = false
       setChampionLoading(false)
