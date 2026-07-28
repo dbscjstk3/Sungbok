@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
 import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
+import { getEventErrorCode, getPageVisibility, logAppEvent } from '@/lib/appEventLog'
 
 interface Round {
   id: string
@@ -167,12 +168,29 @@ export default function MatchPage() {
         .filter(Boolean) as Player[]
       if (pool.length === 0) { clearSession(); return }
 
+      const restoreStartedAt = Date.now()
+      logAppEvent({
+        eventType: 'session_restore',
+        status: 'started',
+        sessionId: stored.sessionId,
+        triggerSource: 'local_storage',
+        pageVisibility: getPageVisibility(),
+      })
+
       insforge.database.from('rounds')
         .select('id, session_id, team1_ids, team2_ids, winner_team, created_at')
         .eq('session_id', stored.sessionId)
         .order('created_at', { ascending: true })
         .then(({ data, error }) => {
           if (error) {
+            logAppEvent({
+              eventType: 'session_restore',
+              status: 'error',
+              sessionId: stored.sessionId,
+              triggerSource: 'local_storage',
+              durationMs: Date.now() - restoreStartedAt,
+              errorCode: getEventErrorCode(error),
+            })
             console.error('내전 세션 복원 실패:', error)
             setSaveError(`기존 내전을 불러오지 못했습니다. ${getErrorMessage(error)}`)
             return
@@ -204,6 +222,14 @@ export default function MatchPage() {
           setTeam2(t2)
           setBetAmount(stored.betAmount || '')
           setPhase(stored.phase)
+          logAppEvent({
+            eventType: 'session_restore',
+            status: 'success',
+            sessionId: stored.sessionId,
+            triggerSource: 'local_storage',
+            durationMs: Date.now() - restoreStartedAt,
+            metadata: { round_count: fetchedRounds.length, player_count: pool.length },
+          })
         })
     } catch {
       clearSession()
@@ -359,14 +385,45 @@ export default function MatchPage() {
     setNextFetchIn(null)
   }
 
-  async function fetchChampions(silent = false): Promise<ChampionFetchResult> {
-    if (championFetchRef.current) return { status: 'busy' }
+  async function fetchChampions(
+    silent = false,
+    triggerSource = 'manual'
+  ): Promise<ChampionFetchResult> {
+    if (championFetchRef.current) {
+      logAppEvent({
+        eventType: 'champion_fetch',
+        status: 'busy',
+        sessionId,
+        roundNumber: rounds.length + 1,
+        triggerSource,
+      })
+      return { status: 'busy' }
+    }
     const pool = sessionPlayersRef.current
     const candidates = pool.filter(p => p.summoner_name)
     if (candidates.length === 0) {
+      logAppEvent({
+        eventType: 'champion_fetch',
+        status: 'fatal',
+        sessionId,
+        roundNumber: rounds.length + 1,
+        triggerSource,
+        candidateCount: 0,
+        errorCode: 'NO_REGISTERED_RIOT_IDS',
+      })
       if (!silent) alert('소환사명이 등록된 선수가 없습니다.')
       return { status: 'fatal', message: '소환사명이 등록된 선수가 없습니다.' }
     }
+    const fetchStartedAt = Date.now()
+    logAppEvent({
+      eventType: 'champion_fetch',
+      status: 'started',
+      sessionId,
+      roundNumber: rounds.length + 1,
+      triggerSource,
+      candidateCount: candidates.length,
+      pageVisibility: getPageVisibility(),
+    })
     championFetchRef.current = true
     setChampionLoading(true)
     try {
@@ -386,6 +443,16 @@ export default function MatchPage() {
         if (matched) map.set(matched.id, p.championName)
       }
       setChampions(map)
+      logAppEvent({
+        eventType: 'champion_fetch',
+        status: map.size > 0 ? 'success' : 'not_found',
+        sessionId,
+        roundNumber: rounds.length + 1,
+        triggerSource,
+        candidateCount: candidates.length,
+        matchedCount: map.size,
+        durationMs: Date.now() - fetchStartedAt,
+      })
       setAutoFetchMessage(map.size > 0 ? `챔피언 ${map.size}명을 자동으로 확인했습니다.` : '')
       return map.size > 0
         ? { status: 'success', count: map.size }
@@ -401,6 +468,19 @@ export default function MatchPage() {
               ? { status: 'rate_limited', message: error.message }
               : { status: 'error', message: error.message }
         : { status: 'error', message }
+      logAppEvent({
+        eventType: 'champion_fetch',
+        status: result.status,
+        sessionId,
+        roundNumber: rounds.length + 1,
+        triggerSource,
+        candidateCount: candidates.length,
+        durationMs: Date.now() - fetchStartedAt,
+        httpStatus: error instanceof SpectatorRequestError ? error.status : null,
+        errorCode: error instanceof SpectatorRequestError
+          ? `HTTP_${error.status}`
+          : getEventErrorCode(error),
+      })
       if (!silent) {
         alert(result.status === 'not_found' ? '진행 중인 게임을 찾을 수 없습니다.' : `챔피언 정보를 가져오지 못했습니다. ${message}`)
       }
@@ -425,13 +505,23 @@ export default function MatchPage() {
       setNextFetchIn(Math.max(0, Math.ceil((nextAttemptAt - Date.now()) / 1000)))
     }
 
-    const schedule = (delay: number) => {
+    const schedule = (delay: number, triggerSource: string) => {
       nextAttemptAt = Date.now() + delay * 1000
       tick()
+      logAppEvent({
+        eventType: 'champion_fetch',
+        status: 'scheduled',
+        sessionId,
+        roundNumber: rounds.length + 1,
+        triggerSource,
+        scheduledFor: new Date(nextAttemptAt).toISOString(),
+        candidateCount: sessionPlayersRef.current.filter(player => player.summoner_name).length,
+        pageVisibility: getPageVisibility(),
+      })
       const timer = setTimeout(async () => {
         if (cancelled) return
         setAutoFetchMessage('자동으로 챔피언 정보를 확인하는 중입니다...')
-        const result = await fetchChampions(true)
+        const result = await fetchChampions(true, triggerSource)
         if (cancelled) return
         if (result.status === 'success') {
           clearAutoFetch()
@@ -444,26 +534,26 @@ export default function MatchPage() {
         }
         if (result.status === 'rate_limited') {
           setAutoFetchMessage(`${result.message} 5분 후 자동으로 다시 확인합니다.`)
-          schedule(RATE_LIMIT_RETRY_DELAY)
+          schedule(RATE_LIMIT_RETRY_DELAY, 'auto_rate_limit_retry')
           return
         }
         if (result.status === 'busy') {
-          schedule(30)
+          schedule(30, 'auto_busy_retry')
           return
         }
         if (result.status === 'error') {
           setAutoFetchMessage(`${result.message} 2분 후 자동으로 다시 확인합니다.`)
-          schedule(RETRY_DELAY)
+          schedule(RETRY_DELAY, 'auto_error_retry')
           return
         }
         setAutoFetchMessage('진행 중인 게임을 찾지 못했습니다. 2분 후 자동으로 다시 확인합니다.')
-        schedule(RETRY_DELAY)
+        schedule(RETRY_DELAY, 'auto_not_found_retry')
       }, delay * 1000)
       autoTimersRef.current = [timer]
     }
 
     countdownIntervalRef.current = setInterval(tick, 1000)
-    schedule(FIRST_DELAY)
+    schedule(FIRST_DELAY, 'auto_initial')
 
     return () => {
       cancelled = true
@@ -534,6 +624,17 @@ export default function MatchPage() {
     const t1Champs = team1.map(p => champions.get(p.id) ?? '')
     const t2Champs = team2.map(p => champions.get(p.id) ?? '')
     const hasChamps = t1Champs.some(c => c) || t2Champs.some(c => c)
+    const roundSaveStartedAt = Date.now()
+    const roundNumber = rounds.length + 1
+    const championCount = [...t1Champs, ...t2Champs].filter(Boolean).length
+    logAppEvent({
+      eventType: 'round_save',
+      status: 'started',
+      sessionId,
+      roundNumber,
+      triggerSource: `team_${winner}_win_button`,
+      metadata: { winner_team: winner, champion_count: championCount },
+    })
 
     try {
       let newRound: Round
@@ -557,11 +658,29 @@ export default function MatchPage() {
         }]).select()
 
         if (error) {
+          logAppEvent({
+            eventType: 'round_save',
+            status: 'error',
+            sessionId,
+            roundNumber,
+            triggerSource: `team_${winner}_win_button`,
+            durationMs: Date.now() - roundSaveStartedAt,
+            errorCode: getEventErrorCode(error),
+          })
           console.error('라운드 저장 실패:', error)
           setSaveError(`결과를 저장하지 못했습니다. ${getErrorMessage(error)}`)
           return
         }
         if (!data?.[0]) {
+          logAppEvent({
+            eventType: 'round_save',
+            status: 'error',
+            sessionId,
+            roundNumber,
+            triggerSource: `team_${winner}_win_button`,
+            durationMs: Date.now() - roundSaveStartedAt,
+            errorCode: 'EMPTY_INSERT_RESPONSE',
+          })
           console.error('라운드 저장 응답에 데이터가 없습니다.')
           setSaveError('저장 응답을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.')
           return
@@ -569,6 +688,16 @@ export default function MatchPage() {
         newRound = data[0] as Round
       }
 
+      logAppEvent({
+        eventType: 'round_save',
+        status: 'success',
+        sessionId,
+        roundId: newRound.id,
+        roundNumber,
+        triggerSource: `team_${winner}_win_button`,
+        durationMs: Date.now() - roundSaveStartedAt,
+        metadata: { winner_team: winner, champion_count: championCount },
+      })
       setChampions(new Map())
       setAutoFetchMessage('')
       const newRounds = [...rounds, newRound]
@@ -615,6 +744,15 @@ export default function MatchPage() {
         setSaveMessage(`${newRounds.length}번째 판 결과를 저장하고 양 팀의 진영을 바꿨습니다.`)
       }
     } catch (error) {
+      logAppEvent({
+        eventType: 'round_save',
+        status: 'error',
+        sessionId,
+        roundNumber,
+        triggerSource: `team_${winner}_win_button`,
+        durationMs: Date.now() - roundSaveStartedAt,
+        errorCode: getEventErrorCode(error),
+      })
       console.error('라운드 저장 중 예외 발생:', error)
       setSaveError(`네트워크 오류로 결과를 저장하지 못했습니다. ${getErrorMessage(error)}`)
     } finally {
@@ -630,10 +768,29 @@ export default function MatchPage() {
     setSaveError('')
     setSaveMessage('')
     const last = rounds[rounds.length - 1]
+    const undoStartedAt = Date.now()
+    logAppEvent({
+      eventType: 'round_undo',
+      status: 'started',
+      sessionId,
+      roundId: last.id,
+      roundNumber: rounds.length,
+      triggerSource: 'undo_button',
+    })
     try {
       if (!IS_MOCK) {
         const { error } = await insforge.database.from('rounds').delete().eq('id', last.id)
         if (error) {
+          logAppEvent({
+            eventType: 'round_undo',
+            status: 'error',
+            sessionId,
+            roundId: last.id,
+            roundNumber: rounds.length,
+            triggerSource: 'undo_button',
+            durationMs: Date.now() - undoStartedAt,
+            errorCode: getEventErrorCode(error),
+          })
           console.error('마지막 판 취소 실패:', error)
           setShowRoulette(false)
           setSaveError(`마지막 판을 취소하지 못했습니다. ${getErrorMessage(error)}`)
@@ -662,6 +819,15 @@ export default function MatchPage() {
       const newRounds = rounds.slice(0, -1)
       setRounds(newRounds)
       setStats(computeStats(pool, newRounds))
+      logAppEvent({
+        eventType: 'round_undo',
+        status: 'success',
+        sessionId,
+        roundId: last.id,
+        roundNumber: rounds.length,
+        triggerSource: 'undo_button',
+        durationMs: Date.now() - undoStartedAt,
+      })
 
       try {
         const storedRaw = localStorage.getItem(STORAGE_KEY)
@@ -688,6 +854,16 @@ export default function MatchPage() {
         setSaveError('마지막 판은 취소했지만 새로고침 복구 정보를 저장하지 못했습니다.')
       }
     } catch (error) {
+      logAppEvent({
+        eventType: 'round_undo',
+        status: 'error',
+        sessionId,
+        roundId: last.id,
+        roundNumber: rounds.length,
+        triggerSource: 'undo_button',
+        durationMs: Date.now() - undoStartedAt,
+        errorCode: getEventErrorCode(error),
+      })
       console.error('마지막 판 취소 중 예외 발생:', error)
       setShowRoulette(false)
       setSaveError(`네트워크 오류로 마지막 판을 취소하지 못했습니다. ${getErrorMessage(error)}`)
