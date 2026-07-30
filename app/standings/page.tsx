@@ -82,7 +82,7 @@ function computeDuoStats(players: Player[], rounds: Round[]): DuoStat[] {
 
   const playerMap = new Map(players.map(p => [p.id, p]))
   return [...duoMap.entries()]
-    .filter(([, s]) => s.games >= 10)
+    .filter(([, s]) => s.games >= 50)
     .map(([key, s]) => {
       const [id1, id2] = key.split(':')
       return { player1: playerMap.get(id1)!, player2: playerMap.get(id2)!, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }
@@ -529,7 +529,7 @@ export default function StandingsPage() {
             {duoStats.length > 0 && (
               <div className="mt-12">
                 <h2 className="text-lg font-bold mb-2">듀오 승률 랭킹</h2>
-                <p className="text-sm mb-6" style={{ opacity: 0.5 }}>10판 이상 함께한 조합만 표시됩니다.</p>
+                <p className="text-sm mb-6" style={{ opacity: 0.5 }}>50판 이상 함께한 조합만 표시됩니다.</p>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {[
                     { title: '베스트 듀오', list: duoStats.slice(0, 10) },
