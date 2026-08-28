@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Home() {
   return (
@@ -6,11 +7,11 @@ export default function Home() {
 
       <nav className="px-4 sm:px-8 py-4 flex justify-between items-center" style={{ backgroundColor: '#ECEEF0' }}>
         <span className="text-xl font-bold tracking-tight shrink-0 mr-2" style={{ color: '#202020' }}>성복내전</span>
-        <div className="flex items-center gap-3 sm:gap-6">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적']].map(([href, label]) => (
-            <a key={href} href={href} className="text-xs sm:text-sm font-medium transition-opacity hover:opacity-60 whitespace-nowrap" style={{ color: '#202020' }}>
+        <div className="min-w-0 flex items-center gap-2 overflow-x-auto sm:gap-5">
+          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적'], ['/champions', '챔피언']].map(([href, label]) => (
+            <Link key={href} href={href} className="text-xs sm:text-sm font-medium transition-opacity hover:opacity-60 whitespace-nowrap" style={{ color: '#202020' }}>
               {label}
-            </a>
+            </Link>
           ))}
         </div>
       </nav>
