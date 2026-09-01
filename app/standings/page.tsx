@@ -5,6 +5,7 @@ import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
 import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
+import season1Standings from '@/data/season1-standings.json'
 
 interface Session {
   id: string
@@ -30,6 +31,13 @@ interface PlayerStat {
   profit: number
 }
 
+interface GivingPickStat {
+  wellPicks: number
+  ambiguousPicks: number
+  neverPicks: number
+  recordedPicks: number
+}
+
 interface DuoStat {
   player1: Player
   player2: Player
@@ -53,14 +61,80 @@ interface PersonalDetail {
   profitTrend: { session: number; profit: number }[]
 }
 
-type SortKey = 'profit' | 'wins' | 'losses' | 'rate'
+type SortKey = 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
+type Season = 1 | 2
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'profit', label: '수익' },
   { key: 'rate', label: '승률' },
+  { key: 'tank', label: '대줌 정도' },
   { key: 'wins', label: '승리' },
   { key: 'losses', label: '패배' },
 ]
+
+type GivingLabel = '잘 댐' | '애매' | '절대 안댐'
+
+const WELL_GIVING_CHAMPIONS = new Set([
+  '갈리오', '노틸러스', '누누와 윌럼프', '람머스', '레오나', '렐', '마오카이', '말파이트',
+  '문도 박사', '브라움', '블리츠크랭크', '뽀삐', '사이온', '세주아니', '쉔', '스카너',
+  '신지드', '아무무', '알리스타', '오른', '자크', '초가스', '크산테', '탐 켄치', '나미',
+  '라칸', '레나타 글라스크', '룰루', '밀리오', '모르가나', '바드', '세라핀', '소나',
+  '소라카', '쓰레쉬', '아이번', '유미', '잔나', '질리언', '타릭', '레넥톤', '렉사이',
+  '세트', '일라오이', '요릭',
+])
+
+const AMBIGUOUS_GIVING_CHAMPIONS = new Set([
+  '가렌', '그라가스', '그웬', '나르', '나서스', '다리우스', '다이애나', '모데카이저',
+  '볼리베어', '쉬바나', '신 짜오', '아트록스', '암베사', '오공', '올라프', '워윅',
+  '우르곳', '자헨', '잭스', '클레드', '트런들', '헤카림', '자르반 4세',
+])
+
+function computeGivingPickStats(rounds: Round[]): Map<string, GivingPickStat> {
+  const result = new Map<string, GivingPickStat>()
+
+  for (const round of rounds) {
+    if (round.winner_team === null) continue
+
+    for (const team of [
+      { ids: round.team1_ids, champions: round.team1_champions },
+      { ids: round.team2_ids, champions: round.team2_champions },
+    ]) {
+      team.champions?.forEach((champion, index) => {
+        const playerId = team.ids[index]
+        const championName = champion.trim()
+        if (!playerId || !championName) return
+
+        const current = result.get(playerId) ?? { wellPicks: 0, ambiguousPicks: 0, neverPicks: 0, recordedPicks: 0 }
+        current.recordedPicks++
+        if (WELL_GIVING_CHAMPIONS.has(championName)) current.wellPicks++
+        else if (AMBIGUOUS_GIVING_CHAMPIONS.has(championName)) current.ambiguousPicks++
+        else current.neverPicks++
+        result.set(playerId, current)
+      })
+    }
+  }
+
+  return result
+}
+
+function getGivingLabel(stat: GivingPickStat | undefined): GivingLabel | '-' {
+  if (!stat || stat.recordedPicks === 0) return '-'
+
+  const highestPickCount = Math.max(stat.wellPicks, stat.ambiguousPicks, stat.neverPicks)
+  const highestCategoryCount = [stat.wellPicks, stat.ambiguousPicks, stat.neverPicks]
+    .filter(count => count === highestPickCount).length
+  if (highestCategoryCount > 1) return '애매'
+  if (stat.wellPicks === highestPickCount) return '잘 댐'
+  if (stat.neverPicks === highestPickCount) return '절대 안댐'
+  return '애매'
+}
+
+function getGivingLabelRank(label: GivingLabel | '-'): number {
+  if (label === '잘 댐') return 2
+  if (label === '애매') return 1
+  if (label === '절대 안댐') return 0
+  return -1
+}
 
 function computeDuoStats(players: Player[], rounds: Round[]): DuoStat[] {
   const duoMap = new Map<string, { games: number; wins: number }>()
@@ -197,6 +271,9 @@ export default function StandingsPage() {
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortKey>('profit')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+  const [season, setSeason] = useState<Season>(2)
+
+  const givingPickStats = useMemo(() => computeGivingPickStats(allRounds), [allRounds])
 
   const sortedStats = useMemo(() => [...stats].sort((a, b) => {
     const ra = (a.wins + a.losses) > 0 ? a.wins / (a.wins + a.losses) : 0
@@ -206,8 +283,13 @@ export default function StandingsPage() {
       case 'wins': return b.wins - a.wins
       case 'losses': return b.losses - a.losses
       case 'rate': return rb - ra
+      case 'tank': {
+        const aLabel = getGivingLabel(givingPickStats.get(a.player.id))
+        const bLabel = getGivingLabel(givingPickStats.get(b.player.id))
+        return getGivingLabelRank(bLabel) - getGivingLabelRank(aLabel)
+      }
     }
-  }), [stats, sortBy])
+  }), [stats, sortBy, givingPickStats])
 
   const recentForm = useMemo(() => {
     const map = new Map<string, boolean[]>()
@@ -237,6 +319,9 @@ export default function StandingsPage() {
 
   useEffect(() => {
     async function load() {
+      setLoading(true)
+      setSelectedPlayerId(null)
+
       if (IS_MOCK) {
         setAllPlayers(samplePlayers)
         setAllSessions(sampleSessions)
@@ -266,22 +351,33 @@ export default function StandingsPage() {
         return
       }
 
-      const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
-        insforge.database.from('sessions').select('id, bet_amount, created_at').not('ended_at', 'is', null),
-        insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at'),
-        insforge.database.from('players').select('id, real_name, created_at'),
-      ])
+      const { data: players } = await insforge.database.from('players').select('id, real_name, created_at')
+      if (!players) { setLoading(false); return }
 
-      if (!sessions || !rounds || !players) { setLoading(false); return }
+      let sessions: Session[]
+      let rounds: Round[]
+
+      if (season === 1) {
+        sessions = season1Standings.sessions as Session[]
+        rounds = season1Standings.rounds as unknown as Round[]
+      } else {
+        const [{ data: currentSessions }, { data: currentRounds }] = await Promise.all([
+          insforge.database.from('sessions').select('id, bet_amount, created_at').not('ended_at', 'is', null),
+          insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at'),
+        ])
+        if (!currentSessions || !currentRounds) { setLoading(false); return }
+        sessions = currentSessions as Session[]
+        rounds = currentRounds as Round[]
+      }
 
       setAllPlayers(players as Player[])
-      setAllRounds(rounds as Round[])
-      setAllSessions(sessions as Session[])
+      setAllRounds(rounds)
+      setAllSessions(sessions)
 
-      const sessionMap = new Map((sessions as Session[]).map(s => [s.id, s]))
+      const sessionMap = new Map(sessions.map(s => [s.id, s]))
       const totals = new Map<string, { wins: number; losses: number; profit: number }>()
 
-      for (const round of rounds as Round[]) {
+      for (const round of rounds) {
         if (round.winner_team === null) continue
         const session = sessionMap.get(round.session_id)
         const bet = session?.bet_amount ?? 0
@@ -306,7 +402,7 @@ export default function StandingsPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [season])
 
   return (
     <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
@@ -420,9 +516,26 @@ export default function StandingsPage() {
       )}
 
       <div className="pt-16">
-        <h1 className="text-3xl font-bold mb-2">전적</h1>
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <h1 className="text-3xl font-bold">전적</h1>
+          <div className="flex gap-2" aria-label="시즌 선택">
+            {([2, 1] as const).map(value => (
+              <button
+                key={value}
+                onClick={() => setSeason(value)}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
+                style={{
+                  backgroundColor: season === value ? '#202020' : '#DEE0E2',
+                  color: season === value ? '#ECEEF0' : '#202020',
+                }}
+              >
+                시즌 {value}
+              </button>
+            ))}
+          </div>
+        </div>
         <p className="text-sm mb-6" style={{ opacity: 0.5 }}>
-          {{ profit: '누적 수익', rate: '승률', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
+          시즌 {season} · {{ profit: '누적 수익', rate: '승률', tank: '대줌 정도', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
         </p>
 
         <div className="flex gap-2 mb-8 flex-wrap">
@@ -445,7 +558,7 @@ export default function StandingsPage() {
 
         {!loading && stats.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-base font-medium" style={{ opacity: 0.4 }}>아직 기록이 없습니다.</p>
+            <p className="text-base font-medium" style={{ opacity: 0.4 }}>시즌 {season} 기록이 없습니다.</p>
           </div>
         )}
 
@@ -474,13 +587,13 @@ export default function StandingsPage() {
             </div>
 
             {/* 전적 테이블 */}
-            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#DEE0E2' }}>
-              <table className="w-full text-xs sm:text-sm">
+            <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: '#DEE0E2' }}>
+              <table className="w-full min-w-[620px] text-xs sm:text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
                     <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
                     <th className="text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                    {([['wins', '승'], ['losses', '패'], ['rate', '승률'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
+                    {([['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
                       <th key={key}
                         onClick={() => setSortBy(key)}
                         className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
@@ -495,6 +608,7 @@ export default function StandingsPage() {
                   {sortedStats.map((s, i) => {
                     const total = s.wins + s.losses
                     const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
+                    const givingLabel = getGivingLabel(givingPickStats.get(s.player.id))
                     const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'
                     return (
                       <tr key={s.player.id} style={{ borderTop: '1px solid #ECEEF0' }}>
@@ -515,6 +629,12 @@ export default function StandingsPage() {
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
+                        <td
+                          className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold whitespace-nowrap"
+                          style={{ color: givingLabel === '잘 댐' ? '#2d7a3a' : givingLabel === '절대 안댐' ? '#c0392b' : '#202020' }}
+                        >
+                          {givingLabel}
+                        </td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
                           {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}원
                         </td>
