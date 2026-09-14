@@ -2,8 +2,11 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sungbok",
-  description: "sungbok",
+  title: {
+    default: "성복내전",
+    template: "%s · 성복내전",
+  },
+  description: "성복 친구들의 내전 기록, 팀 편성, 전적을 한곳에서 관리합니다.",
 };
 
 export const viewport: Viewport = {
@@ -17,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html>
+    <html lang="ko">
       <head>
         <link
           rel="stylesheet"
@@ -25,6 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
         {children}
       </body>
     </html>

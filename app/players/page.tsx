@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
+import NavBar from '@/app/components/NavBar'
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -83,12 +84,10 @@ export default function PlayersPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
-      <a href="/" className="text-sm hover:underline" style={{ color: '#202020', opacity: 0.5 }}>
-        ← 홈으로
-      </a>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+      <NavBar />
 
-      <h1 className="text-3xl font-bold mt-8 mb-2" style={{ color: '#202020' }}>
+      <h1 className="text-3xl font-bold mt-16 mb-2" style={{ color: '#202020' }}>
         선수 명단
       </h1>
       <p className="text-sm mb-10" style={{ color: '#202020', opacity: 0.5 }}>
@@ -106,7 +105,7 @@ export default function PlayersPage() {
             onChange={(e) => setRealName(e.target.value)}
             required
             className="px-4 py-3 rounded-xl text-sm outline-none w-full"
-            style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+            style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
           />
           <input
             type="text"
@@ -114,12 +113,12 @@ export default function PlayersPage() {
             value={summonerName}
             onChange={(e) => setSummonerName(e.target.value)}
             className="px-4 py-3 rounded-xl text-sm outline-none w-full"
-            style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+            style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
           />
           {error && <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>}
           <button type="submit" disabled={loading}
             className="px-6 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-40"
-            style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+            style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
             {loading ? '등록 중...' : '등록하기'}
           </button>
         </form>
@@ -136,38 +135,38 @@ export default function PlayersPage() {
             {players.map((p) =>
               editingId === p.id ? (
                 <li key={p.id} className="flex flex-col gap-2 px-5 py-4 rounded-xl"
-                  style={{ backgroundColor: '#DEE0E2' }}>
+                  style={{ backgroundColor: '#F0F1F2' }}>
                   <input
                     value={editRealName}
                     onChange={(e) => setEditRealName(e.target.value)}
                     className="px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
                     placeholder="이름"
                   />
                   <input
                     value={editSummonerName}
                     onChange={(e) => setEditSummonerName(e.target.value)}
                     className="px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                    style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
                     placeholder="소환사명 (선택)"
                   />
                   {editError && <p className="text-xs" style={{ color: '#e53e3e' }}>{editError}</p>}
                   <div className="flex gap-2 justify-end">
                     <button onClick={cancelEdit}
                       className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                       취소
                     </button>
                     <button onClick={() => handleUpdate(p.id)}
                       className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-80"
-                      style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                      style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
                       저장
                     </button>
                   </div>
                 </li>
               ) : (
                 <li key={p.id} className="flex justify-between items-center px-5 py-4 rounded-xl"
-                  style={{ backgroundColor: '#DEE0E2' }}>
+                  style={{ backgroundColor: '#F0F1F2' }}>
                   <div>
                     <span className="font-medium" style={{ color: '#202020' }}>{p.real_name}</span>
                     {p.summoner_name && (
@@ -177,12 +176,12 @@ export default function PlayersPage() {
                   <div className="flex gap-2">
                     <button onClick={() => startEdit(p)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                       수정
                     </button>
                     <button onClick={() => handleDelete(p.id)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                       삭제
                     </button>
                   </div>
@@ -195,3 +194,4 @@ export default function PlayersPage() {
     </main>
   )
 }
+

@@ -405,7 +405,7 @@ export default function StandingsPage() {
   }, [season])
 
   return (
-    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
       <NavBar />
 
       {/* 개인 하이라이트 모달 */}
@@ -413,13 +413,13 @@ export default function StandingsPage() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={() => setSelectedPlayerId(null)}>
           <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 pb-8 overflow-y-auto max-h-[90vh]"
-            style={{ backgroundColor: '#ECEEF0' }}
+            style={{ backgroundColor: '#FFFFFF' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">{personalDetail.player.real_name}</h2>
               <button onClick={() => setSelectedPlayerId(null)}
                 className="text-sm px-3 py-1 rounded-lg transition-opacity hover:opacity-60"
-                style={{ backgroundColor: '#DEE0E2' }}>
+                style={{ backgroundColor: '#F0F1F2' }}>
                 닫기
               </button>
             </div>
@@ -431,14 +431,14 @@ export default function StandingsPage() {
                 { label: '최다 연승', value: `${personalDetail.longestWinStreak}연승` },
                 { label: '최다 연패', value: `${personalDetail.longestLossStreak}연패` },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl px-4 py-3" style={{ backgroundColor: '#DEE0E2' }}>
+                <div key={label} className="rounded-xl px-4 py-3" style={{ backgroundColor: '#F0F1F2' }}>
                   <p className="text-xs mb-1" style={{ opacity: 0.5 }}>{label}</p>
                   <p className="text-sm font-bold">{value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
+            <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
               <p className="text-xs mb-1" style={{ opacity: 0.5 }}>누적 수익</p>
               <p className="text-lg font-bold" style={{ color: personalDetail.profit > 0 ? '#2d7a3a' : personalDetail.profit < 0 ? '#c0392b' : '#202020' }}>
                 {personalDetail.profit > 0 ? '+' : ''}{personalDetail.profit.toLocaleString()}원
@@ -453,7 +453,7 @@ export default function StandingsPage() {
               const zeroOffset = range > 0 ? Math.round((maxVal / range) * 100) : 50
               const gradId = `pg-${selectedPlayerId}`
               return (
-                <div className="rounded-xl px-4 pt-3 pb-2 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
+                <div className="rounded-xl px-4 pt-3 pb-2 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
                   <p className="text-xs mb-3" style={{ opacity: 0.5 }}>수익 추이</p>
                   <ResponsiveContainer width="100%" height={120}>
                     <LineChart data={trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -467,7 +467,7 @@ export default function StandingsPage() {
                       <YAxis hide domain={[minVal, maxVal]} />
                       <Tooltip
                         formatter={(v) => [`${Number(v) > 0 ? '+' : ''}${Number(v).toLocaleString()}원`, '수익']}
-                        contentStyle={{ backgroundColor: '#ECEEF0', border: 'none', borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ backgroundColor: '#FFFFFF', border: 'none', borderRadius: 8, fontSize: 12 }}
                         cursor={{ stroke: '#20202033' }}
                       />
                       <ReferenceLine y={0} stroke="#20202033" strokeDasharray="3 3" />
@@ -485,7 +485,7 @@ export default function StandingsPage() {
             })()}
 
             {personalDetail.topTeammate && (
-              <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#DEE0E2' }}>
+              <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
                 <p className="text-xs mb-1" style={{ opacity: 0.5 }}>베스트 파트너</p>
                 <p className="text-sm font-bold">
                   {personalDetail.topTeammate.player.real_name}
@@ -497,7 +497,7 @@ export default function StandingsPage() {
             )}
 
             {personalDetail.topChampions.length > 0 && (
-              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#DEE0E2' }}>
+              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#F0F1F2' }}>
                 <p className="text-xs mb-2" style={{ opacity: 0.5 }}>많이 플레이한 챔피언 TOP5</p>
                 <div className="flex flex-col gap-1.5">
                   {personalDetail.topChampions.map((c, i) => (
@@ -525,8 +525,8 @@ export default function StandingsPage() {
                 onClick={() => setSeason(value)}
                 className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
                 style={{
-                  backgroundColor: season === value ? '#202020' : '#DEE0E2',
-                  color: season === value ? '#ECEEF0' : '#202020',
+                  backgroundColor: season === value ? '#202020' : '#F0F1F2',
+                  color: season === value ? '#FFFFFF' : '#202020',
                 }}
               >
                 시즌 {value}
@@ -545,8 +545,8 @@ export default function StandingsPage() {
               onClick={() => setSortBy(key)}
               className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
               style={{
-                backgroundColor: sortBy === key ? '#202020' : '#DEE0E2',
-                color: sortBy === key ? '#ECEEF0' : '#202020',
+                backgroundColor: sortBy === key ? '#202020' : '#F0F1F2',
+                color: sortBy === key ? '#FFFFFF' : '#202020',
               }}
             >
               {label}
@@ -587,10 +587,10 @@ export default function StandingsPage() {
             </div>
 
             {/* 전적 테이블 */}
-            <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: '#DEE0E2' }}>
+            <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: '#F0F1F2' }}>
               <table className="w-full min-w-[620px] text-xs sm:text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
+                  <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
                     <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
                     <th className="text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
                     {([['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
@@ -611,7 +611,7 @@ export default function StandingsPage() {
                     const givingLabel = getGivingLabel(givingPickStats.get(s.player.id))
                     const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'
                     return (
-                      <tr key={s.player.id} style={{ borderTop: '1px solid #ECEEF0' }}>
+                      <tr key={s.player.id} style={{ borderTop: '1px solid #FFFFFF' }}>
                         <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
                         <td className="px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
                           <button onClick={() => setSelectedPlayerId(s.player.id)}
@@ -657,10 +657,10 @@ export default function StandingsPage() {
                   ].map(({ title, list }) => (
                     <div key={title}>
                       <p className="text-sm font-semibold mb-3" style={{ opacity: 0.6 }}>{title}</p>
-                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#DEE0E2' }}>
+                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#F0F1F2' }}>
                         <table className="w-full text-xs sm:text-sm">
                           <thead>
-                            <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
+                            <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
                               <th className="text-center px-2 sm:px-4 py-3 font-semibold w-8" style={{ opacity: 0.5 }}>#</th>
                               <th className="text-left px-2 sm:px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>조합</th>
                               <th className="text-center px-2 sm:px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>판수</th>
@@ -669,7 +669,7 @@ export default function StandingsPage() {
                           </thead>
                           <tbody>
                             {list.map((d, i) => (
-                              <tr key={`${d.player1.id}-${d.player2.id}`} style={{ borderTop: '1px solid #ECEEF0' }}>
+                              <tr key={`${d.player1.id}-${d.player2.id}`} style={{ borderTop: '1px solid #FFFFFF' }}>
                                 <td className="text-center px-2 sm:px-4 py-2.5 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
                                 <td className="px-2 sm:px-4 py-2.5 font-bold">
                                   {d.player1.real_name} + {d.player2.real_name}
@@ -695,3 +695,4 @@ export default function StandingsPage() {
     </main>
   )
 }
+

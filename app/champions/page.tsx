@@ -135,7 +135,7 @@ export default function ChampionsPage() {
   }, [allStats])
 
   return (
-    <main className="min-h-[100dvh] px-4 py-12 sm:px-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-[100dvh] px-4 py-12 sm:px-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
       <NavBar />
 
       <div className="mx-auto max-w-6xl pt-16">
@@ -146,8 +146,8 @@ export default function ChampionsPage() {
 
         {loading && (
           <div className="space-y-3" aria-label="챔피언 통계를 불러오는 중">
-            <div className="h-20 animate-pulse rounded-2xl" style={{ backgroundColor: '#DEE0E2' }} />
-            <div className="h-64 animate-pulse rounded-2xl" style={{ backgroundColor: '#DEE0E2' }} />
+            <div className="h-20 animate-pulse rounded-2xl" style={{ backgroundColor: '#F0F1F2' }} />
+            <div className="h-64 animate-pulse rounded-2xl" style={{ backgroundColor: '#F0F1F2' }} />
           </div>
         )}
 
@@ -166,7 +166,7 @@ export default function ChampionsPage() {
 
         {!loading && !errorMessage && allStats.length > 0 && (
           <>
-            <section className="mb-8 grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-4" style={{ backgroundColor: '#DEE0E2' }}>
+            <section className="mb-8 grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-4" style={{ backgroundColor: '#F0F1F2' }}>
               {[
                 { label: '챔피언', value: `${allStats.length}종` },
                 { label: '집계된 픽 수', value: `${summary.totalPicks}회` },
@@ -176,7 +176,7 @@ export default function ChampionsPage() {
                 <div
                   key={label}
                   className={`px-4 py-5 sm:border-t-0 sm:px-6 ${index > 0 ? 'sm:border-l' : ''} ${index % 2 === 1 ? 'border-l' : ''} ${index >= 2 ? 'border-t' : ''}`}
-                  style={{ borderColor: '#ECEEF0' }}
+                  style={{ borderColor: '#FFFFFF' }}
                 >
                   <p className="mb-1 text-xs" style={{ opacity: 0.5 }}>{label}</p>
                   <p className="truncate text-base font-bold sm:text-lg" title={value}>{value}</p>
@@ -194,7 +194,7 @@ export default function ChampionsPage() {
                   onChange={event => setQuery(event.target.value)}
                   placeholder="이름 입력"
                   className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-[#202020]"
-                  style={{ backgroundColor: '#DEE0E2', color: '#202020' }}
+                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
                 />
               </div>
 
@@ -208,7 +208,7 @@ export default function ChampionsPage() {
                         type="button"
                         onClick={() => setMinimumGames(value)}
                         className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.98]"
-                        style={{ backgroundColor: minimumGames === value ? '#202020' : '#DEE0E2', color: minimumGames === value ? '#ECEEF0' : '#202020' }}
+                        style={{ backgroundColor: minimumGames === value ? '#202020' : '#F0F1F2', color: minimumGames === value ? '#FFFFFF' : '#202020' }}
                       >
                         {value}회 이상
                       </button>
@@ -225,7 +225,7 @@ export default function ChampionsPage() {
                         type="button"
                         onClick={() => setSortBy(key)}
                         className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.98]"
-                        style={{ backgroundColor: sortBy === key ? '#202020' : '#DEE0E2', color: sortBy === key ? '#ECEEF0' : '#202020' }}
+                        style={{ backgroundColor: sortBy === key ? '#202020' : '#F0F1F2', color: sortBy === key ? '#FFFFFF' : '#202020' }}
                       >
                         {label}
                       </button>
@@ -240,10 +240,10 @@ export default function ChampionsPage() {
                 <p className="text-sm font-medium" style={{ opacity: 0.5 }}>조건에 맞는 챔피언이 없습니다.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl" style={{ backgroundColor: '#DEE0E2' }}>
+              <div className="overflow-x-auto rounded-2xl" style={{ backgroundColor: '#F0F1F2' }}>
                 <table className="w-full min-w-[640px] text-sm">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #ECEEF0' }}>
+                    <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
                       <th className="w-14 px-4 py-4 text-center font-semibold" style={{ opacity: 0.5 }}>#</th>
                       <th className="px-4 py-4 text-left font-semibold" style={{ opacity: 0.5 }}>챔피언</th>
                       <th className="px-4 py-4 text-center font-semibold" style={{ opacity: 0.5 }}>픽</th>
@@ -255,7 +255,7 @@ export default function ChampionsPage() {
                   </thead>
                   <tbody>
                     {visibleStats.map((stat, index) => (
-                      <tr key={stat.name} style={{ borderTop: '1px solid #ECEEF0' }}>
+                      <tr key={stat.name} style={{ borderTop: '1px solid #FFFFFF' }}>
                         <td className="px-4 py-3 text-center font-medium" style={{ opacity: 0.35 }}>{index + 1}</td>
                         <td className="px-4 py-3 font-bold">{stat.name}</td>
                         <td className="px-4 py-3 text-center font-bold">{stat.games}</td>
@@ -280,3 +280,4 @@ export default function ChampionsPage() {
     </main>
   )
 }
+

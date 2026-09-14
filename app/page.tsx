@@ -1,37 +1,50 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import NavBar from '@/app/components/NavBar'
+
+const QUICK_LINKS = [
+  { href: '/match', index: '01', label: '새 내전 만들기', note: '팀 편성과 경기 기록' },
+  { href: '/standings', index: '02', label: '시즌 전적 보기', note: '승률과 누적 수익' },
+  { href: '/history', index: '03', label: '지난 경기 열기', note: '세션별 상세 기록' },
+]
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col" style={{ backgroundColor: '#ECEEF0' }}>
+    <main id="main-content" className="home-page">
+      <NavBar />
 
-      <nav className="px-4 sm:px-8 py-4 flex justify-between items-center" style={{ backgroundColor: '#ECEEF0' }}>
-        <span className="text-xl font-bold tracking-tight shrink-0 mr-2" style={{ color: '#202020' }}>성복내전</span>
-        <div className="min-w-0 flex items-center gap-2 overflow-x-auto sm:gap-5">
-          {[['/', '홈'], ['/players', '선수명단'], ['/match', '내전생성'], ['/history', '기록'], ['/standings', '전적'], ['/champions', '챔피언']].map(([href, label]) => (
-            <Link key={href} href={href} className="text-xs sm:text-sm font-medium transition-opacity hover:opacity-60 whitespace-nowrap" style={{ color: '#202020' }}>
-              {label}
-            </Link>
-          ))}
+      <section className="home-hero" aria-labelledby="home-title">
+        <div className="home-photo">
+          <Image src="/hero2.JPG" alt="바닷가에 모인 성복 친구들 단체 사진" fill className="object-cover" sizes="100vw" quality={92} priority />
+          <div className="home-photo-shade" />
         </div>
-      </nav>
+        <div className="home-hero-copy">
+          <p className="home-kicker"><span>Since 2025</span> · Seongbok Invitational</p>
+          <h1 id="home-title">따고 따이는,<br /><em>치열한 경쟁</em></h1>
+          <p className="home-intro">성복 친구들의 내전 팀 편성부터 시즌 전적까지. 매 경기의 결과와 이야기를 한곳에 남깁니다.</p>
+          <Link className="home-primary" href="/match">내전 시작 <span aria-hidden="true">↗</span></Link>
+        </div>
+        <div className="home-issue" aria-hidden="true"><span>ARCHIVE</span><strong>NO. 02</strong></div>
+      </section>
 
-      <div className="flex-1 grid grid-cols-2 sm:grid-cols-5">
-        {['/hero1.jpeg', '/hero2.JPG', '/hero3.JPG', '/hero4.jpeg', '/hero5.jpeg'].map((src, i) => (
-          <div key={src} className={`relative overflow-hidden h-[45vw] sm:h-auto${i >= 2 ? ' hidden sm:block' : ''}`}>
-            <Image
-              src={src}
-              alt={`성복내전 ${i + 1}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 50vw, 20vw"
-              quality={90}
-              priority={i === 0}
-            />
+      <section className="home-directory" aria-label="빠른 메뉴">
+        <header><span>경기 운영실</span><span>2026 — 현재</span></header>
+        <div className="home-directory-grid">
+          <div className="home-polaroid">
+            <Image src="/hero1.jpeg" alt="성복 친구들의 흑백 개인 사진 모음" fill className="object-cover" sizes="(max-width: 800px) 100vw, 38vw" />
           </div>
-        ))}
-      </div>
-
+          <div className="home-links">
+            {QUICK_LINKS.map(link => (
+              <Link href={link.href} key={link.href} className="home-link-row">
+                <span className="home-link-index">{link.index}</span>
+                <span className="home-link-title">{link.label}</span>
+                <span className="home-link-note">{link.note}</span>
+                <span className="home-link-arrow" aria-hidden="true">→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   )
 }

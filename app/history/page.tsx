@@ -269,27 +269,27 @@ export default function HistoryPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
       <NavBar />
 
       {championModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={() => setChampionModal(null)}>
           <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 pb-8"
-            style={{ backgroundColor: '#ECEEF0' }}
+            style={{ backgroundColor: '#FFFFFF' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-xl font-bold">{championModal.playerName}</h2>
               <button onClick={() => setChampionModal(null)}
                 className="text-sm px-3 py-1 rounded-lg transition-opacity hover:opacity-60"
-                style={{ backgroundColor: '#DEE0E2' }}>
+                style={{ backgroundColor: '#F0F1F2' }}>
                 닫기
               </button>
             </div>
             <div className="flex flex-col gap-2">
               {championModal.champions.map((c, i) => (
                 <div key={i} className="flex items-center justify-between px-4 py-2.5 rounded-xl"
-                  style={{ backgroundColor: '#DEE0E2' }}>
+                  style={{ backgroundColor: '#F0F1F2' }}>
                   <span className="text-sm font-medium">{i + 1}판 — {c.champion}</span>
                   <span className="text-xs font-bold" style={{ color: c.won ? '#2d7a3a' : '#c0392b' }}>
                     {c.won ? '승' : '패'}
@@ -307,7 +307,7 @@ export default function HistoryPage() {
 
         {!loading && details.length >= 2 && (
           <div className="mb-6 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-            style={{ backgroundColor: '#DEE0E2' }}>
+            style={{ backgroundColor: '#F0F1F2' }}>
             <div>
               <p className="text-sm font-semibold">기록 합치기</p>
               <p className="text-xs mt-0.5" style={{ opacity: 0.55 }}>
@@ -318,14 +318,14 @@ export default function HistoryPage() {
               {mergeSelection.size > 0 && (
                 <button onClick={() => { setMergeSelection(new Set()); setMergeTargetId(null); setMergeError('') }} disabled={merging}
                   className="px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-40"
-                  style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                  style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                   선택 해제
                 </button>
               )}
               <button onClick={mergeSessions}
                 disabled={merging || mergeSelection.size < 2 || !mergeTargetId || !mergeSelection.has(mergeTargetId)}
                 className="px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-30"
-                style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
                 {merging ? '합치는 중...' : `선택 기록 합치기 (${mergeSelection.size})`}
               </button>
             </div>
@@ -357,7 +357,7 @@ export default function HistoryPage() {
 
             return (
               <div key={session.id} className="rounded-2xl overflow-hidden"
-                style={{ backgroundColor: '#DEE0E2' }}>
+                style={{ backgroundColor: '#F0F1F2' }}>
 
                 {/* 세션 헤더 */}
                 <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -404,30 +404,30 @@ export default function HistoryPage() {
                           autoFocus
                           disabled={savingSessionId === session.id}
                           className="w-28 pl-3 pr-7 py-2 rounded-lg text-sm text-right outline-none disabled:opacity-50"
-                          style={{ backgroundColor: '#ECEEF0', color: '#202020' }}
+                          style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none" style={{ opacity: 0.5 }}>원</span>
                       </div>
                       <button onClick={() => saveAmount(session.id)} disabled={savingSessionId === session.id || editBetAmount === ''}
                         className="px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-40"
-                        style={{ backgroundColor: '#202020', color: '#ECEEF0' }}>
+                        style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
                         {savingSessionId === session.id ? '저장 중' : '저장'}
                       </button>
                       <button onClick={cancelAmountEdit} disabled={savingSessionId === session.id}
                         className="px-3 py-2 rounded-lg text-xs font-medium disabled:opacity-40"
-                        style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                        style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                         취소
                       </button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       <span className="text-xs px-2 py-1 rounded-full font-medium"
-                        style={{ backgroundColor: '#ECEEF0', color: '#202020', opacity: 0.75 }}>
+                        style={{ backgroundColor: '#FFFFFF', color: '#202020', opacity: 0.75 }}>
                         {session.bet_amount.toLocaleString()}원
                       </span>
                       <button onClick={() => startAmountEdit(session)} disabled={savingSessionId !== null || merging}
                         className="px-3 py-2 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-                        style={{ backgroundColor: '#ECEEF0', color: '#202020' }}>
+                        style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                         금액 수정
                       </button>
                     </div>
@@ -441,10 +441,10 @@ export default function HistoryPage() {
                 {/* 세션 상세 */}
                 {isOpen && (
                   <div className="px-3 sm:px-6 pb-5 sm:pb-6">
-                    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#ECEEF0' }}>
+                    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
                       <table className="w-full text-xs sm:text-sm">
                         <thead>
-                          <tr style={{ borderBottom: '1px solid #DEE0E2' }}>
+                          <tr style={{ borderBottom: '1px solid #F0F1F2' }}>
                             <th className="text-left px-3 sm:px-5 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
                             <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
                             <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
@@ -461,7 +461,7 @@ export default function HistoryPage() {
                             const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
                             const money = net * session.bet_amount
                             return (
-                              <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #DEE0E2' : undefined }}>
+                              <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #F0F1F2' : undefined }}>
                                 <td className="px-3 sm:px-5 py-2 sm:py-3">
                                   {(() => {
                                     const champs = getPlayerChampions(s.player.id, rounds)
@@ -501,3 +501,4 @@ export default function HistoryPage() {
     </main>
   )
 }
+
