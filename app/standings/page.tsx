@@ -33,8 +33,6 @@ interface PlayerStat {
 
 interface GivingPickStat {
   wellPicks: number
-  ambiguousPicks: number
-  neverPicks: number
   recordedPicks: number
 }
 
@@ -56,7 +54,7 @@ interface PersonalDetail {
   longestWinStreak: number
   longestLossStreak: number
   sessionCount: number
-  topTeammate: { player: Player; games: number; wins: number } | null
+  teammates: { player: Player; games: number; wins: number; winRate: number }[]
   topChampions: { name: string; games: number; wins: number; winRate: number }[]
   profitTrend: { session: number; profit: number }[]
 }
@@ -72,21 +70,15 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'losses', label: '패배' },
 ]
 
-type GivingLabel = '잘 댐' | '애매' | '절대 안댐'
-
 const WELL_GIVING_CHAMPIONS = new Set([
   '갈리오', '노틸러스', '누누와 윌럼프', '람머스', '레오나', '렐', '마오카이', '말파이트',
   '문도 박사', '브라움', '블리츠크랭크', '뽀삐', '사이온', '세주아니', '쉔', '스카너',
   '신지드', '아무무', '알리스타', '오른', '자크', '초가스', '크산테', '탐 켄치', '나미',
   '라칸', '레나타 글라스크', '룰루', '밀리오', '모르가나', '바드', '세라핀', '소나',
   '소라카', '쓰레쉬', '아이번', '유미', '잔나', '질리언', '타릭', '레넥톤', '렉사이',
-  '세트', '일라오이', '요릭',
-])
-
-const AMBIGUOUS_GIVING_CHAMPIONS = new Set([
-  '가렌', '그라가스', '그웬', '나르', '나서스', '다리우스', '다이애나', '모데카이저',
-  '볼리베어', '쉬바나', '신 짜오', '아트록스', '암베사', '오공', '올라프', '워윅',
-  '우르곳', '자헨', '잭스', '클레드', '트런들', '헤카림', '자르반 4세',
+  '세트', '일라오이', '요릭', '그라가스', '나서스', '모데카이저', '볼리베어', '브라이어',
+  '쉬바나', '신 짜오', '아트록스', '오공', '올라프', '우르곳', '워윅', '자헨', '잭스',
+  '카밀', '클레드', '트런들', '판테온', '나르'
 ])
 
 function computeGivingPickStats(rounds: Round[]): Map<string, GivingPickStat> {
@@ -104,11 +96,9 @@ function computeGivingPickStats(rounds: Round[]): Map<string, GivingPickStat> {
         const championName = champion.trim()
         if (!playerId || !championName) return
 
-        const current = result.get(playerId) ?? { wellPicks: 0, ambiguousPicks: 0, neverPicks: 0, recordedPicks: 0 }
+        const current = result.get(playerId) ?? { wellPicks: 0, recordedPicks: 0 }
         current.recordedPicks++
         if (WELL_GIVING_CHAMPIONS.has(championName)) current.wellPicks++
-        else if (AMBIGUOUS_GIVING_CHAMPIONS.has(championName)) current.ambiguousPicks++
-        else current.neverPicks++
         result.set(playerId, current)
       })
     }
@@ -117,26 +107,12 @@ function computeGivingPickStats(rounds: Round[]): Map<string, GivingPickStat> {
   return result
 }
 
-function getGivingLabel(stat: GivingPickStat | undefined): GivingLabel | '-' {
-  if (!stat || stat.recordedPicks === 0) return '-'
-
-  const highestPickCount = Math.max(stat.wellPicks, stat.ambiguousPicks, stat.neverPicks)
-  const highestCategoryCount = [stat.wellPicks, stat.ambiguousPicks, stat.neverPicks]
-    .filter(count => count === highestPickCount).length
-  if (highestCategoryCount > 1) return '애매'
-  if (stat.wellPicks === highestPickCount) return '잘 댐'
-  if (stat.neverPicks === highestPickCount) return '절대 안댐'
-  return '애매'
+function getGivingRate(stat: GivingPickStat | undefined): number | null {
+  if (!stat || stat.recordedPicks === 0) return null
+  return stat.wellPicks / stat.recordedPicks
 }
 
-function getGivingLabelRank(label: GivingLabel | '-'): number {
-  if (label === '잘 댐') return 2
-  if (label === '애매') return 1
-  if (label === '절대 안댐') return 0
-  return -1
-}
-
-function computeDuoStats(players: Player[], rounds: Round[]): DuoStat[] {
+function computeDuoStats(players: Player[], rounds: Round[], minGames: number): DuoStat[] {
   const duoMap = new Map<string, { games: number; wins: number }>()
 
   for (const r of rounds) {
@@ -156,7 +132,7 @@ function computeDuoStats(players: Player[], rounds: Round[]): DuoStat[] {
 
   const playerMap = new Map(players.map(p => [p.id, p]))
   return [...duoMap.entries()]
-    .filter(([, s]) => s.games >= 50)
+    .filter(([, s]) => s.games >= minGames)
     .map(([key, s]) => {
       const [id1, id2] = key.split(':')
       return { player1: playerMap.get(id1)!, player2: playerMap.get(id2)!, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }
@@ -195,18 +171,18 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     }
   }
 
-  let topTeammate: PersonalDetail['topTeammate'] = null
-  const threshold = playerRounds.length >= 20 ? 20 : 3
-  const allEntries = [...teammateCount.entries()]
-  const qualified = (allEntries.filter(([, s]) => s.games >= threshold).length > 0
-    ? allEntries.filter(([, s]) => s.games >= threshold)
-    : allEntries.filter(([, s]) => s.games >= 5)
-  ).sort((a, b) => (b[1].wins / b[1].games) - (a[1].wins / a[1].games) || b[1].games - a[1].games)
-  if (qualified.length > 0) {
-    const [tmId, tmStat] = qualified[0]
-    const tmPlayer = players.find(p => p.id === tmId)
-    if (tmPlayer) topTeammate = { player: tmPlayer, ...tmStat }
-  }
+  const teammates = [...teammateCount.entries()]
+    .map(([teammateId, teammateStat]) => {
+      const teammate = players.find(player => player.id === teammateId)
+      if (!teammate) return null
+      return {
+        player: teammate,
+        ...teammateStat,
+        winRate: Math.round((teammateStat.wins / teammateStat.games) * 100),
+      }
+    })
+    .filter((teammate): teammate is NonNullable<typeof teammate> => teammate !== null)
+    .sort((a, b) => b.games - a.games || b.winRate - a.winRate || a.player.real_name.localeCompare(b.player.real_name, 'ko'))
 
   const champMap = new Map<string, { games: number; wins: number }>()
   for (const r of playerRounds) {
@@ -230,7 +206,6 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
   }
   const topChampions = [...champMap.entries()]
     .sort((a, b) => b[1].games - a[1].games || (b[1].wins / b[1].games) - (a[1].wins / a[1].games))
-    .slice(0, 5)
     .map(([name, s]) => ({ name, games: s.games, wins: s.wins, winRate: Math.round((s.wins / s.games) * 100) }))
 
   const sessionBetMap = new Map(sessions.map(s => [s.id, s.bet_amount]))
@@ -257,7 +232,7 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     longestWinStreak: maxWin,
     longestLossStreak: maxLoss,
     sessionCount: new Set(playerRounds.map(r => r.session_id)).size,
-    topTeammate,
+    teammates,
     topChampions,
     profitTrend,
   }
@@ -284,9 +259,9 @@ export default function StandingsPage() {
       case 'losses': return b.losses - a.losses
       case 'rate': return rb - ra
       case 'tank': {
-        const aLabel = getGivingLabel(givingPickStats.get(a.player.id))
-        const bLabel = getGivingLabel(givingPickStats.get(b.player.id))
-        return getGivingLabelRank(bLabel) - getGivingLabelRank(aLabel)
+        const aGivingRate = getGivingRate(givingPickStats.get(a.player.id)) ?? -1
+        const bGivingRate = getGivingRate(givingPickStats.get(b.player.id)) ?? -1
+        return bGivingRate - aGivingRate
       }
     }
   }), [stats, sortBy, givingPickStats])
@@ -310,7 +285,11 @@ export default function StandingsPage() {
     return result
   }, [allRounds])
 
-  const duoStats = useMemo(() => computeDuoStats(allPlayers, allRounds), [allPlayers, allRounds])
+  const duoMinGames = season === 2 ? 1 : 50
+  const duoStats = useMemo(
+    () => computeDuoStats(allPlayers, allRounds, duoMinGames),
+    [allPlayers, allRounds, duoMinGames]
+  )
 
   const personalDetail = useMemo(() => {
     if (!selectedPlayerId) return null
@@ -410,108 +389,130 @@ export default function StandingsPage() {
 
       {/* 개인 하이라이트 모달 */}
       {personalDetail && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setSelectedPlayerId(null)}>
-          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 pb-8 overflow-y-auto max-h-[90vh]"
-            style={{ backgroundColor: '#FFFFFF' }}
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">{personalDetail.player.real_name}</h2>
-              <button onClick={() => setSelectedPlayerId(null)}
-                className="text-sm px-3 py-1 rounded-lg transition-opacity hover:opacity-60"
-                style={{ backgroundColor: '#F0F1F2' }}>
-                닫기
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                { label: '참여', value: `${personalDetail.totalGames}판 (${personalDetail.sessionCount}세션)` },
-                { label: '승률', value: `${personalDetail.winRate}% (${personalDetail.wins}승 ${personalDetail.losses}패)` },
-                { label: '최다 연승', value: `${personalDetail.longestWinStreak}연승` },
-                { label: '최다 연패', value: `${personalDetail.longestLossStreak}연패` },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl px-4 py-3" style={{ backgroundColor: '#F0F1F2' }}>
-                  <p className="text-xs mb-1" style={{ opacity: 0.5 }}>{label}</p>
-                  <p className="text-sm font-bold">{value}</p>
+        <div
+          className="standings-player-overlay fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+          onClick={() => setSelectedPlayerId(null)}
+        >
+          <section
+            className="standings-player-modal w-full sm:max-w-3xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="standings-player-title"
+            onClick={event => event.stopPropagation()}
+            onKeyDown={event => {
+              if (event.key === 'Escape') setSelectedPlayerId(null)
+            }}
+          >
+            <div className="standings-player-scroll">
+              <header className="standings-player-header">
+                <div>
+                  <p className="standings-player-kicker">PLAYER RECORD</p>
+                  <h2 id="standings-player-title" className="standings-player-name">{personalDetail.player.real_name}</h2>
+                  <p className="standings-player-subtitle">시즌 {season} 개인 전적</p>
                 </div>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  className="standings-player-close"
+                  onClick={() => setSelectedPlayerId(null)}
+                  aria-label="선수 상세 닫기"
+                  autoFocus
+                >
+                  <span aria-hidden="true">×</span>
+                </button>
+              </header>
 
-            <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
-              <p className="text-xs mb-1" style={{ opacity: 0.5 }}>누적 수익</p>
-              <p className="text-lg font-bold" style={{ color: personalDetail.profit > 0 ? '#2d7a3a' : personalDetail.profit < 0 ? '#c0392b' : '#202020' }}>
-                {personalDetail.profit > 0 ? '+' : ''}{personalDetail.profit.toLocaleString()}원
-              </p>
-            </div>
-
-            {personalDetail.profitTrend.length > 1 && (() => {
-              const trend = personalDetail.profitTrend
-              const maxVal = Math.max(0, ...trend.map(d => d.profit))
-              const minVal = Math.min(0, ...trend.map(d => d.profit))
-              const range = maxVal - minVal
-              const zeroOffset = range > 0 ? Math.round((maxVal / range) * 100) : 50
-              const gradId = `pg-${selectedPlayerId}`
-              return (
-                <div className="rounded-xl px-4 pt-3 pb-2 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
-                  <p className="text-xs mb-3" style={{ opacity: 0.5 }}>수익 추이</p>
-                  <ResponsiveContainer width="100%" height={120}>
-                    <LineChart data={trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset={`${zeroOffset}%`} stopColor="#2d7a3a" />
-                          <stop offset={`${zeroOffset}%`} stopColor="#c0392b" />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="session" tick={{ fontSize: 10, fill: '#20202066' }} tickLine={false} axisLine={false} />
-                      <YAxis hide domain={[minVal, maxVal]} />
-                      <Tooltip
-                        formatter={(v) => [`${Number(v) > 0 ? '+' : ''}${Number(v).toLocaleString()}원`, '수익']}
-                        contentStyle={{ backgroundColor: '#FFFFFF', border: 'none', borderRadius: 8, fontSize: 12 }}
-                        cursor={{ stroke: '#20202033' }}
-                      />
-                      <ReferenceLine y={0} stroke="#20202033" strokeDasharray="3 3" />
-                      <Line
-                        type="monotone"
-                        dataKey="profit"
-                        dot={false}
-                        strokeWidth={2}
-                        stroke={`url(#${gradId})`}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+              <dl className="standings-player-streaks">
+                <div>
+                  <dt>최다 연승</dt>
+                  <dd>{personalDetail.longestWinStreak}<small>연승</small></dd>
                 </div>
-              )
-            })()}
+                <div>
+                  <dt>최다 연패</dt>
+                  <dd>{personalDetail.longestLossStreak}<small>연패</small></dd>
+                </div>
+              </dl>
 
-            {personalDetail.topTeammate && (
-              <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: '#F0F1F2' }}>
-                <p className="text-xs mb-1" style={{ opacity: 0.5 }}>베스트 파트너</p>
-                <p className="text-sm font-bold">
-                  {personalDetail.topTeammate.player.real_name}
-                  <span className="font-normal ml-2" style={{ opacity: 0.5 }}>
-                    {personalDetail.topTeammate.games}판 함께 · 승률 {Math.round((personalDetail.topTeammate.wins / personalDetail.topTeammate.games) * 100)}%
-                  </span>
-                </p>
-              </div>
-            )}
-
-            {personalDetail.topChampions.length > 0 && (
-              <div className="rounded-xl px-4 py-3" style={{ backgroundColor: '#F0F1F2' }}>
-                <p className="text-xs mb-2" style={{ opacity: 0.5 }}>많이 플레이한 챔피언 TOP5</p>
-                <div className="flex flex-col gap-1.5">
-                  {personalDetail.topChampions.map((c, i) => (
-                    <div key={c.name} className="flex items-center justify-between">
-                      <span className="text-sm font-bold">{i + 1}. {c.name}</span>
-                      <span className="text-xs" style={{ opacity: 0.5 }}>
-                        {c.games}판 · <span style={{ color: c.winRate >= 50 ? '#2d7a3a' : '#c0392b', opacity: 1 }}>{c.winRate}%</span>
-                      </span>
+              {personalDetail.profitTrend.length > 1 && (() => {
+                const trend = personalDetail.profitTrend
+                const maxVal = Math.max(0, ...trend.map(d => d.profit))
+                const minVal = Math.min(0, ...trend.map(d => d.profit))
+                const range = maxVal - minVal
+                const zeroOffset = range > 0 ? Math.round((maxVal / range) * 100) : 50
+                const gradId = `pg-${selectedPlayerId}`
+                return (
+                  <section className="standings-player-trend" aria-labelledby="profit-trend-title">
+                    <div className="standings-player-section-heading">
+                      <h3 id="profit-trend-title">수익 추이</h3>
+                      <span>{trend.length}개 세션</span>
                     </div>
-                  ))}
-                </div>
+                    <ResponsiveContainer width="100%" height={150}>
+                      <LineChart data={trend} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset={`${zeroOffset}%`} stopColor="#2f6b48" />
+                            <stop offset={`${zeroOffset}%`} stopColor="#a44335" />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="session" tick={{ fontSize: 10, fill: '#68695f' }} tickLine={false} axisLine={false} />
+                        <YAxis hide domain={[minVal, maxVal]} />
+                        <Tooltip
+                          formatter={(value) => [`${Number(value) > 0 ? '+' : ''}${Number(value).toLocaleString()}원`, '수익']}
+                          contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(23,25,19,.14)', borderRadius: 5, fontSize: 12 }}
+                          cursor={{ stroke: '#17191333' }}
+                        />
+                        <ReferenceLine y={0} stroke="#17191333" strokeDasharray="3 3" />
+                        <Line type="monotone" dataKey="profit" dot={false} strokeWidth={2.5} stroke={`url(#${gradId})`} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </section>
+                )
+              })()}
+
+              <div className="standings-player-lists">
+                {personalDetail.teammates.length > 0 && (
+                  <section className="standings-player-list-section" aria-labelledby="teammate-list-title">
+                    <div className="standings-player-section-heading">
+                      <h3 id="teammate-list-title">함께한 선수</h3>
+                      <span>{personalDetail.teammates.length}명</span>
+                    </div>
+                    <ol className="standings-player-list">
+                      {personalDetail.teammates.map((teammate, index) => (
+                        <li key={teammate.player.id}>
+                          <span className="standings-player-rank">{String(index + 1).padStart(2, '0')}</span>
+                          <strong>{teammate.player.real_name}</strong>
+                          <span className="standings-player-list-meta">
+                            <span>{teammate.games}판</span>
+                            <b className={teammate.winRate >= 50 ? 'is-positive' : 'is-negative'}>{teammate.winRate}%</b>
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
+
+                {personalDetail.topChampions.length > 0 && (
+                  <section className="standings-player-list-section" aria-labelledby="champion-list-title">
+                    <div className="standings-player-section-heading">
+                      <h3 id="champion-list-title">플레이한 챔피언</h3>
+                      <span>{personalDetail.topChampions.length}종</span>
+                    </div>
+                    <ol className="standings-player-list">
+                      {personalDetail.topChampions.map((champion, index) => (
+                        <li key={champion.name}>
+                          <span className="standings-player-rank">{String(index + 1).padStart(2, '0')}</span>
+                          <strong>{champion.name}</strong>
+                          <span className="standings-player-list-meta">
+                            <span>{champion.games}판</span>
+                            <b className={champion.winRate >= 50 ? 'is-positive' : 'is-negative'}>{champion.winRate}%</b>
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          </section>
         </div>
       )}
 
@@ -608,7 +609,7 @@ export default function StandingsPage() {
                   {sortedStats.map((s, i) => {
                     const total = s.wins + s.losses
                     const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
-                    const givingLabel = getGivingLabel(givingPickStats.get(s.player.id))
+                    const givingRate = getGivingRate(givingPickStats.get(s.player.id))
                     const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'
                     return (
                       <tr key={s.player.id} style={{ borderTop: '1px solid #FFFFFF' }}>
@@ -631,9 +632,8 @@ export default function StandingsPage() {
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
                         <td
                           className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold whitespace-nowrap"
-                          style={{ color: givingLabel === '잘 댐' ? '#2d7a3a' : givingLabel === '절대 안댐' ? '#c0392b' : '#202020' }}
                         >
-                          {givingLabel}
+                          {givingRate === null ? '-' : `${Math.round(givingRate * 100)}%`}
                         </td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
                           {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}원
@@ -649,7 +649,7 @@ export default function StandingsPage() {
             {duoStats.length > 0 && (
               <div className="mt-12">
                 <h2 className="text-lg font-bold mb-2">듀오 승률 랭킹</h2>
-                <p className="text-sm mb-6" style={{ opacity: 0.5 }}>50판 이상 함께한 조합만 표시됩니다.</p>
+                <p className="text-sm mb-6" style={{ opacity: 0.5 }}>{duoMinGames}판 이상 함께한 조합만 표시됩니다.</p>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {[
                     { title: '베스트 듀오', list: duoStats.slice(0, 10) },
@@ -695,4 +695,3 @@ export default function StandingsPage() {
     </main>
   )
 }
-

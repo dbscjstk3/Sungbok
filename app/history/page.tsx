@@ -85,6 +85,13 @@ export default function HistoryPage() {
   const [merging, setMerging] = useState(false)
   const [mergeError, setMergeError] = useState('')
 
+  const championModalWins = championModal?.champions.filter(champion => champion.won).length ?? 0
+  const championModalGames = championModal?.champions.length ?? 0
+  const championModalLosses = championModalGames - championModalWins
+  const championModalWinRate = championModalGames > 0
+    ? Math.round((championModalWins / championModalGames) * 100)
+    : 0
+
   useEffect(() => {
     async function load() {
       if (IS_MOCK) {
@@ -273,31 +280,74 @@ export default function HistoryPage() {
       <NavBar />
 
       {championModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          onClick={() => setChampionModal(null)}>
-          <div className="w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 pb-8"
-            style={{ backgroundColor: '#FFFFFF' }}
-            onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-xl font-bold">{championModal.playerName}</h2>
-              <button onClick={() => setChampionModal(null)}
-                className="text-sm px-3 py-1 rounded-lg transition-opacity hover:opacity-60"
-                style={{ backgroundColor: '#F0F1F2' }}>
-                닫기
+        <div
+          className="history-champion-overlay fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+          onClick={() => setChampionModal(null)}
+        >
+          <section
+            className="history-champion-modal w-full overflow-hidden sm:max-w-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="champion-log-title"
+            onClick={event => event.stopPropagation()}
+            onKeyDown={event => {
+              if (event.key === 'Escape') setChampionModal(null)
+            }}
+          >
+            <header className="history-champion-header">
+              <div>
+                <p className="history-champion-kicker">PLAYER MATCH LOG</p>
+                <h2 id="champion-log-title" className="history-champion-name">{championModal.playerName}</h2>
+                <p className="history-champion-subtitle">플레이 챔피언 기록</p>
+              </div>
+              <button
+                type="button"
+                className="history-champion-close"
+                onClick={() => setChampionModal(null)}
+                aria-label="챔피언 기록 닫기"
+                autoFocus
+              >
+                <span aria-hidden="true">×</span>
               </button>
+            </header>
+
+            <dl className="history-champion-summary">
+              <div>
+                <dt>PLAYED</dt>
+                <dd>{championModalGames}</dd>
+              </div>
+              <div>
+                <dt>RECORD</dt>
+                <dd className="history-champion-record">
+                  <span>{championModalWins}<small>W</small></span>
+                  <span>{championModalLosses}<small>L</small></span>
+                </dd>
+              </div>
+              <div>
+                <dt>WIN RATE</dt>
+                <dd>{championModalWinRate}<small>%</small></dd>
+              </div>
+            </dl>
+
+            <div className="history-champion-log">
+              <div className="history-champion-columns" aria-hidden="true">
+                <span>ROUND</span>
+                <span>CHAMPION</span>
+                <span>RESULT</span>
+              </div>
+              <ol className="history-champion-list">
+                {championModal.champions.map((champion, index) => (
+                  <li key={`${champion.champion}-${index}`}>
+                    <span className="history-champion-round">{String(index + 1).padStart(2, '0')}</span>
+                    <strong>{champion.champion}</strong>
+                    <span className={champion.won ? 'history-result history-result-win' : 'history-result history-result-loss'}>
+                      {champion.won ? 'WIN' : 'LOSS'}
+                    </span>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <div className="flex flex-col gap-2">
-              {championModal.champions.map((c, i) => (
-                <div key={i} className="flex items-center justify-between px-4 py-2.5 rounded-xl"
-                  style={{ backgroundColor: '#F0F1F2' }}>
-                  <span className="text-sm font-medium">{i + 1}판 — {c.champion}</span>
-                  <span className="text-xs font-bold" style={{ color: c.won ? '#2d7a3a' : '#c0392b' }}>
-                    {c.won ? '승' : '패'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          </section>
         </div>
       )}
 
@@ -501,4 +551,3 @@ export default function HistoryPage() {
     </main>
   )
 }
-

@@ -20,8 +20,7 @@ export default function Home() {
         </div>
         <div className="home-hero-copy">
           <p className="home-kicker"><span>Since 2025</span> · Seongbok Invitational</p>
-          <h1 id="home-title">따고 따이는,<br /><em>치열한 경쟁</em></h1>
-          <p className="home-intro">성복 친구들의 내전 팀 편성부터 시즌 전적까지. 매 경기의 결과와 이야기를 한곳에 남깁니다.</p>
+          <h1 id="home-title">장미반부터 나래반까지,<br /><em>따고 따이는 치열한 경쟁</em></h1>
           <Link className="home-primary" href="/match">내전 시작 <span aria-hidden="true">↗</span></Link>
         </div>
         <div className="home-issue" aria-hidden="true"><span>ARCHIVE</span><strong>NO. 02</strong></div>

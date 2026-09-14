@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import NavBar from '@/app/components/NavBar'
 import { insforge } from '@/lib/insforge'
+import season1Standings from '@/data/season1-standings.json'
 
 interface Round {
   team1_ids: string[]
@@ -28,6 +29,7 @@ interface ChampionStat {
 }
 
 type SortKey = 'games' | 'wins' | 'rate'
+type Season = 1 | 2
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'games', label: '픽' },
@@ -88,29 +90,58 @@ export default function ChampionsPage() {
   const [query, setQuery] = useState('')
   const [minimumGames, setMinimumGames] = useState(1)
   const [sortBy, setSortBy] = useState<SortKey>('games')
+  const [season, setSeason] = useState<Season>(2)
 
   useEffect(() => {
-    async function load() {
-      const [roundResult, playerResult] = await Promise.all([
-        insforge.database
-          .from('rounds')
-          .select('team1_ids, team2_ids, winner_team, team1_champions, team2_champions'),
-        insforge.database
-          .from('players')
-          .select('id, real_name'),
-      ])
+    let cancelled = false
 
-      if (roundResult.error || playerResult.error) {
+    async function load() {
+      setLoading(true)
+      setErrorMessage('')
+
+      const playerResult = await insforge.database
+        .from('players')
+        .select('id, real_name')
+
+      if (cancelled) return
+
+      if (playerResult.error) {
         setErrorMessage('챔피언 통계를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
-      } else {
-        setRounds((roundResult.data ?? []) as Round[])
-        setPlayers((playerResult.data ?? []) as PlayerRecord[])
+        setLoading(false)
+        return
       }
+
+      let nextRounds: Round[]
+
+      if (season === 1) {
+        nextRounds = season1Standings.rounds as unknown as Round[]
+      } else {
+        const roundResult = await insforge.database
+          .from('rounds')
+          .select('team1_ids, team2_ids, winner_team, team1_champions, team2_champions')
+
+        if (cancelled) return
+
+        if (roundResult.error) {
+          setErrorMessage('챔피언 통계를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
+          setLoading(false)
+          return
+        }
+
+        nextRounds = (roundResult.data ?? []) as Round[]
+      }
+
+      setRounds(nextRounds)
+      setPlayers((playerResult.data ?? []) as PlayerRecord[])
       setLoading(false)
     }
 
     load()
-  }, [])
+
+    return () => {
+      cancelled = true
+    }
+  }, [season])
 
   const allStats = useMemo(() => computeChampionStats(rounds, players), [rounds, players])
 
@@ -139,9 +170,27 @@ export default function ChampionsPage() {
       <NavBar />
 
       <div className="mx-auto max-w-6xl pt-16">
-        <h1 className="mb-2 text-3xl font-bold">챔피언 통계</h1>
+        <div className="mb-2 flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold">챔피언 통계</h1>
+          <div className="flex gap-2" aria-label="시즌 선택">
+            {([2, 1] as const).map(value => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSeason(value)}
+                className="rounded-full px-4 py-1.5 text-sm font-medium transition-opacity hover:opacity-80"
+                style={{
+                  backgroundColor: season === value ? '#202020' : '#DEE0E2',
+                  color: season === value ? '#ECEEF0' : '#202020',
+                }}
+              >
+                시즌 {value}
+              </button>
+            ))}
+          </div>
+        </div>
         <p className="mb-8 text-sm" style={{ opacity: 0.5 }}>
-          챔피언 정보가 저장된 경기만 집계합니다.
+          시즌 {season} · 챔피언 정보가 저장된 경기만 집계합니다.
         </p>
 
         {loading && (
