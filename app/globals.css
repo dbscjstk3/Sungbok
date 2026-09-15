@@ -117,8 +117,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 
 .history-champion-overlay,
 .standings-player-overlay {
-  background: rgba(15, 17, 13, .68);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 17, 13, .76);
 }
 
 .history-champion-modal {
@@ -137,7 +136,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   align-items: flex-start;
   justify-content: space-between;
   gap: 2rem;
-  padding: clamp(2rem, 5vw, 4rem);
+  padding: clamp(1.75rem, 4vw, 3rem) clamp(2rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.25rem);
 }
 
 .history-champion-kicker,
@@ -150,7 +149,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 }
 
 .history-champion-kicker {
-  margin-bottom: 1.65rem;
+  margin-bottom: 1rem;
   color: var(--muted);
   font-size: .7rem;
   font-weight: 650;
@@ -159,14 +158,14 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 
 .history-champion-name {
   margin: 0;
-  font-size: clamp(3.25rem, 8vw, 6rem);
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
   font-weight: 850;
   line-height: .86;
   letter-spacing: -.075em !important;
 }
 
 .history-champion-subtitle {
-  margin-top: 1.4rem;
+  margin-top: .9rem;
   color: var(--muted);
   font-size: clamp(.95rem, 2vw, 1.2rem);
   font-weight: 650;
@@ -203,7 +202,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 
 .history-champion-summary > div {
   min-width: 0;
-  padding: 1.75rem 2rem 1.9rem;
+  padding: 1.25rem 2rem 1.4rem;
 }
 
 .history-champion-summary > div + div {
@@ -211,7 +210,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 }
 
 .history-champion-summary dt {
-  margin-bottom: 1.15rem;
+  margin-bottom: .75rem;
   color: var(--muted);
   font-size: .68rem;
   font-weight: 650;
@@ -245,7 +244,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding: 2rem clamp(2rem, 5vw, 4rem) 2.5rem;
+  padding: 1.5rem clamp(2rem, 5vw, 4rem) 2.5rem;
 }
 
 .history-champion-columns,
@@ -541,16 +540,16 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
     border-radius: .65rem .65rem 0 0;
   }
 
-  .history-champion-header { gap: 1rem; padding: 1.75rem 1.25rem 1.5rem; }
-  .history-champion-kicker { margin-bottom: 1.15rem; font-size: .6rem; }
-  .history-champion-name { font-size: clamp(2.7rem, 14vw, 4rem); }
-  .history-champion-subtitle { margin-top: .9rem; font-size: .9rem; }
+  .history-champion-header { gap: 1rem; padding: 1.4rem 1.25rem 1.15rem; }
+  .history-champion-kicker { margin-bottom: .7rem; font-size: .6rem; }
+  .history-champion-name { font-size: clamp(2.1rem, 11vw, 3.15rem); }
+  .history-champion-subtitle { margin-top: .65rem; font-size: .85rem; }
   .history-champion-close { width: 3.25rem; font-size: 1.8rem; }
   .history-champion-summary { margin-inline: 1.25rem; }
-  .history-champion-summary > div { padding: 1.15rem .65rem 1.25rem; }
-  .history-champion-summary dt { margin-bottom: .8rem; font-size: .56rem; letter-spacing: .1em; }
+  .history-champion-summary > div { padding: .9rem .65rem 1rem; }
+  .history-champion-summary dt { margin-bottom: .55rem; font-size: .56rem; letter-spacing: .1em; }
   .history-champion-summary dd { font-size: 1.65rem; }
-  .history-champion-log { padding: 1.5rem 1.25rem 1.75rem; }
+  .history-champion-log { padding: 1.15rem 1.25rem 1.75rem; }
   .history-champion-columns,
   .history-champion-list li { grid-template-columns: 3.25rem minmax(0, 1fr) 4.25rem; column-gap: .6rem; }
   .history-champion-columns { font-size: .56rem; letter-spacing: .08em; }

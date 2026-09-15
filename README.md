@@ -1,53 +1,94 @@
 # 성복내전
 
-https://sungboktime.insforge.site/
+성복 친구들의 롤 내전 기록을 관리하는 웹앱입니다. 마블 룰렛으로 팀을 편성하고, 라운드별 승패와 챔피언을 기록해 개인·듀오·챔피언 통계를 확인할 수 있습니다.
 
-리그오브레전드 내전(사용자 설정 게임) 전적 조회 및 관리 웹앱입니다.
-마블 룰렛으로 팀을 나누고, 승패를 기록하고, 수익금 전적을 확인할 수 있습니다.
+서비스: [sungboktime.insforge.site](https://sungboktime.insforge.site/)
 
-## 기능
+## 주요 기능
 
-- **선수 명단** — 참가자 등록/수정/삭제, 소환사명 연동
-- **내전 생성** — 8명 또는 10명 선택, 팀 고정 배치 + 마블 룰렛으로 자동 배정 (4:4 / 5:5)
-- **챔피언 기록** — Riot Spectator API로 현재 게임 챔피언 자동 수집, 팀 확정 후 6분 뒤 자동 가져오기 (최대 3회 재시도)
-- **승패 기록** — 판당 금액 설정 및 라운드별 결과 기록, 잘못 선택 시 취소 기능
-- **기록** — 세션별 완료된 내전 기록 조회, 선수별 챔피언 목록 확인
-- **전적** — 누적 수익금 순 개인 전적, 최근 폼, 연승/연패, 베스트 파트너, 챔피언 통계, 세션별 수익 추이 그래프
-- **듀오 랭킹** — 10판 이상 함께한 조합의 베스트/쓰레기 듀오 순위
+- **선수 관리** — 참가자와 Riot ID(소환사명) 등록·수정·삭제
+- **팀 편성** — 8명 또는 10명 선택, 고정 선수 배치 후 마블 룰렛으로 4:4 또는 5:5 팀 구성
+- **내전 진행** — 판당 금액 설정, 라운드별 팀 재편성·진영 교대·승패 저장·마지막 결과 취소
+- **진행 상태 복구** — 브라우저 로컬 스토리지를 이용해 진행 중인 내전 복원
+- **챔피언 자동 기록** — Riot Spectator API로 현재 게임의 챔피언을 자동 조회
+- **내전 기록** — 완료된 세션의 라운드·손익·챔피언 기록 조회, 판당 금액 수정 및 여러 세션 합치기
+- **시즌 전적** — 시즌 1 보관 데이터와 시즌 2 실시간 데이터 전환, 승·패·승률·누적 수익·최근 폼·연승/연패·파트너·수익 추이 확인
+- **듀오 랭킹** — 시즌 1은 50판 이상, 시즌 2는 1판 이상 함께한 조합의 승률 비교
+- **챔피언 통계** — 시즌별 픽·승·패·승률·최다 플레이 선수 집계와 검색·필터·정렬
 
 ## 기술 스택
 
-- **프레임워크**: Next.js 16 (App Router), React 19
-- **스타일**: Tailwind CSS v4
-- **백엔드/DB**: InsForge BaaS
-- **룰렛**: [lazygyu/roulette](https://github.com/lazygyu/roulette) 포크 (TypeScript + Canvas + Box2D WASM)
+- Next.js 16 App Router
+- React 19, TypeScript
+- Tailwind CSS 4
+- Recharts
+- InsForge BaaS (Postgres, RLS, 배포)
+- [lazygyu/roulette](https://github.com/lazygyu/roulette) 기반 마블 룰렛 (Canvas, Box2D WASM)
 
-## 시작하기
+## 로컬 실행
+
+요구 사항은 Node.js와 npm입니다.
 
 ```bash
 npm install
+```
+
+프로젝트 루트에 `.env.local`을 만들고 다음 값을 설정합니다.
+
+```dotenv
+NEXT_PUBLIC_INSFORGE_URL=https://<project-id>.<region>.insforge.app
+NEXT_PUBLIC_INSFORGE_ANON_KEY=<insforge-anon-key>
+RIOT_API_KEY=<riot-api-key>
+```
+
+- `NEXT_PUBLIC_INSFORGE_URL`, `NEXT_PUBLIC_INSFORGE_ANON_KEY`: 실제 데이터 조회·저장에 필요합니다.
+- `RIOT_API_KEY`: 진행 중인 게임과 챔피언 조회에 필요하며 서버에서만 사용됩니다.
+- `NEXT_PUBLIC_INSFORGE_URL`을 설정하지 않으면 선수·기록·전적 화면이 샘플 데이터 모드로 동작합니다.
+
+개발 서버를 실행합니다.
+
+```bash
 npm run dev
 ```
 
-환경 변수 설정 (`.env.local`):
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다.
 
-```
-NEXT_PUBLIC_INSFORGE_URL=...
-NEXT_PUBLIC_INSFORGE_ANON_KEY=...
-```
+## 명령어
+
+| 명령어 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 실행 |
+| `npm run build` | 프로덕션 빌드 생성 |
+| `npm run start` | 프로덕션 서버 실행 |
+| `npm run lint` | ESLint 검사 |
+| `npm run deploy` | 빌드 후 InsForge에 배포 |
+
+## 화면 구성
+
+| 경로 | 설명 |
+| --- | --- |
+| `/players` | 선수 명단 관리 |
+| `/match` | 팀 편성 및 내전 진행 |
+| `/history` | 완료된 내전 기록 조회·수정·병합 |
+| `/standings` | 시즌별 개인 및 듀오 전적 |
+| `/champions` | 시즌별 챔피언 통계 |
+
+## 데이터 구조
+
+| 테이블·뷰 | 용도 | 주요 필드 |
+| --- | --- | --- |
+| `players` | 선수 정보 | `id`, `real_name`, `summoner_name`, `created_at` |
+| `sessions` | 내전 세션 | `id`, `bet_amount`, `created_at`, `ended_at` |
+| `rounds` | 라운드 결과 | `session_id`, `team1_ids`, `team2_ids`, `winner_team`, `team1_champions`, `team2_champions`, `team1_names`, `team2_names` |
+| `rounds_readable` | 선수명이 포함된 읽기용 라운드 뷰 | 팀별 선수명·챔피언·승리 팀 |
+| `app_event_logs` | 챔피언 조회와 라운드 저장 등의 진단 로그 | `event_type`, `status`, `session_id`, `round_id`, `metadata` |
+
+DB 변경 이력은 [`migrations`](./migrations) 디렉터리에서 관리합니다. 시즌 1 전적은 [`data/season1-standings.json`](./data/season1-standings.json)에 보관되어 있습니다.
 
 ## 배포
+
+InsForge 프로젝트 연결과 CLI 인증을 마친 뒤 다음 명령을 실행합니다.
 
 ```bash
 npm run deploy
 ```
-
-InsForge CLI를 통해 빌드 및 배포합니다.
-
-## DB 스키마
-
-| 테이블 | 주요 컬럼 |
-|--------|-----------|
-| `players` | `id`, `real_name` |
-| `sessions` | `id`, `bet_amount`, `created_at`, `ended_at` |
-| `rounds` | `id`, `session_id`, `team1_ids[]`, `team2_ids[]`, `winner_team` |

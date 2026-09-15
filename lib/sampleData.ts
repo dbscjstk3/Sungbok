@@ -19,6 +19,19 @@ export const sampleSessions = [
   { id: 's3', created_at: '2026-06-01T13:00:00Z', ended_at: '2026-06-01T17:00:00Z', bet_amount: 5000 },
 ]
 
+const sampleChampions = [
+  '아리', '리 신', '징크스', '쓰레쉬', '가렌',
+  '오리아나', '비에고', '카이사', '노틸러스', '레넥톤',
+  '르블랑', '자르반 4세',
+]
+
+function championsForTeam(roundIndex: number, teamSize: number, offset: number) {
+  return Array.from(
+    { length: teamSize },
+    (_, playerIndex) => sampleChampions[(roundIndex * 3 + playerIndex + offset) % sampleChampions.length],
+  )
+}
+
 export const sampleRounds = [
   // s1 — 8명 (p1~p8), 8판
   { id: 'r1',  session_id: 's1', team1_ids: ['p1','p2','p3','p4'], team2_ids: ['p5','p6','p7','p8'], winner_team: 1 },
@@ -49,4 +62,8 @@ export const sampleRounds = [
   { id: 'r22', session_id: 's3', team1_ids: ['p1','p4','p5','p8','p9'],  team2_ids: ['p2','p3','p6','p7','p10'], winner_team: 1 },
   { id: 'r23', session_id: 's3', team1_ids: ['p2','p3','p6','p8','p9'],  team2_ids: ['p1','p4','p5','p7','p10'], winner_team: 1 },
   { id: 'r24', session_id: 's3', team1_ids: ['p1','p5','p7','p9','p10'], team2_ids: ['p2','p3','p4','p6','p8'],  winner_team: 2 },
-]
+].map((round, roundIndex) => ({
+  ...round,
+  team1_champions: championsForTeam(roundIndex, round.team1_ids.length, 0),
+  team2_champions: championsForTeam(roundIndex, round.team2_ids.length, 6),
+}))
