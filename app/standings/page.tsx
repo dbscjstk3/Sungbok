@@ -593,8 +593,8 @@ export default function StandingsPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
                     <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
-                    <th className="text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                    {([['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
+                    <th className="w-px whitespace-nowrap text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
+                    {([["total", "전적"], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
                       <th key={key}
                         onClick={() => setSortBy(key)}
                         className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
@@ -614,7 +614,7 @@ export default function StandingsPage() {
                     return (
                       <tr key={s.player.id} style={{ borderTop: '1px solid #FFFFFF' }}>
                         <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
-                        <td className="px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
+                        <td className="w-px whitespace-nowrap px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
                           <button onClick={() => setSelectedPlayerId(s.player.id)}
                             className="underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
                             {s.player.real_name}
@@ -627,6 +627,7 @@ export default function StandingsPage() {
                             </span>
                           )}
                         </td>
+                        <td className="text-center px-2 sm:px-4 py2.5 sm:py-4 font-bold">{total}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
