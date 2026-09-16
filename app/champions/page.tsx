@@ -3,6 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import NavBar from '@/app/components/NavBar'
 import { insforge } from '@/lib/insforge'
+import {
+  IS_MOCK,
+  portfolioPlayers,
+  portfolioSeason1Rounds,
+  portfolioSeason2Rounds,
+  samplePlayers,
+  sampleRounds,
+} from '@/lib/sampleData'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 import season1Standings from '@/data/season1-standings.json'
 
 interface Round {
@@ -98,6 +107,15 @@ export default function ChampionsPage() {
     async function load() {
       setLoading(true)
       setErrorMessage('')
+
+      if (IS_MOCK) {
+        setRounds((IS_PORTFOLIO
+          ? (season === 1 ? portfolioSeason1Rounds : portfolioSeason2Rounds)
+          : sampleRounds) as Round[])
+        setPlayers(IS_PORTFOLIO ? portfolioPlayers : samplePlayers)
+        setLoading(false)
+        return
+      }
 
       const playerResult = await insforge.database
         .from('players')

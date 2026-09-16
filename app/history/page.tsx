@@ -3,7 +3,17 @@
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
-import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
+import {
+  IS_MOCK,
+  portfolioMetadata,
+  portfolioPlayers,
+  portfolioRounds,
+  portfolioSessions,
+  samplePlayers,
+  sampleSessions,
+  sampleRounds,
+} from '@/lib/sampleData'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 
 interface Session {
   id: string
@@ -95,9 +105,12 @@ export default function HistoryPage() {
   useEffect(() => {
     async function load() {
       if (IS_MOCK) {
-        const playerMap = new Map(samplePlayers.map(p => [p.id, p]))
-        const result: SessionDetail[] = [...sampleSessions].reverse().map(session => {
-          const sessionRounds = sampleRounds.filter(r => r.session_id === session.id)
+        const mockPlayers = IS_PORTFOLIO ? portfolioPlayers : samplePlayers
+        const mockSessions = IS_PORTFOLIO ? portfolioSessions : sampleSessions
+        const mockRounds = IS_PORTFOLIO ? portfolioRounds : sampleRounds
+        const playerMap = new Map(mockPlayers.map(p => [p.id, p]))
+        const result: SessionDetail[] = [...mockSessions].reverse().map(session => {
+          const sessionRounds = mockRounds.filter(r => r.session_id === session.id)
           const allIds = new Set<string>()
           sessionRounds.forEach(r => { r.team1_ids.forEach(id => allIds.add(id)); r.team2_ids.forEach(id => allIds.add(id)) })
           const sessionPlayers = [...allIds].map(id => playerMap.get(id)).filter(Boolean) as Player[]
@@ -160,7 +173,7 @@ export default function HistoryPage() {
     if (savingSessionId || editBetAmount === '') return
     const amount = Number(editBetAmount)
     if (!Number.isSafeInteger(amount) || amount < 0) {
-      setEditError('금액은 0 이상의 정수로 입력해 주세요.')
+      setEditError(`${IS_PORTFOLIO ? '포인트' : '금액'}는 0 이상의 정수로 입력해 주세요.`)
       return
     }
 
@@ -239,7 +252,7 @@ export default function HistoryPage() {
     const sourceIds = [...mergeSelection].filter(id => id !== mergeTargetId)
     const confirmed = window.confirm(
       `${mergeSelection.size}개 기록을 ${formatDate(target.session.created_at)} 기록으로 합칠까요?\n` +
-      `금액은 ${target.session.bet_amount.toLocaleString()}원으로 통일되며 이 작업은 되돌릴 수 없습니다.`
+      `${IS_PORTFOLIO ? '점수' : '금액'}는 ${target.session.bet_amount.toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}으로 통일되며 이 작업은 되돌릴 수 없습니다.`
     )
     if (!confirmed) return
 
@@ -353,7 +366,11 @@ export default function HistoryPage() {
 
       <div className="pt-16">
         <h1 className="text-3xl font-bold mb-2">내전 기록</h1>
-        <p className="text-sm mb-10" style={{ opacity: 0.5 }}>완료된 내전 목록입니다.</p>
+        <p className="text-sm mb-10" style={{ opacity: 0.5 }}>
+          {IS_PORTFOLIO
+            ? `실제 운영 기록 ${portfolioMetadata.session_count}개 세션 · ${portfolioMetadata.round_count}라운드 · 개인정보 비식별 처리`
+            : '완료된 내전 목록입니다.'}
+        </p>
 
         {!loading && details.length >= 2 && (
           <div className="mb-6 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -444,7 +461,7 @@ export default function HistoryPage() {
                         <input
                           type="number"
                           min="0"
-                          step="1000"
+                          step={IS_PORTFOLIO ? 10 : 1000}
                           value={editBetAmount}
                           onChange={event => setEditBetAmount(event.target.value === '' ? '' : Number(event.target.value))}
                           onKeyDown={event => {
@@ -456,7 +473,7 @@ export default function HistoryPage() {
                           className="w-28 pl-3 pr-7 py-2 rounded-lg text-sm text-right outline-none disabled:opacity-50"
                           style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none" style={{ opacity: 0.5 }}>원</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none" style={{ opacity: 0.5 }}>{IS_PORTFOLIO ? 'P' : '원'}</span>
                       </div>
                       <button onClick={() => saveAmount(session.id)} disabled={savingSessionId === session.id || editBetAmount === ''}
                         className="px-3 py-2 rounded-lg text-xs font-bold disabled:opacity-40"
@@ -473,12 +490,12 @@ export default function HistoryPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-xs px-2 py-1 rounded-full font-medium"
                         style={{ backgroundColor: '#FFFFFF', color: '#202020', opacity: 0.75 }}>
-                        {session.bet_amount.toLocaleString()}원
+                        {session.bet_amount.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
                       </span>
                       <button onClick={() => startAmountEdit(session)} disabled={savingSessionId !== null || merging}
                         className="px-3 py-2 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
                         style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
-                        금액 수정
+                        {IS_PORTFOLIO ? '점수 수정' : '금액 수정'}
                       </button>
                     </div>
                   )}
@@ -500,7 +517,7 @@ export default function HistoryPage() {
                             <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
                             <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
                             <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>
-                              손익
+                              {IS_PORTFOLIO ? '점수 변동' : '손익'}
                             </th>
                           </tr>
                         </thead>
@@ -532,7 +549,7 @@ export default function HistoryPage() {
                                 <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold"
                                   style={{ color: net > 0 ? '#2d7a3a' : net < 0 ? '#c0392b' : '#202020' }}>
                                   {showMoney
-                                    ? `${money > 0 ? '+' : ''}${money.toLocaleString()}원`
+                                    ? `${money > 0 ? '+' : ''}${money.toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}`
                                     : `${net > 0 ? '+' : ''}${net}판`}
                                 </td>
                               </tr>

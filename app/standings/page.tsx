@@ -3,7 +3,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
-import { IS_MOCK, samplePlayers, sampleSessions, sampleRounds } from '@/lib/sampleData'
+import {
+  IS_MOCK,
+  portfolioMetadata,
+  portfolioPlayers,
+  portfolioSeason1Rounds,
+  portfolioSeason1Sessions,
+  portfolioSeason2Rounds,
+  portfolioSeason2Sessions,
+  samplePlayers,
+  sampleSessions,
+  sampleRounds,
+} from '@/lib/sampleData'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import season1Standings from '@/data/season1-standings.json'
 
@@ -63,7 +75,7 @@ type SortKey = 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
 type Season = 1 | 2
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'profit', label: '수익' },
+  { key: 'profit', label: IS_PORTFOLIO ? '점수' : '수익' },
   { key: 'rate', label: '승률' },
   { key: 'tank', label: '대줌 정도' },
   { key: 'wins', label: '승리' },
@@ -302,13 +314,23 @@ export default function StandingsPage() {
       setSelectedPlayerId(null)
 
       if (IS_MOCK) {
-        setAllPlayers(samplePlayers)
-        setAllSessions(sampleSessions)
-        setAllRounds(sampleRounds.map(r => ({ ...r, created_at: '' })) as Round[])
+        const mockPlayers = IS_PORTFOLIO ? portfolioPlayers : samplePlayers
+        const mockSessions = IS_PORTFOLIO
+          ? (season === 1 ? portfolioSeason1Sessions : portfolioSeason2Sessions)
+          : sampleSessions
+        const mockRounds = IS_PORTFOLIO
+          ? (season === 1 ? portfolioSeason1Rounds : portfolioSeason2Rounds)
+          : sampleRounds
+        setAllPlayers(mockPlayers)
+        setAllSessions(mockSessions)
+        setAllRounds(mockRounds.map(r => ({
+          ...r,
+          created_at: 'created_at' in r ? r.created_at ?? '' : '',
+        })) as unknown as Round[])
         const totals = new Map<string, { wins: number; losses: number; profit: number }>()
-        for (const round of sampleRounds) {
+        for (const round of mockRounds) {
           if (round.winner_team === null) continue
-          const session = sampleSessions.find(s => s.id === round.session_id)
+          const session = mockSessions.find(s => s.id === round.session_id)
           const bet = session?.bet_amount ?? 0
           const winners = round.winner_team === 1 ? round.team1_ids : round.team2_ids
           const losers = round.winner_team === 1 ? round.team2_ids : round.team1_ids
@@ -321,7 +343,7 @@ export default function StandingsPage() {
             totals.set(id, { ...prev, losses: prev.losses + 1, profit: prev.profit - bet })
           }
         }
-        const result: PlayerStat[] = samplePlayers
+        const result: PlayerStat[] = mockPlayers
           .filter(p => totals.has(p.id))
           .map(p => { const t = totals.get(p.id)!; return { player: p, wins: t.wins, losses: t.losses, profit: t.profit } })
           .sort((a, b) => b.profit - a.profit)
@@ -442,7 +464,7 @@ export default function StandingsPage() {
                 return (
                   <section className="standings-player-trend" aria-labelledby="profit-trend-title">
                     <div className="standings-player-section-heading">
-                      <h3 id="profit-trend-title">수익 추이</h3>
+                      <h3 id="profit-trend-title">{IS_PORTFOLIO ? '점수 추이' : '수익 추이'}</h3>
                       <span>{trend.length}개 세션</span>
                     </div>
                     <ResponsiveContainer width="100%" height={150}>
@@ -456,7 +478,7 @@ export default function StandingsPage() {
                         <XAxis dataKey="session" tick={{ fontSize: 10, fill: '#68695f' }} tickLine={false} axisLine={false} />
                         <YAxis hide domain={[minVal, maxVal]} />
                         <Tooltip
-                          formatter={(value) => [`${Number(value) > 0 ? '+' : ''}${Number(value).toLocaleString()}원`, '수익']}
+                          formatter={(value) => [`${Number(value) > 0 ? '+' : ''}${Number(value).toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}`, IS_PORTFOLIO ? '점수' : '수익']}
                           contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(23,25,19,.14)', borderRadius: 5, fontSize: 12 }}
                           cursor={{ stroke: '#17191333' }}
                         />
@@ -536,7 +558,8 @@ export default function StandingsPage() {
           </div>
         </div>
         <p className="text-sm mb-6" style={{ opacity: 0.5 }}>
-          시즌 {season} · {{ profit: '누적 수익', rate: '승률', tank: '대줌 정도', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
+          {IS_PORTFOLIO && `실제 운영 기록 ${portfolioMetadata.session_count}개 세션 · ${portfolioMetadata.round_count}라운드 · `}
+          시즌 {season} · {{ profit: IS_PORTFOLIO ? '누적 점수' : '누적 수익', rate: '승률', tank: '대줌 정도', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
         </p>
 
         <div className="flex gap-2 mb-8 flex-wrap">
@@ -567,20 +590,20 @@ export default function StandingsPage() {
           <>
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <div className="flex-1 rounded-2xl px-7 py-6" style={{ backgroundColor: '#2d7a3a' }}>
-                <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>가장 많이 빤 사람</p>
+                <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>{IS_PORTFOLIO ? '최고 누적 점수' : '가장 많이 빤 사람'}</p>
                 <p className="text-2xl font-bold text-white mb-1">{stats[0].player.real_name}</p>
                 <p className="text-lg font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  +{stats[0].profit.toLocaleString()}원
+                  +{stats[0].profit.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
                 </p>
               </div>
               {(() => {
                 const worst = [...stats].sort((a, b) => a.profit - b.profit)[0]
                 return (
                   <div className="flex-1 rounded-2xl px-7 py-6" style={{ backgroundColor: '#c0392b' }}>
-                    <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>가장 많이 빨린 사람</p>
+                    <p className="text-xs font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.6)' }}>{IS_PORTFOLIO ? '최저 누적 점수' : '가장 많이 빨린 사람'}</p>
                     <p className="text-2xl font-bold text-white mb-1">{worst.player.real_name}</p>
                     <p className="text-lg font-bold" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                      {worst.profit.toLocaleString()}원
+                      {worst.profit.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
                     </p>
                   </div>
                 )
@@ -594,7 +617,7 @@ export default function StandingsPage() {
                   <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
                     <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
                     <th className="w-px whitespace-nowrap text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                    {([["total", "전적"], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', '수익']] as [SortKey, string][]).map(([key, label]) => (
+                    {([["total", "전적"], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', IS_PORTFOLIO ? '점수' : '수익']] as [SortKey, string][]).map(([key, label]) => (
                       <th key={key}
                         onClick={() => setSortBy(key)}
                         className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
@@ -637,7 +660,7 @@ export default function StandingsPage() {
                           {givingRate === null ? '-' : `${Math.round(givingRate * 100)}%`}
                         </td>
                         <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
-                          {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}원
+                          {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
                         </td>
                       </tr>
                     )

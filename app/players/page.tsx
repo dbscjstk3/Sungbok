@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
-import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
+import { IS_MOCK, portfolioPlayers, samplePlayers } from '@/lib/sampleData'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 import NavBar from '@/app/components/NavBar'
 
 export default function PlayersPage() {
@@ -17,7 +18,11 @@ export default function PlayersPage() {
   const [editError, setEditError] = useState('')
 
   async function fetchPlayers() {
-    if (IS_MOCK) { setPlayers([...samplePlayers].sort((a, b) => a.real_name.localeCompare(b.real_name))); return }
+    if (IS_MOCK) {
+      const mockPlayers = IS_PORTFOLIO ? portfolioPlayers : samplePlayers
+      setPlayers([...mockPlayers].sort((a, b) => a.real_name.localeCompare(b.real_name)))
+      return
+    }
     const { data } = await insforge.database
       .from('players')
       .select('id, real_name, summoner_name, created_at')
@@ -91,11 +96,11 @@ export default function PlayersPage() {
         선수 명단
       </h1>
       <p className="text-sm mb-10" style={{ color: '#202020', opacity: 0.5 }}>
-        {players.length}명 등록됨
+        {players.length}명 등록됨{IS_PORTFOLIO && ' · 실제 운영 데이터 비식별 처리'}
       </p>
 
       {/* 등록 폼 */}
-      <section className="mb-10">
+      {!IS_PORTFOLIO && <section className="mb-10">
         <h2 className="text-lg font-bold mb-5" style={{ color: '#202020' }}>선수 등록</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
@@ -122,7 +127,7 @@ export default function PlayersPage() {
             {loading ? '등록 중...' : '등록하기'}
           </button>
         </form>
-      </section>
+      </section>}
 
       {/* 목록 */}
       <section className="mb-12">
@@ -173,7 +178,7 @@ export default function PlayersPage() {
                       <span className="ml-2 text-xs" style={{ opacity: 0.4 }}>{p.summoner_name}</span>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  {!IS_PORTFOLIO && <div className="flex gap-2">
                     <button onClick={() => startEdit(p)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
                       style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
@@ -184,7 +189,7 @@ export default function PlayersPage() {
                       style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
                       삭제
                     </button>
-                  </div>
+                  </div>}
                 </li>
               )
             )}
@@ -194,4 +199,3 @@ export default function PlayersPage() {
     </main>
   )
 }
-

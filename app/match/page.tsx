@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { insforge, Player } from '@/lib/insforge'
 import NavBar from '@/app/components/NavBar'
-import { IS_MOCK, samplePlayers } from '@/lib/sampleData'
+import { IS_MOCK, portfolioPlayers, samplePlayers } from '@/lib/sampleData'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 import { getEventErrorCode, getPageVisibility, logAppEvent } from '@/lib/appEventLog'
 
 interface Round {
@@ -146,7 +147,7 @@ export default function MatchPage() {
   useEffect(() => { assignmentsRef.current = assignments }, [assignments])
 
   useEffect(() => {
-    if (IS_MOCK) { setAllPlayers(samplePlayers); return }
+    if (IS_MOCK) { setAllPlayers(IS_PORTFOLIO ? portfolioPlayers : samplePlayers); return }
     insforge.database
       .from('players')
       .select('id, real_name, summoner_name, created_at')
@@ -1020,7 +1021,7 @@ export default function MatchPage() {
             </div>
 
             <div className="flex flex-col gap-2 mb-8">
-              <label className="text-sm font-medium" style={{ opacity: 0.6 }}>판당 금액</label>
+              <label className="text-sm font-medium" style={{ opacity: 0.6 }}>{IS_PORTFOLIO ? '라운드 포인트' : '판당 금액'}</label>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <input
@@ -1032,9 +1033,9 @@ export default function MatchPage() {
                     className="w-32 pl-4 pr-9 py-2 rounded-xl text-sm font-medium text-right outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>원</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>{IS_PORTFOLIO ? 'P' : '원'}</span>
                 </div>
-                {[1000, 2000, 3000, 5000].map(v => (
+                {(IS_PORTFOLIO ? [10, 20, 30, 50] : [1000, 2000, 3000, 5000]).map(v => (
                   <button key={v} onClick={() => setBetAmount(v)}
                     className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
                     style={{ backgroundColor: betAmount === v ? '#202020' : '#F0F1F2', color: betAmount === v ? '#FFFFFF' : '#202020' }}>
@@ -1264,7 +1265,7 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
               <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승률</th>
               {showSettlement && (
                 <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>
-                  손익
+                  {IS_PORTFOLIO ? '점수 변동' : '손익'}
                 </th>
               )}
             </tr>
@@ -1287,7 +1288,7 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
                     <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold"
                       style={{ color: net > 0 ? '#2d7a3a' : net < 0 ? '#c0392b' : '#202020' }}>
                       {showMoney
-                        ? `${money > 0 ? '+' : ''}${money.toLocaleString()}원`
+                        ? `${money > 0 ? '+' : ''}${money.toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}`
                         : `${net > 0 ? '+' : ''}${net}판`}
                     </td>
                   )}
@@ -1300,8 +1301,12 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
       {showSettlement && (
         <p className="text-xs mt-3" style={{ opacity: 0.4 }}>
           {showMoney
-            ? `판당 ${betAmount.toLocaleString()}원 기준 · 양수면 받을 금액, 음수면 줄 금액`
-            : '판당 금액을 입력하면 정산액을 확인할 수 있습니다.'}
+            ? IS_PORTFOLIO
+              ? `라운드당 ${betAmount.toLocaleString()}P 기준 · 경기 결과에 따른 점수 변동입니다.`
+              : `판당 ${betAmount.toLocaleString()}원 기준 · 양수면 받을 금액, 음수면 줄 금액`
+            : IS_PORTFOLIO
+              ? '라운드 포인트를 입력하면 점수 변동을 확인할 수 있습니다.'
+              : '판당 금액을 입력하면 정산액을 확인할 수 있습니다.'}
         </p>
       )}
     </div>

@@ -1,6 +1,17 @@
-export const IS_MOCK = !process.env.NEXT_PUBLIC_INSFORGE_URL
+import { IS_PORTFOLIO } from '@/lib/appMode'
+import portfolioData from '@/data/portfolio-data.json'
 
-export const samplePlayers = [
+export const IS_MOCK = IS_PORTFOLIO || !process.env.NEXT_PUBLIC_INSFORGE_URL
+export const portfolioMetadata = portfolioData.metadata
+export const portfolioPlayers = portfolioData.players
+export const portfolioSeason1Sessions = portfolioData.seasons['1'].sessions
+export const portfolioSeason1Rounds = portfolioData.seasons['1'].rounds
+export const portfolioSeason2Sessions = portfolioData.seasons['2'].sessions
+export const portfolioSeason2Rounds = portfolioData.seasons['2'].rounds
+export const portfolioSessions = [...portfolioSeason1Sessions, ...portfolioSeason2Sessions]
+export const portfolioRounds = [...portfolioSeason1Rounds, ...portfolioSeason2Rounds]
+
+const baseSamplePlayers = [
   { id: 'p1',  real_name: '김민준', summoner_name: null, created_at: '2026-01-01T00:00:00Z' },
   { id: 'p2',  real_name: '이서준', summoner_name: null, created_at: '2026-01-02T00:00:00Z' },
   { id: 'p3',  real_name: '박도윤', summoner_name: null, created_at: '2026-01-03T00:00:00Z' },
@@ -13,10 +24,15 @@ export const samplePlayers = [
   { id: 'p10', real_name: '신예준', summoner_name: null, created_at: '2026-01-10T00:00:00Z' },
 ]
 
+export const samplePlayers = baseSamplePlayers.map((player, index) => IS_PORTFOLIO
+  ? { ...player, real_name: `플레이어 ${String(index + 1).padStart(2, '0')}` }
+  : player
+)
+
 export const sampleSessions = [
-  { id: 's1', created_at: '2026-04-05T13:00:00Z', ended_at: '2026-04-05T16:00:00Z', bet_amount: 3000 },
-  { id: 's2', created_at: '2026-05-10T14:00:00Z', ended_at: '2026-05-10T17:30:00Z', bet_amount: 2000 },
-  { id: 's3', created_at: '2026-06-01T13:00:00Z', ended_at: '2026-06-01T17:00:00Z', bet_amount: 5000 },
+  { id: 's1', created_at: '2026-04-05T13:00:00Z', ended_at: '2026-04-05T16:00:00Z', bet_amount: IS_PORTFOLIO ? 30 : 3000 },
+  { id: 's2', created_at: '2026-05-10T14:00:00Z', ended_at: '2026-05-10T17:30:00Z', bet_amount: IS_PORTFOLIO ? 20 : 2000 },
+  { id: 's3', created_at: '2026-06-01T13:00:00Z', ended_at: '2026-06-01T17:00:00Z', bet_amount: IS_PORTFOLIO ? 50 : 5000 },
 ]
 
 const sampleChampions = [

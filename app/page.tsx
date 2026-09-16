@@ -1,10 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import NavBar from '@/app/components/NavBar'
+import { IS_PORTFOLIO } from '@/lib/appMode'
 
 const QUICK_LINKS = [
   { href: '/match', index: '01', label: '새 내전 만들기', note: '팀 편성과 경기 기록' },
-  { href: '/standings', index: '02', label: '시즌 전적 보기', note: '승률과 누적 수익' },
+  { href: '/standings', index: '02', label: '시즌 전적 보기', note: IS_PORTFOLIO ? '승률과 누적 점수' : '승률과 누적 수익' },
   { href: '/history', index: '03', label: '지난 경기 열기', note: '세션별 상세 기록' },
 ]
 
@@ -20,7 +21,7 @@ export default function Home() {
         </div>
         <div className="home-hero-copy">
           <p className="home-kicker"><span>Since 2025</span> · Seongbok Invitational</p>
-          <h1 id="home-title">장미반부터 나래반까지,<br /><em>따고 따이는 치열한 경쟁</em></h1>
+          <h1 id="home-title">장미반부터 나래반까지,<br /><em>{IS_PORTFOLIO ? '함께 쌓아온 치열한 경쟁' : '따고 따이는 치열한 경쟁'}</em></h1>
           <Link className="home-primary" href="/match">내전 시작 <span aria-hidden="true">↗</span></Link>
         </div>
         <div className="home-issue" aria-hidden="true"><span>ARCHIVE</span><strong>NO. 02</strong></div>
