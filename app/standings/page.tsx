@@ -297,7 +297,7 @@ export default function StandingsPage() {
     return result
   }, [allRounds])
 
-  const duoMinGames = season === 2 ? 10 : 50
+  const duoMinGames = season === 2 ? 20 : 50
   const duoStats = useMemo(
     () => computeDuoStats(allPlayers, allRounds, duoMinGames),
     [allPlayers, allRounds, duoMinGames]
