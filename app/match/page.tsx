@@ -52,7 +52,10 @@ interface StoredSession {
   betAmount: number
   fixedTeam1Ids: string[]
   fixedTeam2Ids: string[]
+  naraePlayerIds?: string[]
 }
+
+type RouletteStage = 'narae' | 'general'
 
 function saveSession(data: StoredSession) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
@@ -120,7 +123,6 @@ export default function MatchPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [phase, setPhase] = useState<Phase>('select')
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [sessionPlayers, setSessionPlayers] = useState<Player[]>([])
   const [rounds, setRounds] = useState<Round[]>([])
   const [team1, setTeam1] = useState<Player[]>([])
   const [team2, setTeam2] = useState<Player[]>([])
@@ -131,13 +133,23 @@ export default function MatchPage() {
   const [saveMessage, setSaveMessage] = useState('')
   const [showRoulette, setShowRoulette] = useState(false)
   const [rouletteKey, setRouletteKey] = useState(0)
+  const [rouletteStage, setRouletteStage] = useState<RouletteStage>('general')
+  const [roulettePlayers, setRoulettePlayers] = useState<Player[]>([])
+  const [rouletteTeam1Size, setRouletteTeam1Size] = useState(0)
   const [assignments, setAssignments] = useState<Map<string, 1 | 2>>(new Map())
+  const [naraePlayerIds, setNaraePlayerIds] = useState<Set<string>>(new Set())
   const [champions, setChampions] = useState<Map<string, string>>(new Map())
   const [championLoading, setChampionLoading] = useState(false)
   const [nextFetchIn, setNextFetchIn] = useState<number | null>(null)
   const [autoFetchMessage, setAutoFetchMessage] = useState('')
   const sessionPlayersRef = useRef<Player[]>([])
   const assignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
+  const naraePlayerIdsRef = useRef<Set<string>>(new Set())
+  const rouletteStageRef = useRef<RouletteStage>('general')
+  const naraeRoundAssignmentsRef = useRef<Map<string, 1 | 2>>(new Map())
+  const naraeTeam1SizeRef = useRef(0)
+  const rouletteIframeRef = useRef<HTMLIFrameElement | null>(null)
+  const rouletteResultLockedRef = useRef(false)
   const restoredRef = useRef(false)
   const savingRef = useRef(false)
   const championFetchRef = useRef(false)
@@ -145,6 +157,7 @@ export default function MatchPage() {
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => { assignmentsRef.current = assignments }, [assignments])
+  useEffect(() => { naraePlayerIdsRef.current = naraePlayerIds }, [naraePlayerIds])
 
   useEffect(() => {
     if (IS_MOCK) { setAllPlayers(IS_PORTFOLIO ? portfolioPlayers : samplePlayers); return }
@@ -212,10 +225,14 @@ export default function MatchPage() {
             ...fixedTeam1Ids.map(id => [id, 1] as [string, 1 | 2]),
             ...fixedTeam2Ids.map(id => [id, 2] as [string, 1 | 2]),
           ])
+          const restoredNaraePlayerIds = new Set(
+            (stored.naraePlayerIds ?? []).filter(id => pool.some(player => player.id === id))
+          )
           setAssignments(restoredAssignments)
           assignmentsRef.current = restoredAssignments
+          setNaraePlayerIds(restoredNaraePlayerIds)
+          naraePlayerIdsRef.current = restoredNaraePlayerIds
           setSessionId(stored.sessionId)
-          setSessionPlayers(pool)
           sessionPlayersRef.current = pool
           setRounds(fetchedRounds)
           setStats(computeStats(pool, fetchedRounds))
@@ -242,20 +259,84 @@ export default function MatchPage() {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return
       if (e.data?.type !== 'roulette-result') return
+      if (e.source !== rouletteIframeRef.current?.contentWindow) return
+      if (rouletteResultLockedRef.current) return
+      rouletteResultLockedRef.current = true
       const pool = sessionPlayersRef.current
       const asgn = assignmentsRef.current
+      const naraeIds = naraePlayerIdsRef.current
       const fixed1 = pool.filter(p => asgn.get(p.id) === 1)
       const fixed2 = pool.filter(p => asgn.get(p.id) === 2)
-      const roulettePool = pool.filter(p => !asgn.has(p.id))
-      const rouletteTeam1Size = Math.max(0, pool.length / 2 - fixed1.length)
-      const rouletteTeam1Names: string[] = (e.data.rankings ?? []).slice(0, rouletteTeam1Size)
-      const rouletteT1 = roulettePool.filter(p => rouletteTeam1Names.includes(p.real_name))
-      const rouletteT2 = roulettePool.filter(p => !rouletteTeam1Names.includes(p.real_name))
-      const t1 = [...fixed1, ...rouletteT1]
-      const t2 = [...fixed2, ...rouletteT2]
+      const teamSize = pool.length / 2
+      const rankings: string[] = e.data.rankings ?? []
+
+      if (rouletteStageRef.current === 'narae') {
+        const naraePool = pool.filter(p => naraeIds.has(p.id) && !asgn.has(p.id))
+        const naraeTeam1Size = naraeTeam1SizeRef.current
+        const naraeNames = new Set(naraePool.map(player => player.real_name))
+        const naraeWinners = rankings.slice(0, naraeTeam1Size)
+        if (
+          naraeWinners.length !== naraeTeam1Size ||
+          !naraeWinners.every(name => naraeNames.has(name))
+        ) {
+          rouletteResultLockedRef.current = false
+          return
+        }
+        const naraeTeam1Names = new Set(naraeWinners)
+        const naraeAssignments = new Map<string, 1 | 2>()
+        naraePool.forEach(player => {
+          naraeAssignments.set(player.id, naraeTeam1Names.has(player.real_name) ? 1 : 2)
+        })
+        naraeRoundAssignmentsRef.current = naraeAssignments
+
+        const generalPool = pool.filter(p => !asgn.has(p.id) && !naraeIds.has(p.id))
+        if (generalPool.length >= 2) {
+          const generalTeam1Size = Math.max(0, teamSize - fixed1.length - naraeTeam1Size)
+          rouletteStageRef.current = 'general'
+          setRouletteStage('general')
+          setRoulettePlayers(generalPool)
+          setRouletteTeam1Size(generalTeam1Size)
+          setRouletteKey(key => key + 1)
+          return
+        }
+      }
+
+      const naraeAssignments = naraeRoundAssignmentsRef.current
+      const narae1 = pool.filter(p => naraeAssignments.get(p.id) === 1)
+      const narae2 = pool.filter(p => naraeAssignments.get(p.id) === 2)
+      const generalPool = pool.filter(p => !asgn.has(p.id) && !naraeIds.has(p.id))
+      const generalTeam1Size = Math.max(0, teamSize - fixed1.length - narae1.length)
+      const generalNames = new Set(generalPool.map(player => player.real_name))
+      const generalWinners = rankings.slice(0, generalTeam1Size)
+      if (
+        rouletteStageRef.current === 'general' &&
+        generalPool.length >= 2 &&
+        (generalWinners.length !== generalTeam1Size ||
+          !generalWinners.every(name => generalNames.has(name)))
+      ) {
+        rouletteResultLockedRef.current = false
+        return
+      }
+      const generalTeam1Names = new Set(
+        rouletteStageRef.current === 'general' ? generalWinners : []
+      )
+      const generalT1 = generalPool.filter(player =>
+        generalPool.length === 1 ? generalTeam1Size === 1 : generalTeam1Names.has(player.real_name)
+      )
+      const generalT1Ids = new Set(generalT1.map(player => player.id))
+      const generalT2 = generalPool.filter(player => !generalT1Ids.has(player.id))
+      const t1 = [...fixed1, ...narae1, ...generalT1]
+      const t2 = [...fixed2, ...narae2, ...generalT2]
+      if (t1.length !== teamSize || t2.length !== teamSize) {
+        setSaveError(`팀 배정 결과가 ${teamSize}:${teamSize}이 아니어서 룰렛을 다시 시작합니다.`)
+        rouletteResultLockedRef.current = false
+        openRoulette()
+        return
+      }
       setTeam1(t1)
       setTeam2(t2)
       setShowRoulette(false)
+      naraeRoundAssignmentsRef.current = new Map()
       const storedRaw = localStorage.getItem(STORAGE_KEY)
       if (storedRaw) {
         try {
@@ -285,19 +366,52 @@ export default function MatchPage() {
   function goToAssign() {
     if (!canStart) return
     setAssignments(new Map())
+    assignmentsRef.current = new Map()
+    setNaraePlayerIds(new Set())
+    naraePlayerIdsRef.current = new Set()
     setPhase('assign')
   }
 
   function toggleAssignment(id: string, team: 1 | 2) {
+    setNaraePlayerIds(prev => {
+      if (!prev.has(id)) return prev
+      const next = new Set(prev)
+      next.delete(id)
+      naraePlayerIdsRef.current = next
+      return next
+    })
     setAssignments(prev => {
       const next = new Map(prev)
       if (next.get(id) === team) { next.delete(id) } else { next.set(id, team) }
+      assignmentsRef.current = next
+      return next
+    })
+  }
+
+  function toggleNaraePlayer(id: string) {
+    setAssignments(prev => {
+      if (!prev.has(id)) return prev
+      const next = new Map(prev)
+      next.delete(id)
+      assignmentsRef.current = next
+      return next
+    })
+    setNaraePlayerIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      naraePlayerIdsRef.current = next
       return next
     })
   }
 
   async function startSession() {
     if (!canStart || savingRef.current) return
+    const selectedNaraeCount = allPlayers.filter(player => selected.has(player.id) && naraePlayerIds.has(player.id)).length
+    if (selectedNaraeCount === 1) {
+      setSaveError('나래반 전용 룰렛을 사용하려면 나래반을 2명 이상 지정해 주세요.')
+      return
+    }
     savingRef.current = true
     setSaving(true)
     setSaveError('')
@@ -307,15 +421,17 @@ export default function MatchPage() {
     const fixed1 = pool.filter(p => asgn.get(p.id) === 1)
     const fixed2 = pool.filter(p => asgn.get(p.id) === 2)
     const roulettePool = pool.filter(p => !asgn.has(p.id))
+    const naraePool = pool.filter(p => naraePlayerIds.has(p.id))
+    const hasNaraeRoulette = naraePool.length >= 2
     const teamSize = pool.length / 2
-    const directTeam1 = roulettePool.length === 0
+    const directTeam1 = hasNaraeRoulette ? null : roulettePool.length === 0
       ? fixed1
       : fixed1.length === teamSize
         ? fixed1
         : fixed2.length === teamSize
           ? [...fixed1, ...roulettePool]
           : null
-    const directTeam2 = roulettePool.length === 0
+    const directTeam2 = hasNaraeRoulette ? null : roulettePool.length === 0
       ? fixed2
       : fixed1.length === teamSize
         ? [...fixed2, ...roulettePool]
@@ -343,8 +459,10 @@ export default function MatchPage() {
         sid = (data[0] as { id: string }).id
       }
       setSessionId(sid)
-      setSessionPlayers(pool)
       sessionPlayersRef.current = pool
+      const activeNaraePlayerIds = new Set(naraePool.map(player => player.id))
+      setNaraePlayerIds(activeNaraePlayerIds)
+      naraePlayerIdsRef.current = activeNaraePlayerIds
       setRounds([])
       setStats(pool.map(p => ({ player: p, wins: 0, losses: 0 })))
       setPhase('playing')
@@ -357,6 +475,7 @@ export default function MatchPage() {
         betAmount: betAmount === '' ? 0 : betAmount,
         fixedTeam1Ids: fixed1.map(p => p.id),
         fixedTeam2Ids: fixed2.map(p => p.id),
+        naraePlayerIds: naraePool.map(p => p.id),
       })
 
       if (directTeam1 && directTeam2) {
@@ -598,6 +717,38 @@ export default function MatchPage() {
   }
 
   function openRoulette() {
+    rouletteResultLockedRef.current = false
+    const pool = sessionPlayersRef.current
+    const asgn = assignmentsRef.current
+    const naraePool = pool.filter(player =>
+      naraePlayerIdsRef.current.has(player.id) && !asgn.has(player.id)
+    )
+    const generalPool = pool.filter(player =>
+      !naraePlayerIdsRef.current.has(player.id) && !asgn.has(player.id)
+    )
+    const naraeCount = naraePool.length
+    const nextStage: RouletteStage = naraeCount >= 2 ? 'narae' : 'general'
+    if (nextStage === 'narae') {
+      const teamSize = pool.length / 2
+      const fixedTeam1Count = pool.filter(player => asgn.get(player.id) === 1).length
+      const fixedTeam2Count = pool.filter(player => asgn.get(player.id) === 2).length
+      const minTeam1 = Math.max(0, naraeCount - (teamSize - fixedTeam2Count))
+      const maxTeam1 = Math.min(naraeCount, teamSize - fixedTeam1Count)
+      const randomByte = window.crypto.getRandomValues(new Uint8Array(1))[0]
+      const preferredTeam1 = naraeCount % 2 === 0
+        ? naraeCount / 2
+        : (randomByte % 2 === 0 ? Math.floor(naraeCount / 2) : Math.ceil(naraeCount / 2))
+      naraeTeam1SizeRef.current = Math.min(maxTeam1, Math.max(minTeam1, preferredTeam1))
+      setRoulettePlayers(naraePool)
+      setRouletteTeam1Size(naraeTeam1SizeRef.current)
+    } else {
+      const fixedTeam1Count = pool.filter(player => asgn.get(player.id) === 1).length
+      setRoulettePlayers(generalPool)
+      setRouletteTeam1Size(Math.max(0, pool.length / 2 - fixedTeam1Count))
+    }
+    naraeRoundAssignmentsRef.current = new Map()
+    rouletteStageRef.current = nextStage
+    setRouletteStage(nextStage)
     setRouletteKey(k => k + 1)
     setShowRoulette(true)
   }
@@ -910,7 +1061,10 @@ export default function MatchPage() {
     setSessionId(null)
     setSelected(new Set())
     setAssignments(new Map())
-    setSessionPlayers([])
+    assignmentsRef.current = new Map()
+    setNaraePlayerIds(new Set())
+    naraePlayerIdsRef.current = new Set()
+    naraeRoundAssignmentsRef.current = new Map()
     sessionPlayersRef.current = []
     setRounds([])
     setStats([])
@@ -918,14 +1072,13 @@ export default function MatchPage() {
     setTeam2([])
     setAutoFetchMessage('')
     setShowRoulette(false)
+    setRoulettePlayers([])
+    setRouletteTeam1Size(0)
     clearSession()
   }
 
-  const roulettePool = sessionPlayers.filter(p => !assignments.has(p.id))
-  const fixedTeam1Count = sessionPlayers.filter(p => assignments.get(p.id) === 1).length
-  const rouletteTeamSize = Math.max(0, sessionPlayers.length / 2 - fixedTeam1Count)
-  const rouletteSrc = roulettePool.length >= 2
-    ? `/roulette/index.html?names=${encodeURIComponent(roulettePool.map(p => p.real_name).join(','))}&teamSize=${rouletteTeamSize}`
+  const rouletteSrc = roulettePlayers.length >= 2
+    ? `/roulette/index.html?names=${encodeURIComponent(roulettePlayers.map(p => p.real_name).join(','))}&teamSize=${rouletteTeam1Size}`
     : ''
 
   const roundCount = rounds.length
@@ -936,7 +1089,14 @@ export default function MatchPage() {
       {/* 마블 룰렛 오버레이 */}
       {showRoulette && rouletteSrc && (
         <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: '#202020' }}>
-          <div className="shrink-0 px-6 py-3 flex justify-end gap-2">
+          <div className="shrink-0 px-6 py-3 flex items-center justify-between gap-2">
+            <div style={{ color: '#FFFFFF' }}>
+              <strong className="text-sm">{rouletteStage === 'narae' ? '나래반 룰렛' : '일반 선수 룰렛'}</strong>
+              <span className="ml-2 text-xs" style={{ opacity: 0.6 }}>
+                {rouletteStage === 'narae' ? '완료 후 일반 룰렛이 이어집니다.' : '최종 팀을 배정합니다.'}
+              </span>
+            </div>
+            <div className="flex gap-2">
             {roundCount > 0 && (
               <button
                 onClick={() => { if (window.confirm('마지막 판 결과를 취소할까요?')) undoLastRound() }}
@@ -955,12 +1115,15 @@ export default function MatchPage() {
             >
               닫기
             </button>
+            </div>
           </div>
           <iframe
+            ref={rouletteIframeRef}
             key={rouletteKey}
             src={rouletteSrc}
             className="flex-1 w-full border-0"
             allow="autoplay"
+            onLoad={() => { rouletteResultLockedRef.current = false }}
           />
         </div>
       )}
@@ -1059,10 +1222,13 @@ export default function MatchPage() {
           const teamSize = selected.size / 2
           const f1 = pool.filter(p => assignments.get(p.id) === 1)
           const f2 = pool.filter(p => assignments.get(p.id) === 2)
+          const naraePlayers = pool.filter(p => naraePlayerIds.has(p.id))
           const remaining = pool.length - f1.length - f2.length
+          const generalRouletteCount = remaining - naraePlayers.length
           const allFixed = remaining === 0
           const overCapacity = f1.length > teamSize || f2.length > teamSize
-          const canConfirm = !overCapacity
+          const invalidNaraeCount = naraePlayers.length === 1
+          const canConfirm = !overCapacity && !invalidNaraeCount
           const rouletteToTeam1 = teamSize - f1.length
           const rouletteToTeam2 = teamSize - f2.length
 
@@ -1074,7 +1240,7 @@ export default function MatchPage() {
               </button>
               <h1 className="text-3xl font-bold mb-2">팀 고정 배치</h1>
               <p className="text-sm mb-8" style={{ opacity: 0.5 }}>
-                팀에 고정할 선수를 선택하세요. 나머지 {remaining}명은 룰렛으로 배정됩니다.
+                팀에 고정할 선수와 나래반을 선택하세요. 나래반 선수는 전용 룰렛으로 먼저 배정됩니다.
               </p>
 
               <div className="flex flex-col gap-2 mb-8">
@@ -1085,6 +1251,17 @@ export default function MatchPage() {
                       style={{ backgroundColor: '#F0F1F2' }}>
                       <span className="font-medium text-sm">{p.real_name}</span>
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleNaraePlayer(p.id)}
+                          disabled={saving}
+                          className="px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                          style={{
+                            backgroundColor: naraePlayerIds.has(p.id) ? '#15803d' : '#FFFFFF',
+                            color: naraePlayerIds.has(p.id) ? '#FFFFFF' : '#202020',
+                          }}
+                        >
+                          나래반
+                        </button>
                         {([1, 2] as const).map(team => {
                           const active = assigned === team
                           return (
@@ -1104,15 +1281,28 @@ export default function MatchPage() {
                 })}
               </div>
 
-              <div className="flex gap-3 mb-6 text-sm" style={{ opacity: 0.6 }}>
+              <div className="flex flex-wrap gap-3 mb-6 text-sm" style={{ opacity: 0.6 }}>
                 <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#1e3a8a', color: '#fff' }}>1팀 고정 {f1.length}/{teamSize}명</span>
                 <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#991b1b', color: '#fff' }}>2팀 고정 {f2.length}/{teamSize}명</span>
-                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>룰렛 {remaining}명</span>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>나래반 {naraePlayers.length}명</span>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>일반 룰렛 {generalRouletteCount}명</span>
               </div>
 
-              {!allFixed && !overCapacity && (
+              {!allFixed && !overCapacity && naraePlayers.length === 0 && (
                 <p className="text-xs mb-4" style={{ opacity: 0.55 }}>
                   룰렛 결과에서 1팀 {rouletteToTeam1}명, 2팀 {rouletteToTeam2}명을 배정합니다.
+                </p>
+              )}
+
+              {naraePlayers.length >= 2 && (
+                <p className="text-xs mb-4" style={{ color: '#166534' }}>
+                  나래반 룰렛을 먼저 진행한 뒤 나머지 선수의 일반 룰렛이 이어집니다.
+                </p>
+              )}
+
+              {invalidNaraeCount && (
+                <p className="text-xs mb-4" style={{ color: '#c0392b' }}>
+                  나래반 전용 룰렛을 사용하려면 나래반을 2명 이상 지정해 주세요.
                 </p>
               )}
 
@@ -1125,7 +1315,13 @@ export default function MatchPage() {
               <button onClick={startSession} disabled={!canConfirm || saving}
                 className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
                 style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
-                {saving ? '내전 생성 중...' : allFixed ? '팀 확정하기' : `룰렛으로 나머지 ${remaining}명 배정`}
+                {saving
+                  ? '내전 생성 중...'
+                  : allFixed
+                    ? '팀 확정하기'
+                    : naraePlayers.length >= 2
+                      ? '나래반 룰렛부터 시작'
+                      : `룰렛으로 나머지 ${remaining}명 배정`}
               </button>
             </div>
           )
@@ -1165,6 +1361,11 @@ export default function MatchPage() {
                       {team.map(p => (
                         <li key={p.id} className="flex items-center gap-2">
                           <span className="text-lg font-bold" style={{ color: '#ffffff' }}>{p.real_name}</span>
+                          {naraePlayerIds.has(p.id) && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>
+                              나래반
+                            </span>
+                          )}
                           {champions.get(p.id) && (
                             <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{champions.get(p.id)}</span>
                           )}
