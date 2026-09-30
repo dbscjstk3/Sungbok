@@ -46,7 +46,7 @@ RIOT_API_KEY=<riot-api-key>
 - `RIOT_API_KEY`: 진행 중인 게임과 챔피언 조회에 필요하며 서버에서만 사용됩니다.
 - `NEXT_PUBLIC_APP_MODE=portfolio`: 실제 백엔드 대신 비식별 처리한 실제 운영 데이터를 사용하고 금액을 포인트로 표시합니다.
 
-포트폴리오 데이터를 갱신할 때는 실제 DB 원본을 Git에서 제외된 `backups/portfolio-source.json`으로 내보낸 뒤 `npm run portfolio:data`를 실행합니다. 생성 결과에는 실명, Riot ID, 원본 ID와 실제 금액이 포함되지 않습니다.
+포트폴리오 데이터를 갱신할 때는 실제 DB 원본을 Git에서 제외된 `backups/portfolio-source.json`으로 내보낸 뒤 `npm run portfolio:data`를 실행합니다. 생성 결과에는 실명, Riot ID와 원본 ID가 포함되지 않으며, 판당 수치는 실제 통계와 동일하게 유지하되 공개 화면에서는 포인트로 표시합니다.
 - `NEXT_PUBLIC_INSFORGE_URL`을 설정하지 않으면 선수·기록·전적 화면이 샘플 데이터 모드로 동작합니다.
 
 개발 서버를 실행합니다.

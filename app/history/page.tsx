@@ -50,6 +50,16 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
 }
 
+function getDisplayedRoundCount(rounds: Round[]) {
+  const countsByPlayerCount = new Map<number, number>()
+  for (const round of rounds) {
+    if (round.winner_team === null) continue
+    const playerCount = round.team1_ids.length + round.team2_ids.length
+    countsByPlayerCount.set(playerCount, (countsByPlayerCount.get(playerCount) ?? 0) + 1)
+  }
+  return Math.max(0, ...countsByPlayerCount.values())
+}
+
 function computeStats(players: Player[], rounds: Round[]): PlayerStat[] {
   return players.map(p => {
     const decided = rounds.filter(r => r.winner_team !== null)
@@ -419,7 +429,7 @@ export default function HistoryPage() {
         <div className="flex flex-col gap-4">
           {details.map(({ session, rounds, stats }) => {
             const isOpen = expanded.has(session.id)
-            const totalRounds = rounds.filter(r => r.winner_team !== null).length
+            const totalRounds = getDisplayedRoundCount(rounds)
             const showMoney = session.bet_amount > 0
 
             return (

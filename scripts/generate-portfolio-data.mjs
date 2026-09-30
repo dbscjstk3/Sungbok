@@ -12,14 +12,8 @@ const season2Sessions = tables.sessions.rows.filter(session => session.ended_at)
 const season2SessionIds = new Set(season2Sessions.map(session => session.id))
 const season2Rounds = tables.rounds.rows.filter(round => season2SessionIds.has(round.session_id))
 
-const allRounds = [...season1.rounds, ...season2Rounds]
-const allPlayerIds = new Set(livePlayers.map(player => player.id))
-for (const round of allRounds) {
-  for (const id of [...round.team1_ids, ...round.team2_ids]) allPlayerIds.add(id)
-}
-
 const createdAtByPlayer = new Map(livePlayers.map(player => [player.id, player.created_at]))
-const orderedPlayerIds = [...allPlayerIds].sort((left, right) => {
+const orderedPlayerIds = livePlayers.map(player => player.id).sort((left, right) => {
   const leftCreated = createdAtByPlayer.get(left) ?? '9999'
   const rightCreated = createdAtByPlayer.get(right) ?? '9999'
   return leftCreated.localeCompare(rightCreated) || left.localeCompare(right)
@@ -33,34 +27,40 @@ const players = orderedPlayerIds.map((id, index) => ({
   created_at: createdAtByPlayer.get(id) ?? '2025-01-01T00:00:00.000Z',
 }))
 
-function pointMapFor(sessions) {
-  const amounts = [...new Set(sessions.map(session => Number(session.bet_amount) || 0))].sort((a, b) => a - b)
-  return new Map(amounts.map((amount, index) => [amount, amount === 0 ? 0 : (index + 1) * 10]))
-}
-
 function sanitizeSeason(seasonNumber, sessions, rounds) {
   const orderedSessions = [...sessions].sort((left, right) => left.created_at.localeCompare(right.created_at))
   const sessionIdMap = new Map(orderedSessions.map((session, index) => [session.id, `s${seasonNumber}-session-${String(index + 1).padStart(2, '0')}`]))
-  const points = pointMapFor(orderedSessions)
   const sanitizedSessions = orderedSessions.map(session => ({
     id: sessionIdMap.get(session.id),
     created_at: session.created_at,
     ended_at: session.ended_at ?? session.created_at,
-    bet_amount: points.get(Number(session.bet_amount) || 0) ?? 0,
+    bet_amount: Number(session.bet_amount) || 0,
   }))
+  function sanitizeTeam(ids, champions) {
+    const keptIndexes = ids.map((id, index) => playerIdMap.has(id) ? index : -1).filter(index => index >= 0)
+    return {
+      ids: keptIndexes.map(index => playerIdMap.get(ids[index])),
+      champions: champions ? keptIndexes.map(index => champions[index] ?? '') : null,
+    }
+  }
+
   const sanitizedRounds = rounds
     .filter(round => sessionIdMap.has(round.session_id))
     .sort((left, right) => (left.created_at ?? '').localeCompare(right.created_at ?? ''))
-    .map((round, index) => ({
-      id: `s${seasonNumber}-round-${String(index + 1).padStart(3, '0')}`,
-      session_id: sessionIdMap.get(round.session_id),
-      team1_ids: round.team1_ids.map(id => playerIdMap.get(id)).filter(Boolean),
-      team2_ids: round.team2_ids.map(id => playerIdMap.get(id)).filter(Boolean),
-      winner_team: round.winner_team,
-      created_at: round.created_at ?? '',
-      team1_champions: round.team1_champions ?? null,
-      team2_champions: round.team2_champions ?? null,
-    }))
+    .map((round, index) => {
+      const team1 = sanitizeTeam(round.team1_ids, round.team1_champions)
+      const team2 = sanitizeTeam(round.team2_ids, round.team2_champions)
+      return {
+        id: `s${seasonNumber}-round-${String(index + 1).padStart(3, '0')}`,
+        session_id: sessionIdMap.get(round.session_id),
+        team1_ids: team1.ids,
+        team2_ids: team2.ids,
+        winner_team: round.winner_team,
+        created_at: round.created_at ?? '',
+        team1_champions: team1.champions,
+        team2_champions: team2.champions,
+      }
+    })
 
   return { sessions: sanitizedSessions, rounds: sanitizedRounds }
 }
