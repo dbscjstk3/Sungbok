@@ -41,6 +41,10 @@ jobs:
             echo "::error::Add INSFORGE_ACCESS_TOKEN to the repository's Actions secrets."
             exit 1
           fi
+          if [ -z "$INSFORGE_REFRESH_TOKEN" ]; then
+            echo "::error::Add INSFORGE_REFRESH_TOKEN to the repository's Actions secrets."
+            exit 1
+          fi
           node <<'NODE'
           const fs = require('node:fs')
           const os = require('node:os')
@@ -52,7 +56,7 @@ jobs:
             path.join(credentialsDirectory, 'credentials.json'),
             JSON.stringify({
               access_token: process.env.INSFORGE_ACCESS_TOKEN,
-              refresh_token: process.env.INSFORGE_REFRESH_TOKEN || ''
+              refresh_token: process.env.INSFORGE_REFRESH_TOKEN
             }),
             { mode: 0o600 }
           )
