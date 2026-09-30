@@ -1,0 +1,58 @@
+name: Deploy to InsForge
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: insforge-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      INSFORGE_ACCESS_TOKEN: ${{ secrets.INSFORGE_ACCESS_TOKEN }}
+      INSFORGE_PROJECT_ID: fb135011-88fe-472d-bd8b-aedbca3a86aa
+      INSFORGE_ORG_ID: 7a5056ef-943d-4100-b1e8-be96b214ceac
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Verify deployment credentials
+        run: |
+          if [ -z "$INSFORGE_ACCESS_TOKEN" ]; then
+            echo "::error::Add INSFORGE_ACCESS_TOKEN to the repository's Actions secrets."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Link InsForge project
+        run: >-
+          npx --yes @insforge/cli@0.2.8 link
+          --project-id "$INSFORGE_PROJECT_ID"
+          --org-id "$INSFORGE_ORG_ID"
+
+      - name: Deploy to InsForge
+        run: >-
+          npx --yes @insforge/cli@0.2.8 deployments deploy .
+          --meta '{"source":"github-actions","commit":"${{ github.sha }}"}'
