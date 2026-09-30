@@ -51,6 +51,8 @@ jobs:
           npx --yes @insforge/cli@0.2.8 link
           --project-id "$INSFORGE_PROJECT_ID"
           --org-id "$INSFORGE_ORG_ID"
+          --yes
+          --json
 
       - name: Deploy to InsForge
         run: >-
