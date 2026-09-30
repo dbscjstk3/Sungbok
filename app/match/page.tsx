@@ -679,7 +679,7 @@ export default function MatchPage() {
       cancelled = true
       clearAutoFetch()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, showRoulette, team1.length, champions.size])
 
   function swapTeams() {
@@ -952,6 +952,15 @@ export default function MatchPage() {
       const pool = sessionPlayersRef.current
       const t1 = last.team1_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
       const t2 = last.team2_ids.map(id => pool.find(p => p.id === id)).filter(Boolean) as Player[]
+      const restoredChampions = new Map<string, string>()
+      last.team1_ids.forEach((playerId, index) => {
+        const champion = last.team1_champions?.[index]
+        if (champion) restoredChampions.set(playerId, champion)
+      })
+      last.team2_ids.forEach((playerId, index) => {
+        const champion = last.team2_champions?.[index]
+        if (champion) restoredChampions.set(playerId, champion)
+      })
       const restoredAssignments = new Map<string, 1 | 2>()
       assignmentsRef.current.forEach((currentTeam, playerId) => {
         if (last.team1_ids.includes(playerId)) {
@@ -964,6 +973,7 @@ export default function MatchPage() {
       })
       setTeam1(t1)
       setTeam2(t2)
+      setChampions(restoredChampions)
       setAssignments(restoredAssignments)
       assignmentsRef.current = restoredAssignments
       setAutoFetchMessage('')
