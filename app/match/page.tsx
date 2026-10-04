@@ -1094,7 +1094,7 @@ export default function MatchPage() {
   const roundCount = rounds.length
 
   return (
-    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
 
       {/* 마블 룰렛 오버레이 */}
       {showRoulette && rouletteSrc && (
@@ -1144,7 +1144,7 @@ export default function MatchPage() {
 
         {saveError && (
           <div role="alert" className="mb-4 px-4 py-3 rounded-xl text-sm flex items-start justify-between gap-3"
-            style={{ backgroundColor: '#f8d7da', color: '#842029' }}>
+            style={{ backgroundColor: 'var(--negative-surface)', color: 'var(--negative-on-surface)' }}>
             <span>{saveError}</span>
             <button onClick={() => setSaveError('')} className="shrink-0 font-bold" aria-label="오류 메시지 닫기">×</button>
           </div>
@@ -1152,7 +1152,7 @@ export default function MatchPage() {
 
         {saveMessage && (
           <div role="status" className="mb-4 px-4 py-3 rounded-xl text-sm"
-            style={{ backgroundColor: '#d1e7dd', color: '#0f5132' }}>
+            style={{ backgroundColor: 'var(--positive-surface)', color: 'var(--positive-on-surface)' }}>
             {saveMessage}
           </div>
         )}
@@ -1168,13 +1168,13 @@ export default function MatchPage() {
                 <button
                   onClick={() => setSelected(new Set(allPlayers.slice(0, 8).map(p => p.id)))}
                   className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>
+                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                   상위 8명
                 </button>
                 <button
                   onClick={() => setSelected(new Set(allPlayers.slice(0, 10).map(p => p.id)))}
                   className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>
+                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                   상위 10명
                 </button>
               </div>
@@ -1186,7 +1186,7 @@ export default function MatchPage() {
                 return (
                   <button key={p.id} onClick={() => toggleSelect(p.id)} disabled={off}
                     className="px-4 py-3 rounded-xl text-left transition-all"
-                    style={{ backgroundColor: on ? '#202020' : '#F0F1F2', color: on ? '#FFFFFF' : '#202020', opacity: off ? 0.3 : 1 }}>
+                    style={{ backgroundColor: on ? 'var(--ink)' : 'var(--surface)', color: on ? 'var(--on-ink)' : 'var(--ink)', opacity: off ? 0.3 : 1 }}>
                     <div className="text-sm font-medium">{p.real_name}</div>
                   </button>
                 )
@@ -1204,14 +1204,14 @@ export default function MatchPage() {
                     value={betAmount}
                     onChange={e => setBetAmount(e.target.value === '' ? '' : Number(e.target.value))}
                     className="w-32 pl-4 pr-9 py-2 rounded-xl text-sm font-medium text-right outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
+                    style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>{IS_PORTFOLIO ? 'P' : '원'}</span>
                 </div>
                 {(IS_PORTFOLIO ? [10, 20, 30, 50] : [1000, 2000, 3000, 5000]).map(v => (
                   <button key={v} onClick={() => setBetAmount(v)}
                     className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{ backgroundColor: betAmount === v ? '#202020' : '#F0F1F2', color: betAmount === v ? '#FFFFFF' : '#202020' }}>
+                    style={{ backgroundColor: betAmount === v ? 'var(--ink)' : 'var(--surface)', color: betAmount === v ? 'var(--on-ink)' : 'var(--ink)' }}>
                     {v.toLocaleString()}
                   </button>
                 ))}
@@ -1220,7 +1220,7 @@ export default function MatchPage() {
 
             <button onClick={goToAssign} disabled={!canStart}
               className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
-              style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
+              style={{ backgroundColor: 'var(--ink)', color: 'var(--on-ink)' }}>
               다음 — 팀 배정 {canStart && `(${selected.size / 2}:${selected.size / 2})`}
             </button>
           </div>
@@ -1258,7 +1258,7 @@ export default function MatchPage() {
                   const assigned = assignments.get(p.id)
                   return (
                     <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded-xl"
-                      style={{ backgroundColor: '#F0F1F2' }}>
+                      style={{ backgroundColor: 'var(--surface)' }}>
                       <span className="font-medium text-sm">{p.real_name}</span>
                       <div className="flex gap-2">
                         <button
@@ -1266,8 +1266,8 @@ export default function MatchPage() {
                           disabled={saving}
                           className="px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
                           style={{
-                            backgroundColor: naraePlayerIds.has(p.id) ? '#15803d' : '#FFFFFF',
-                            color: naraePlayerIds.has(p.id) ? '#FFFFFF' : '#202020',
+                            backgroundColor: naraePlayerIds.has(p.id) ? '#15803d' : 'var(--canvas)',
+                            color: naraePlayerIds.has(p.id) ? '#FFFFFF' : 'var(--ink)',
                           }}
                         >
                           나래반
@@ -1278,8 +1278,8 @@ export default function MatchPage() {
                             <button key={team} onClick={() => toggleAssignment(p.id, team)} disabled={saving}
                               className="px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
                               style={{
-                                backgroundColor: active ? (team === 1 ? '#1e3a8a' : '#991b1b') : '#FFFFFF',
-                                color: active ? '#ffffff' : '#202020',
+                                backgroundColor: active ? (team === 1 ? '#1e3a8a' : '#991b1b') : 'var(--canvas)',
+                                color: active ? '#ffffff' : 'var(--ink)',
                               }}>
                               {team}팀
                             </button>
@@ -1295,7 +1295,7 @@ export default function MatchPage() {
                 <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#1e3a8a', color: '#fff' }}>1팀 고정 {f1.length}/{teamSize}명</span>
                 <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#991b1b', color: '#fff' }}>2팀 고정 {f2.length}/{teamSize}명</span>
                 <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>나래반 {naraePlayers.length}명</span>
-                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>일반 룰렛 {generalRouletteCount}명</span>
+                <span className="px-3 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>일반 룰렛 {generalRouletteCount}명</span>
               </div>
 
               {!allFixed && !overCapacity && naraePlayers.length === 0 && (
@@ -1324,7 +1324,7 @@ export default function MatchPage() {
 
               <button onClick={startSession} disabled={!canConfirm || saving}
                 className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
-                style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
+                style={{ backgroundColor: 'var(--ink)', color: 'var(--on-ink)' }}>
                 {saving
                   ? '내전 생성 중...'
                   : allFixed
@@ -1349,13 +1349,13 @@ export default function MatchPage() {
                 {roundCount > 0 && (
                   <button onClick={() => { if (window.confirm('마지막 판 결과를 취소할까요?')) undoLastRound() }} disabled={saving}
                     className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-70 disabled:opacity-40"
-                    style={{ backgroundColor: '#F0F1F2', color: '#c0392b' }}>
+                    style={{ backgroundColor: 'var(--surface)', color: 'var(--negative)' }}>
                     {saving ? '처리 중...' : '마지막 판 취소'}
                   </button>
                 )}
                 <button onClick={endSession} disabled={saving}
                   className="px-5 py-2 text-sm font-medium rounded-full transition-opacity hover:opacity-70 disabled:opacity-40"
-                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>
+                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                   {saving ? '처리 중...' : '내전 종료'}
                 </button>
               </div>
@@ -1387,7 +1387,7 @@ export default function MatchPage() {
                 <button onClick={swapTeams} disabled={saving || team1.length === 0 || team2.length === 0}
                   aria-label="1팀과 2팀 위치 변경" title="1팀과 2팀 위치 변경"
                   className="col-start-2 row-start-1 h-11 px-3 sm:px-5 rounded-full whitespace-nowrap text-xs sm:text-sm font-bold transition-opacity hover:opacity-70 disabled:opacity-40"
-                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>
+                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                   1팀 ↔ 2팀
                 </button>
               </div>
@@ -1396,7 +1396,7 @@ export default function MatchPage() {
             <div className="flex gap-3 mb-4">
               <button onClick={openRoulette} disabled={saving}
                 className="flex-1 py-3 rounded-2xl text-sm font-bold transition-opacity hover:opacity-85 disabled:opacity-40"
-                style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
+                style={{ backgroundColor: 'var(--ink)', color: 'var(--on-ink)' }}>
                 팀 다시 섞기
               </button>
               <button onClick={() => fetchChampions()} disabled={championLoading || saving}
@@ -1445,7 +1445,7 @@ export default function MatchPage() {
             <Standings stats={stats} roundCount={roundCount} showSettlement betAmount={betAmount === '' ? 0 : betAmount} />
             <button onClick={reset}
               className="mt-8 px-8 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
-              style={{ backgroundColor: '#F0F1F2', color: '#202020' }}>
+              style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
               새 내전 시작
             </button>
           </div>
@@ -1466,10 +1466,10 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
   return (
     <div>
       <h2 className="text-lg font-bold mb-4">{showSettlement ? '최종 전적' : '현재 전적'}</h2>
-      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#F0F1F2' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
         <table className="w-full text-xs sm:text-sm">
           <thead>
-            <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
+            <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
               <th className="text-left px-3 sm:px-5 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>이름</th>
               <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>승</th>
               <th className="text-center px-2 sm:px-4 py-2.5 sm:py-3 font-semibold" style={{ opacity: 0.5 }}>패</th>
@@ -1488,7 +1488,7 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
               const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
               const money = net * betAmount
               return (
-                <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid #FFFFFF' : undefined }}>
+                <tr key={s.player.id} style={{ borderTop: i > 0 ? '1px solid var(--canvas)' : undefined }}>
                   <td className="px-3 sm:px-5 py-2 sm:py-3">
                     <span className="font-medium">{s.player.real_name}</span>
                   </td>
@@ -1497,7 +1497,7 @@ function Standings({ stats, roundCount, showSettlement = false, betAmount = 0 }:
                   <td className="text-center px-2 sm:px-4 py-2 sm:py-3" style={{ opacity: 0.7 }}>{rate}%</td>
                   {showSettlement && (
                     <td className="text-center px-2 sm:px-4 py-2 sm:py-3 font-bold"
-                      style={{ color: net > 0 ? '#2d7a3a' : net < 0 ? '#c0392b' : '#202020' }}>
+                      style={{ color: net > 0 ? 'var(--positive)' : net < 0 ? 'var(--negative)' : 'var(--ink)' }}>
                       {showMoney
                         ? `${money > 0 ? '+' : ''}${money.toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}`
                         : `${net > 0 ? '+' : ''}${net}판`}

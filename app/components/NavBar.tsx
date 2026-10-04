@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import ThemeToggle from './ThemeToggle'
 
 const NAV_LINKS = [
   ['/', '홈'],
@@ -32,6 +33,7 @@ export default function NavBar() {
           )
         })}
       </div>
+      <ThemeToggle />
     </nav>
   )
 }
