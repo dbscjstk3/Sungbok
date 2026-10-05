@@ -42,6 +42,8 @@ function computeStats(players: Player[], rounds: Round[]): Stat[] {
 type Phase = 'select' | 'assign' | 'playing' | 'ended'
 
 const STORAGE_KEY = 'sungbok_match_session'
+const PARTICIPANT_OPTIONS = [6, 8, 10] as const
+const MAX_PARTICIPANTS = PARTICIPANT_OPTIONS[PARTICIPANT_OPTIONS.length - 1]
 
 interface StoredSession {
   phase: Phase
@@ -354,14 +356,14 @@ export default function MatchPage() {
       const next = new Set(prev)
       if (next.has(id)) {
         next.delete(id)
-      } else if (next.size < 10) {
+      } else if (next.size < MAX_PARTICIPANTS) {
         next.add(id)
       }
       return next
     })
   }
 
-  const canStart = selected.size === 8 || selected.size === 10
+  const canStart = PARTICIPANT_OPTIONS.some(count => count === selected.size)
 
   function goToAssign() {
     if (!canStart) return
@@ -1161,28 +1163,25 @@ export default function MatchPage() {
         {phase === 'select' && (
           <div>
             <h1 className="text-3xl font-bold mb-2">내전 생성</h1>
-            <p className="text-sm mb-8" style={{ opacity: 0.5 }}>참가할 인원을 선택하세요. (8명 또는 10명)</p>
+            <p className="text-sm mb-8" style={{ opacity: 0.5 }}>참가할 인원을 선택하세요. (6명, 8명 또는 10명)</p>
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium" style={{ opacity: 0.6 }}>{selected.size}명 선택됨</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelected(new Set(allPlayers.slice(0, 8).map(p => p.id)))}
-                  className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
-                  상위 8명
-                </button>
-                <button
-                  onClick={() => setSelected(new Set(allPlayers.slice(0, 10).map(p => p.id)))}
-                  className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
-                  상위 10명
-                </button>
+              <div className="flex flex-wrap justify-end gap-2">
+                {PARTICIPANT_OPTIONS.map(count => (
+                  <button
+                    key={count}
+                    onClick={() => setSelected(new Set(allPlayers.slice(0, count).map(p => p.id)))}
+                    className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
+                    style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
+                    상위 {count}명
+                  </button>
+                ))}
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
               {allPlayers.map(p => {
                 const on = selected.has(p.id)
-                const off = !on && selected.size >= 10
+                const off = !on && selected.size >= MAX_PARTICIPANTS
                 return (
                   <button key={p.id} onClick={() => toggleSelect(p.id)} disabled={off}
                     className="px-4 py-3 rounded-xl text-left transition-all"
