@@ -178,7 +178,7 @@ export default function ChampionsPage() {
   const summary = useMemo(() => {
     const totalPicks = allStats.reduce((sum, stat) => sum + stat.games, 0)
     const mostPlayed = [...allStats].sort((a, b) => b.games - a.games || b.winRate - a.winRate)[0]
-    const qualified = allStats.filter(stat => stat.games >= 3)
+    const qualified = allStats.filter(stat => stat.games >= 20)
     const highestRate = [...qualified].sort((a, b) => b.winRate - a.winRate || b.games - a.games)[0]
     return { totalPicks, mostPlayed, highestRate }
   }, [allStats])
@@ -238,7 +238,7 @@ export default function ChampionsPage() {
                 { label: '챔피언', value: `${allStats.length}종` },
                 { label: '집계된 픽 수', value: `${summary.totalPicks}회` },
                 { label: '최다 픽', value: summary.mostPlayed ? `${summary.mostPlayed.name} ${summary.mostPlayed.games}회` : '-' },
-                { label: '최고 승률 (3회+)', value: summary.highestRate ? `${summary.highestRate.name} ${summary.highestRate.winRate}%` : '-' },
+                { label: '최고 승률 (20회+)', value: summary.highestRate ? `${summary.highestRate.name} ${summary.highestRate.winRate}%` : '-' },
               ].map(({ label, value }, index) => (
                 <div
                   key={label}
