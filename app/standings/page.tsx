@@ -418,7 +418,7 @@ export default function StandingsPage() {
   }, [season])
 
   return (
-    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
       <NavBar />
 
       {/* 개인 하이라이트 모달 */}
@@ -483,18 +483,18 @@ export default function StandingsPage() {
                       <LineChart data={trend} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset={`${zeroOffset}%`} stopColor="#2f6b48" />
-                            <stop offset={`${zeroOffset}%`} stopColor="#a44335" />
+                            <stop offset={`${zeroOffset}%`} stopColor="var(--positive)" />
+                            <stop offset={`${zeroOffset}%`} stopColor="var(--negative)" />
                           </linearGradient>
                         </defs>
-                        <XAxis dataKey="session" tick={{ fontSize: 10, fill: '#68695f' }} tickLine={false} axisLine={false} />
+                        <XAxis dataKey="session" tick={{ fontSize: 10, fill: 'var(--muted)' }} tickLine={false} axisLine={false} />
                         <YAxis hide domain={[minVal, maxVal]} />
                         <Tooltip
                           formatter={(value) => [`${Number(value) > 0 ? '+' : ''}${Number(value).toLocaleString()}${IS_PORTFOLIO ? 'P' : '원'}`, IS_PORTFOLIO ? '점수' : '수익']}
-                          contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(23,25,19,.14)', borderRadius: 5, fontSize: 12 }}
-                          cursor={{ stroke: '#17191333' }}
+                          contentStyle={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)', border: '1px solid var(--line)', borderRadius: 5, fontSize: 12 }}
+                          cursor={{ stroke: 'var(--line)' }}
                         />
-                        <ReferenceLine y={0} stroke="#17191333" strokeDasharray="3 3" />
+                        <ReferenceLine y={0} stroke="var(--line)" strokeDasharray="3 3" />
                         <Line type="monotone" dataKey="profit" dot={false} strokeWidth={2.5} stroke={`url(#${gradId})`} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -560,8 +560,8 @@ export default function StandingsPage() {
                 onClick={() => setSeason(value)}
                 className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
                 style={{
-                  backgroundColor: season === value ? '#202020' : '#F0F1F2',
-                  color: season === value ? '#FFFFFF' : '#202020',
+                  backgroundColor: season === value ? 'var(--ink)' : 'var(--surface)',
+                  color: season === value ? 'var(--on-ink)' : 'var(--ink)',
                 }}
               >
                 시즌 {value}
@@ -581,8 +581,8 @@ export default function StandingsPage() {
               onClick={() => setSortBy(key)}
               className="px-4 py-1.5 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
               style={{
-                backgroundColor: sortBy === key ? '#202020' : '#F0F1F2',
-                color: sortBy === key ? '#FFFFFF' : '#202020',
+                backgroundColor: sortBy === key ? 'var(--ink)' : 'var(--surface)',
+                color: sortBy === key ? 'var(--on-ink)' : 'var(--ink)',
               }}
             >
               {label}
@@ -637,14 +637,14 @@ export default function StandingsPage() {
                 </div>
 
                 {list.length === 0 ? (
-                  <div className="rounded-2xl px-6 py-10 text-center text-sm" style={{ backgroundColor: '#F0F1F2', opacity: 0.55 }}>
+                  <div className="rounded-2xl px-6 py-10 text-center text-sm" style={{ backgroundColor: 'var(--surface)', opacity: 0.55 }}>
                     해당 리그에 표시할 선수가 없습니다.
                   </div>
                 ) : (
-                  <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: '#F0F1F2' }}>
+                  <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: 'var(--surface)' }}>
                     <table className="w-full min-w-[620px] text-xs sm:text-sm">
                       <thead>
-                        <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
+                        <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
                           <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
                           <th className="w-px whitespace-nowrap text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
                           {([['total', '전적'], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', IS_PORTFOLIO ? '점수' : '수익']] as [SortKey, string][]).map(([key, label]) => (
@@ -663,9 +663,9 @@ export default function StandingsPage() {
                           const total = s.wins + s.losses
                           const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
                           const givingRate = getGivingRate(givingPickStats.get(s.player.id))
-                          const profitColor = s.profit > 0 ? '#2d7a3a' : s.profit < 0 ? '#c0392b' : '#202020'
+                          const profitColor = s.profit > 0 ? 'var(--positive)' : s.profit < 0 ? 'var(--negative)' : 'var(--ink)'
                           return (
-                            <tr key={s.player.id} style={{ borderTop: '1px solid #FFFFFF' }}>
+                            <tr key={s.player.id} style={{ borderTop: '1px solid var(--canvas)' }}>
                               <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
                               <td className="w-px whitespace-nowrap px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
                                 <button onClick={() => setSelectedPlayerId(s.player.id)}
@@ -712,10 +712,10 @@ export default function StandingsPage() {
                   ].map(({ title, list }) => (
                     <div key={title}>
                       <p className="text-sm font-semibold mb-3" style={{ opacity: 0.6 }}>{title}</p>
-                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#F0F1F2' }}>
+                      <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
                         <table className="w-full text-xs sm:text-sm">
                           <thead>
-                            <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
+                            <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
                               <th className="text-center px-2 sm:px-4 py-3 font-semibold w-8" style={{ opacity: 0.5 }}>#</th>
                               <th className="text-left px-2 sm:px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>조합</th>
                               <th className="text-center px-2 sm:px-4 py-3 font-semibold" style={{ opacity: 0.5 }}>판수</th>
@@ -724,14 +724,14 @@ export default function StandingsPage() {
                           </thead>
                           <tbody>
                             {list.map((d, i) => (
-                              <tr key={`${d.player1.id}-${d.player2.id}`} style={{ borderTop: '1px solid #FFFFFF' }}>
+                              <tr key={`${d.player1.id}-${d.player2.id}`} style={{ borderTop: '1px solid var(--canvas)' }}>
                                 <td className="text-center px-2 sm:px-4 py-2.5 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
                                 <td className="px-2 sm:px-4 py-2.5 font-bold">
                                   {d.player1.real_name} + {d.player2.real_name}
                                 </td>
                                 <td className="text-center px-2 sm:px-4 py-2.5">{d.games}</td>
                                 <td className="text-center px-2 sm:px-4 py-2.5 font-bold"
-                                  style={{ color: d.winRate >= 60 ? '#2d7a3a' : d.winRate <= 40 ? '#c0392b' : '#202020' }}>
+                                  style={{ color: d.winRate >= 60 ? 'var(--positive)' : d.winRate <= 40 ? 'var(--negative)' : 'var(--ink)' }}>
                                   {d.winRate}%
                                 </td>
                               </tr>

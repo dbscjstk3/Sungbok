@@ -89,19 +89,19 @@ export default function PlayersPage() {
   }
 
   return (
-    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-screen px-4 sm:px-12 py-12 sm:py-16" style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
       <NavBar />
 
-      <h1 className="text-3xl font-bold mt-16 mb-2" style={{ color: '#202020' }}>
+      <h1 className="text-3xl font-bold mt-16 mb-2" style={{ color: 'var(--ink)' }}>
         선수 명단
       </h1>
-      <p className="text-sm mb-10" style={{ color: '#202020', opacity: 0.5 }}>
+      <p className="text-sm mb-10" style={{ color: 'var(--ink)', opacity: 0.5 }}>
         {players.length}명 등록됨{IS_PORTFOLIO && ' · 실제 운영 데이터 비식별 처리'}
       </p>
 
       {/* 등록 폼 */}
       {!IS_PORTFOLIO && <section className="mb-10">
-        <h2 className="text-lg font-bold mb-5" style={{ color: '#202020' }}>선수 등록</h2>
+        <h2 className="text-lg font-bold mb-5" style={{ color: 'var(--ink)' }}>선수 등록</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             type="text"
@@ -110,7 +110,7 @@ export default function PlayersPage() {
             onChange={(e) => setRealName(e.target.value)}
             required
             className="px-4 py-3 rounded-xl text-sm outline-none w-full"
-            style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
+            style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}
           />
           <input
             type="text"
@@ -118,12 +118,12 @@ export default function PlayersPage() {
             value={summonerName}
             onChange={(e) => setSummonerName(e.target.value)}
             className="px-4 py-3 rounded-xl text-sm outline-none w-full"
-            style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
+            style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}
           />
           {error && <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>}
           <button type="submit" disabled={loading}
             className="px-6 py-3 rounded-xl text-sm font-semibold transition-opacity hover:opacity-85 disabled:opacity-40"
-            style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
+            style={{ backgroundColor: 'var(--ink)', color: 'var(--on-ink)' }}>
             {loading ? '등록 중...' : '등록하기'}
           </button>
         </form>
@@ -132,7 +132,7 @@ export default function PlayersPage() {
       {/* 목록 */}
       <section className="mb-12">
         {players.length === 0 ? (
-          <p className="text-sm" style={{ color: '#202020', opacity: 0.4 }}>
+          <p className="text-sm" style={{ color: 'var(--ink)', opacity: 0.4 }}>
             아직 등록된 참가자가 없습니다.
           </p>
         ) : (
@@ -140,40 +140,40 @@ export default function PlayersPage() {
             {players.map((p) =>
               editingId === p.id ? (
                 <li key={p.id} className="flex flex-col gap-2 px-5 py-4 rounded-xl"
-                  style={{ backgroundColor: '#F0F1F2' }}>
+                  style={{ backgroundColor: 'var(--surface)' }}>
                   <input
                     value={editRealName}
                     onChange={(e) => setEditRealName(e.target.value)}
                     className="px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
+                    style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}
                     placeholder="이름"
                   />
                   <input
                     value={editSummonerName}
                     onChange={(e) => setEditSummonerName(e.target.value)}
                     className="px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{ backgroundColor: '#FFFFFF', color: '#202020' }}
+                    style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}
                     placeholder="소환사명 (선택)"
                   />
                   {editError && <p className="text-xs" style={{ color: '#e53e3e' }}>{editError}</p>}
                   <div className="flex gap-2 justify-end">
                     <button onClick={cancelEdit}
                       className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+                      style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
                       취소
                     </button>
                     <button onClick={() => handleUpdate(p.id)}
                       className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-80"
-                      style={{ backgroundColor: '#202020', color: '#FFFFFF' }}>
+                      style={{ backgroundColor: 'var(--ink)', color: 'var(--on-ink)' }}>
                       저장
                     </button>
                   </div>
                 </li>
               ) : (
                 <li key={p.id} className="flex justify-between items-center px-5 py-4 rounded-xl"
-                  style={{ backgroundColor: '#F0F1F2' }}>
+                  style={{ backgroundColor: 'var(--surface)' }}>
                   <div>
-                    <span className="font-medium" style={{ color: '#202020' }}>{p.real_name}</span>
+                    <span className="font-medium" style={{ color: 'var(--ink)' }}>{p.real_name}</span>
                     {p.summoner_name && (
                       <span className="ml-2 text-xs" style={{ opacity: 0.4 }}>{p.summoner_name}</span>
                     )}
@@ -181,12 +181,12 @@ export default function PlayersPage() {
                   {!IS_PORTFOLIO && <div className="flex gap-2">
                     <button onClick={() => startEdit(p)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+                      style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
                       수정
                     </button>
                     <button onClick={() => handleDelete(p.id)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+                      style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
                       삭제
                     </button>
                   </div>}

@@ -27,6 +27,15 @@ interface PlayerRecord {
   real_name: string
 }
 
+interface ChampionPlayerStat {
+  id: string
+  name: string
+  games: number
+  wins: number
+  losses: number
+  winRate: number
+}
+
 interface ChampionStat {
   name: string
   games: number
@@ -35,6 +44,9 @@ interface ChampionStat {
   winRate: number
   topPlayerName: string
   topPlayerGames: number
+  topPlayerWins: number
+  topPlayerLosses: number
+  playerStats: ChampionPlayerStat[]
 }
 
 type SortKey = 'games' | 'wins' | 'rate'
@@ -50,7 +62,11 @@ const MIN_GAME_OPTIONS = [1, 3, 5, 10]
 
 function computeChampionStats(rounds: Round[], players: PlayerRecord[]): ChampionStat[] {
   const playerNames = new Map(players.map(player => [player.id, player.real_name]))
-  const stats = new Map<string, { games: number; wins: number; playerGames: Map<string, number> }>()
+  const stats = new Map<string, {
+    games: number
+    wins: number
+    playerRecords: Map<string, { games: number; wins: number }>
+  }>()
 
   for (const round of rounds) {
     if (round.winner_team === null) continue
@@ -65,19 +81,33 @@ function computeChampionStats(rounds: Round[], players: PlayerRecord[]): Champio
         const name = champion.trim()
         if (!name) return
 
-        const current = stats.get(name) ?? { games: 0, wins: 0, playerGames: new Map<string, number>() }
+        const current = stats.get(name) ?? { games: 0, wins: 0, playerRecords: new Map<string, { games: number; wins: number }>() }
         current.games++
         if (team.won) current.wins++
         const playerId = team.ids[index]
-        if (playerId) current.playerGames.set(playerId, (current.playerGames.get(playerId) ?? 0) + 1)
+        if (playerId) {
+          const playerRecord = current.playerRecords.get(playerId) ?? { games: 0, wins: 0 }
+          playerRecord.games++
+          if (team.won) playerRecord.wins++
+          current.playerRecords.set(playerId, playerRecord)
+        }
         stats.set(name, current)
       })
     }
   }
 
   return [...stats.entries()].map(([name, stat]) => {
-    const [topPlayerId, topPlayerGames] = [...stat.playerGames.entries()]
-      .sort((a, b) => b[1] - a[1] || (playerNames.get(a[0]) ?? '').localeCompare(playerNames.get(b[0]) ?? '', 'ko'))[0] ?? ['', 0]
+    const playerStats = [...stat.playerRecords.entries()]
+      .map(([id, record]) => ({
+        id,
+        name: playerNames.get(id) ?? '알 수 없음',
+        games: record.games,
+        wins: record.wins,
+        losses: record.games - record.wins,
+        winRate: Math.round((record.wins / record.games) * 100),
+      }))
+      .sort((a, b) => b.games - a.games || b.wins - a.wins || a.name.localeCompare(b.name, 'ko'))
+    const topPlayer = playerStats[0]
 
     return {
       name,
@@ -85,8 +115,11 @@ function computeChampionStats(rounds: Round[], players: PlayerRecord[]): Champio
       wins: stat.wins,
       losses: stat.games - stat.wins,
       winRate: Math.round((stat.wins / stat.games) * 100),
-      topPlayerName: playerNames.get(topPlayerId) ?? '알 수 없음',
-      topPlayerGames,
+      topPlayerName: topPlayer?.name ?? '알 수 없음',
+      topPlayerGames: topPlayer?.games ?? 0,
+      topPlayerWins: topPlayer?.wins ?? 0,
+      topPlayerLosses: topPlayer?.losses ?? 0,
+      playerStats,
     }
   })
 }
@@ -100,6 +133,7 @@ export default function ChampionsPage() {
   const [minimumGames, setMinimumGames] = useState(1)
   const [sortBy, setSortBy] = useState<SortKey>('games')
   const [season, setSeason] = useState<Season>(2)
+  const [selectedChampionName, setSelectedChampionName] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -162,6 +196,21 @@ export default function ChampionsPage() {
   }, [season])
 
   const allStats = useMemo(() => computeChampionStats(rounds, players), [rounds, players])
+  const selectedChampion = useMemo(
+    () => allStats.find(stat => stat.name === selectedChampionName) ?? null,
+    [allStats, selectedChampionName],
+  )
+
+  useEffect(() => {
+    if (!selectedChampion) return
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setSelectedChampionName(null)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [selectedChampion])
 
   const visibleStats = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase('ko-KR')
@@ -184,8 +233,96 @@ export default function ChampionsPage() {
   }, [allStats])
 
   return (
-    <main id="main-content" className="app-page min-h-[100dvh] px-4 py-12 sm:px-12 sm:py-16" style={{ backgroundColor: '#FFFFFF', color: '#202020' }}>
+    <main id="main-content" className="app-page min-h-[100dvh] px-4 py-12 sm:px-12 sm:py-16" style={{ backgroundColor: 'var(--canvas)', color: 'var(--ink)' }}>
       <NavBar />
+
+      {selectedChampion && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(32,32,32,0.28)] backdrop-blur-sm sm:items-center sm:p-6"
+          onClick={() => setSelectedChampionName(null)}
+        >
+          <section
+            className="flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-[var(--line)] bg-[var(--canvas)] text-[var(--ink)] shadow-[0_30px_100px_rgba(32,32,32,0.22)] sm:max-w-3xl sm:rounded-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="champion-player-record-title"
+            onClick={event => event.stopPropagation()}
+          >
+            <header className="flex shrink-0 items-start justify-between gap-6 border-b border-[var(--line)] px-5 pb-6 pt-6 sm:px-9 sm:pb-8 sm:pt-9">
+              <div className="min-w-0">
+                <p className="mb-3 font-mono text-[0.62rem] font-semibold tracking-[0.18em] text-[var(--muted)] sm:text-xs">
+                  CHAMPION / PLAYER RECORDS
+                </p>
+                <h2
+                  id="champion-player-record-title"
+                  className="truncate text-[clamp(2.25rem,9vw,4.5rem)] font-black leading-[0.9] tracking-[-0.065em]"
+                >
+                  {selectedChampion.name}
+                </h2>
+                <p className="mt-4 text-sm font-medium text-[var(--muted)]">시즌 {season} · 플레이 선수 전체 전적</p>
+              </div>
+              <button
+                type="button"
+                className="grid size-12 shrink-0 place-items-center rounded-lg border border-[var(--line)] bg-[var(--surface)] text-2xl leading-none text-[var(--ink)] transition-colors hover:border-[var(--ink)] hover:bg-[var(--accent)] hover:text-[#171913] sm:size-14"
+                onClick={() => setSelectedChampionName(null)}
+                aria-label={`${selectedChampion.name} 선수 전적 닫기`}
+                autoFocus
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </header>
+
+            <dl className="grid shrink-0 grid-cols-3 border-b border-[var(--line)] bg-[var(--surface)]">
+              <div className="px-4 py-5 sm:px-8 sm:py-6">
+                <dt className="mb-2 font-mono text-[0.58rem] font-semibold tracking-[0.15em] text-[var(--muted)] sm:text-[0.68rem]">PLAYED</dt>
+                <dd className="m-0 text-2xl font-black tabular-nums tracking-[-0.04em] sm:text-4xl">{selectedChampion.games}</dd>
+              </div>
+              <div className="border-l border-[var(--line)] px-4 py-5 sm:px-8 sm:py-6">
+                <dt className="mb-2 font-mono text-[0.58rem] font-semibold tracking-[0.15em] text-[var(--muted)] sm:text-[0.68rem]">RECORD</dt>
+                <dd className="m-0 flex items-baseline gap-2 text-2xl font-black tabular-nums tracking-[-0.04em] sm:text-4xl">
+                  <span>{selectedChampion.wins}<small className="ml-0.5 text-xs text-[var(--positive)] sm:text-sm">W</small></span>
+                  <span>{selectedChampion.losses}<small className="ml-0.5 text-xs text-[var(--negative)] sm:text-sm">L</small></span>
+                </dd>
+              </div>
+              <div className="border-l border-[var(--line)] px-4 py-5 sm:px-8 sm:py-6">
+                <dt className="mb-2 font-mono text-[0.58rem] font-semibold tracking-[0.15em] text-[var(--muted)] sm:text-[0.68rem]">WIN RATE</dt>
+                <dd className={`m-0 text-2xl font-black tabular-nums tracking-[-0.04em] sm:text-4xl ${selectedChampion.winRate >= 50 ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
+                  {selectedChampion.winRate}<small className="ml-0.5 text-xs sm:text-sm">%</small>
+                </dd>
+              </div>
+            </dl>
+
+            <div className="flex min-h-0 flex-1 flex-col px-5 pb-7 pt-6 sm:px-9 sm:pb-9">
+              <div
+                className="grid shrink-0 grid-cols-[minmax(6rem,1fr)_3.2rem_5rem_3.5rem] items-center gap-x-2 border-b border-[var(--line)] pb-3 font-mono text-[0.56rem] font-semibold tracking-[0.1em] text-[var(--muted)] sm:grid-cols-[3rem_minmax(8rem,1fr)_4.25rem_7rem_4rem] sm:gap-x-4 sm:text-[0.65rem]"
+                aria-hidden="true"
+              >
+                <span className="hidden sm:block">#</span>
+                <span>PLAYER</span>
+                <span className="text-center">PLAYED</span>
+                <span className="text-center">RECORD</span>
+                <span className="text-right">RATE</span>
+              </div>
+              <ol className="min-h-0 overflow-y-auto [scrollbar-color:var(--surface-strong)_transparent]">
+                {selectedChampion.playerStats.map((player, index) => (
+                  <li
+                    key={player.id}
+                    className="grid min-h-16 grid-cols-[minmax(6rem,1fr)_3.2rem_5rem_3.5rem] items-center gap-x-2 border-b border-[var(--line)] text-sm tabular-nums transition-colors hover:bg-[var(--surface)] sm:min-h-20 sm:grid-cols-[3rem_minmax(8rem,1fr)_4.25rem_7rem_4rem] sm:gap-x-4"
+                  >
+                    <span className="hidden font-mono text-xs text-[var(--muted)] sm:block">{String(index + 1).padStart(2, '0')}</span>
+                    <strong className="truncate text-base font-bold tracking-[-0.025em] sm:text-lg">{player.name}</strong>
+                    <span className="text-center font-semibold text-[var(--muted)]">{player.games}</span>
+                    <span className="text-center font-bold">{player.wins}승 <span className="text-[var(--muted)]">{player.losses}패</span></span>
+                    <b className={`text-right font-extrabold ${player.winRate >= 50 ? 'text-[var(--positive)]' : 'text-[var(--negative)]'}`}>
+                      {player.winRate}%
+                    </b>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        </div>
+      )}
 
       <div className="mx-auto max-w-6xl pt-16">
         <div className="mb-2 flex items-center justify-between gap-4">
@@ -195,11 +332,14 @@ export default function ChampionsPage() {
               <button
                 key={value}
                 type="button"
-                onClick={() => setSeason(value)}
+                onClick={() => {
+                  setSeason(value)
+                  setSelectedChampionName(null)
+                }}
                 className="rounded-full px-4 py-1.5 text-sm font-medium transition-opacity hover:opacity-80"
                 style={{
-                  backgroundColor: season === value ? '#202020' : '#DEE0E2',
-                  color: season === value ? '#ECEEF0' : '#202020',
+                  backgroundColor: season === value ? 'var(--ink)' : 'var(--surface-strong)',
+                  color: season === value ? 'var(--on-ink)' : 'var(--ink)',
                 }}
               >
                 시즌 {value}
@@ -213,13 +353,13 @@ export default function ChampionsPage() {
 
         {loading && (
           <div className="space-y-3" aria-label="챔피언 통계를 불러오는 중">
-            <div className="h-20 animate-pulse rounded-2xl" style={{ backgroundColor: '#F0F1F2' }} />
-            <div className="h-64 animate-pulse rounded-2xl" style={{ backgroundColor: '#F0F1F2' }} />
+            <div className="h-20 animate-pulse rounded-2xl" style={{ backgroundColor: 'var(--surface)' }} />
+            <div className="h-64 animate-pulse rounded-2xl" style={{ backgroundColor: 'var(--surface)' }} />
           </div>
         )}
 
         {!loading && errorMessage && (
-          <div className="rounded-2xl px-5 py-4 text-sm" role="alert" style={{ backgroundColor: '#F1D8D5', color: '#8B2F25' }}>
+          <div className="rounded-2xl px-5 py-4 text-sm" role="alert" style={{ backgroundColor: 'var(--negative-surface)', color: 'var(--negative-on-surface)' }}>
             {errorMessage}
           </div>
         )}
@@ -233,7 +373,7 @@ export default function ChampionsPage() {
 
         {!loading && !errorMessage && allStats.length > 0 && (
           <>
-            <section className="mb-8 grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-4" style={{ backgroundColor: '#F0F1F2' }}>
+            <section className="mb-8 grid grid-cols-2 overflow-hidden rounded-2xl sm:grid-cols-4" style={{ backgroundColor: 'var(--surface)' }}>
               {[
                 { label: '챔피언', value: `${allStats.length}종` },
                 { label: '집계된 픽 수', value: `${summary.totalPicks}회` },
@@ -243,7 +383,7 @@ export default function ChampionsPage() {
                 <div
                   key={label}
                   className={`px-4 py-5 sm:border-t-0 sm:px-6 ${index > 0 ? 'sm:border-l' : ''} ${index % 2 === 1 ? 'border-l' : ''} ${index >= 2 ? 'border-t' : ''}`}
-                  style={{ borderColor: '#FFFFFF' }}
+                  style={{ borderColor: 'var(--canvas)' }}
                 >
                   <p className="mb-1 text-xs" style={{ opacity: 0.5 }}>{label}</p>
                   <p className="truncate text-base font-bold sm:text-lg" title={value}>{value}</p>
@@ -260,8 +400,8 @@ export default function ChampionsPage() {
                   value={query}
                   onChange={event => setQuery(event.target.value)}
                   placeholder="이름 입력"
-                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-[#202020]"
-                  style={{ backgroundColor: '#F0F1F2', color: '#202020' }}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-[var(--ink)]"
+                  style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}
                 />
               </div>
 
@@ -275,7 +415,7 @@ export default function ChampionsPage() {
                         type="button"
                         onClick={() => setMinimumGames(value)}
                         className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.98]"
-                        style={{ backgroundColor: minimumGames === value ? '#202020' : '#F0F1F2', color: minimumGames === value ? '#FFFFFF' : '#202020' }}
+                        style={{ backgroundColor: minimumGames === value ? 'var(--ink)' : 'var(--surface)', color: minimumGames === value ? 'var(--on-ink)' : 'var(--ink)' }}
                       >
                         {value}회 이상
                       </button>
@@ -292,7 +432,7 @@ export default function ChampionsPage() {
                         type="button"
                         onClick={() => setSortBy(key)}
                         className="whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-opacity hover:opacity-80 active:scale-[0.98]"
-                        style={{ backgroundColor: sortBy === key ? '#202020' : '#F0F1F2', color: sortBy === key ? '#FFFFFF' : '#202020' }}
+                        style={{ backgroundColor: sortBy === key ? 'var(--ink)' : 'var(--surface)', color: sortBy === key ? 'var(--on-ink)' : 'var(--ink)' }}
                       >
                         {label}
                       </button>
@@ -307,10 +447,10 @@ export default function ChampionsPage() {
                 <p className="text-sm font-medium" style={{ opacity: 0.5 }}>조건에 맞는 챔피언이 없습니다.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl" style={{ backgroundColor: '#F0F1F2' }}>
+              <div className="overflow-x-auto rounded-2xl" style={{ backgroundColor: 'var(--surface)' }}>
                 <table className="w-full min-w-[640px] text-sm">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #FFFFFF' }}>
+                    <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
                       <th className="w-14 px-4 py-4 text-center font-semibold" style={{ opacity: 0.5 }}>#</th>
                       <th className="px-4 py-4 text-left font-semibold" style={{ opacity: 0.5 }}>챔피언</th>
                       <th className="px-4 py-4 text-center font-semibold" style={{ opacity: 0.5 }}>픽</th>
@@ -322,18 +462,30 @@ export default function ChampionsPage() {
                   </thead>
                   <tbody>
                     {visibleStats.map((stat, index) => (
-                      <tr key={stat.name} style={{ borderTop: '1px solid #FFFFFF' }}>
+                      <tr key={stat.name} style={{ borderTop: '1px solid var(--canvas)' }}>
                         <td className="px-4 py-3 text-center font-medium" style={{ opacity: 0.35 }}>{index + 1}</td>
-                        <td className="px-4 py-3 font-bold">{stat.name}</td>
+                        <td className="px-4 py-3 font-bold">
+                          <button
+                            type="button"
+                            className="group inline-flex items-center gap-2 text-left font-bold hover:opacity-60"
+                            onClick={() => setSelectedChampionName(stat.name)}
+                            aria-haspopup="dialog"
+                          >
+                            <span className="border-b border-current">{stat.name}</span>
+                            <span className="text-xs opacity-30 transition-transform group-hover:translate-x-1" aria-hidden="true">↗</span>
+                          </button>
+                        </td>
                         <td className="px-4 py-3 text-center font-bold">{stat.games}</td>
                         <td className="px-4 py-3 text-center">{stat.wins}</td>
                         <td className="px-4 py-3 text-center">{stat.losses}</td>
-                        <td className="px-4 py-3 text-center font-bold" style={{ color: stat.winRate >= 50 ? '#2d7a3a' : '#c0392b' }}>
+                        <td className="px-4 py-3 text-center font-bold" style={{ color: stat.winRate >= 50 ? 'var(--positive)' : 'var(--negative)' }}>
                           {stat.winRate}%
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className="font-medium">{stat.topPlayerName}</span>
-                          <span className="ml-1" style={{ opacity: 0.45 }}>{stat.topPlayerGames}회</span>
+                          <span className="ml-1" style={{ opacity: 0.45 }}>
+                            {stat.topPlayerGames}회 · {stat.topPlayerWins}승 {stat.topPlayerLosses}패
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -347,4 +499,3 @@ export default function ChampionsPage() {
     </main>
   )
 }
-
