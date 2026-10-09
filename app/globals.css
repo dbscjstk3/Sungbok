@@ -475,16 +475,46 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   white-space: nowrap;
 }
 
-.standings-player-lists {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.standings-player-records {
   margin: 0 clamp(2rem, 5vw, 3.5rem);
   padding: 2rem 0 2.5rem;
 }
 
-.standings-player-list-section { min-width: 0; }
-.standings-player-list-section + .standings-player-list-section { padding-left: 2rem; border-left: 1px solid var(--line); }
-.standings-player-list-section:first-child:not(:last-child) { padding-right: 2rem; }
+.standings-player-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+
+.standings-player-tabs button {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  padding: 1rem 1.15rem;
+  background: transparent;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 750;
+  text-align: left;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.standings-player-tabs button + button { border-left: 1px solid var(--line); }
+.standings-player-tabs button:hover { background: var(--surface); color: var(--ink); }
+.standings-player-tabs button.is-active { background: var(--accent); color: #171913; }
+.standings-player-tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.standings-player-tabs small {
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .62rem;
+  font-variant-numeric: tabular-nums;
+  opacity: .6;
+}
+
+.standings-player-tab-panel { min-height: 12rem; }
 
 .standings-player-list {
   max-height: 17rem;
@@ -517,6 +547,17 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   color: var(--muted);
   font-size: .66rem;
   text-align: right;
+}
+
+.standings-player-list-meta.is-matchup { grid-template-columns: 4.5rem 2.6rem; }
+
+.standings-player-empty {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 650;
 }
 
 .standings-player-list-meta b { font-weight: 800; }
@@ -611,9 +652,9 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   .standings-player-streaks dt { min-height: 2.2em; margin-bottom: .65rem; font-size: .54rem; letter-spacing: .08em; }
   .standings-player-streaks dd { font-size: 2rem; }
   .standings-player-trend { margin-inline: 1.25rem; padding-top: 1.6rem; }
-  .standings-player-lists { grid-template-columns: 1fr; margin-inline: 1.25rem; padding-top: 1.6rem; }
-  .standings-player-list-section:first-child:not(:last-child) { padding-right: 0; padding-bottom: 1.75rem; }
-  .standings-player-list-section + .standings-player-list-section { padding-top: 1.75rem; padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
+  .standings-player-records { margin-inline: 1.25rem; padding-top: 1.6rem; }
+  .standings-player-tabs button { justify-content: center; padding: .85rem .4rem; font-size: .68rem; text-align: center; }
+  .standings-player-tabs small { display: none; }
   .standings-player-list { max-height: 14rem; }
 }
 

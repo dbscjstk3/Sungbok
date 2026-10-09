@@ -67,12 +67,14 @@ interface PersonalDetail {
   longestLossStreak: number
   sessionCount: number
   teammates: { player: Player; games: number; wins: number; winRate: number }[]
+  opponents: { player: Player; games: number; wins: number; losses: number; winRate: number }[]
   topChampions: { name: string; games: number; wins: number; winRate: number }[]
   profitTrend: { session: number; profit: number }[]
 }
 
 type SortKey = 'total' | 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
 type Season = 1 | 2
+type DetailTab = 'teammates' | 'opponents' | 'champions'
 
 const MORE_LEAGUE_MAX_GAMES = 30
 
@@ -198,6 +200,32 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     .filter((teammate): teammate is NonNullable<typeof teammate> => teammate !== null)
     .sort((a, b) => b.games - a.games || b.winRate - a.winRate || a.player.real_name.localeCompare(b.player.real_name, 'ko'))
 
+  const opponentCount = new Map<string, { games: number; wins: number }>()
+  for (const r of playerRounds) {
+    const opponents = r.team1_ids.includes(playerId) ? r.team2_ids : r.team1_ids
+    const won = (r.team1_ids.includes(playerId) && r.winner_team === 1) || (r.team2_ids.includes(playerId) && r.winner_team === 2)
+    for (const opponentId of opponents) {
+      const prev = opponentCount.get(opponentId) ?? { games: 0, wins: 0 }
+      prev.games++
+      if (won) prev.wins++
+      opponentCount.set(opponentId, prev)
+    }
+  }
+
+  const opponents = [...opponentCount.entries()]
+    .map(([opponentId, opponentStat]) => {
+      const opponent = players.find(candidate => candidate.id === opponentId)
+      if (!opponent) return null
+      return {
+        player: opponent,
+        ...opponentStat,
+        losses: opponentStat.games - opponentStat.wins,
+        winRate: Math.round((opponentStat.wins / opponentStat.games) * 100),
+      }
+    })
+    .filter((opponent): opponent is NonNullable<typeof opponent> => opponent !== null)
+    .sort((a, b) => a.winRate - b.winRate || b.games - a.games || a.player.real_name.localeCompare(b.player.real_name, 'ko'))
+
   const champMap = new Map<string, { games: number; wins: number }>()
   for (const r of playerRounds) {
     const t1Idx = r.team1_ids.indexOf(playerId)
@@ -247,6 +275,7 @@ function computePersonalDetail(playerId: string, players: Player[], rounds: Roun
     longestLossStreak: maxLoss,
     sessionCount: new Set(playerRounds.map(r => r.session_id)).size,
     teammates,
+    opponents,
     topChampions,
     profitTrend,
   }
@@ -260,6 +289,7 @@ export default function StandingsPage() {
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<SortKey>('profit')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+  const [detailTab, setDetailTab] = useState<DetailTab>('teammates')
   const [season, setSeason] = useState<Season>(2)
 
   const givingPickStats = useMemo(() => computeGivingPickStats(allRounds), [allRounds])
@@ -309,7 +339,7 @@ export default function StandingsPage() {
     return result
   }, [allRounds])
 
-  const duoMinGames = season === 2 ? 20 : 50
+  const duoMinGames = season === 2 ? 50 : 50
   const duoStats = useMemo(
     () => computeDuoStats(allPlayers, allRounds, duoMinGames),
     [allPlayers, allRounds, duoMinGames]
@@ -502,13 +532,37 @@ export default function StandingsPage() {
                 )
               })()}
 
-              <div className="standings-player-lists">
-                {personalDetail.teammates.length > 0 && (
-                  <section className="standings-player-list-section" aria-labelledby="teammate-list-title">
-                    <div className="standings-player-section-heading">
-                      <h3 id="teammate-list-title">함께한 선수</h3>
-                      <span>{personalDetail.teammates.length}명</span>
-                    </div>
+              <section className="standings-player-records" aria-label="선수 상세 기록">
+                <div className="standings-player-tabs" role="tablist" aria-label="상세 기록 선택">
+                  {([
+                    { key: 'teammates', label: '함께한 선수', count: personalDetail.teammates.length },
+                    { key: 'opponents', label: '상대 전적', count: personalDetail.opponents.length },
+                    { key: 'champions', label: '플레이 챔피언', count: personalDetail.topChampions.length },
+                  ] as { key: DetailTab; label: string; count: number }[]).map(tab => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      role="tab"
+                      id={`detail-tab-${tab.key}`}
+                      aria-controls={`detail-panel-${tab.key}`}
+                      aria-selected={detailTab === tab.key}
+                      tabIndex={detailTab === tab.key ? 0 : -1}
+                      className={detailTab === tab.key ? 'is-active' : ''}
+                      onClick={() => setDetailTab(tab.key)}
+                    >
+                      <span>{tab.label}</span>
+                      <small>{tab.count}</small>
+                    </button>
+                  ))}
+                </div>
+
+                <div
+                  id={`detail-panel-${detailTab}`}
+                  role="tabpanel"
+                  aria-labelledby={`detail-tab-${detailTab}`}
+                  className="standings-player-tab-panel"
+                >
+                  {detailTab === 'teammates' && (
                     <ol className="standings-player-list">
                       {personalDetail.teammates.map((teammate, index) => (
                         <li key={teammate.player.id}>
@@ -521,30 +575,43 @@ export default function StandingsPage() {
                         </li>
                       ))}
                     </ol>
-                  </section>
-                )}
+                  )}
 
-                {personalDetail.topChampions.length > 0 && (
-                  <section className="standings-player-list-section" aria-labelledby="champion-list-title">
-                    <div className="standings-player-section-heading">
-                      <h3 id="champion-list-title">플레이한 챔피언</h3>
-                      <span>{personalDetail.topChampions.length}종</span>
-                    </div>
+                  {detailTab === 'opponents' && (
                     <ol className="standings-player-list">
-                      {personalDetail.topChampions.map((champion, index) => (
-                        <li key={champion.name}>
+                      {personalDetail.opponents.map((opponent, index) => (
+                        <li key={opponent.player.id}>
                           <span className="standings-player-rank">{String(index + 1).padStart(2, '0')}</span>
-                          <strong>{champion.name}</strong>
-                          <span className="standings-player-list-meta">
-                            <span>{champion.games}판</span>
-                            <b className={champion.winRate >= 50 ? 'is-positive' : 'is-negative'}>{champion.winRate}%</b>
+                          <strong>{opponent.player.real_name}</strong>
+                          <span className="standings-player-list-meta is-matchup">
+                            <span>{opponent.wins}승 {opponent.losses}패</span>
+                            <b className={opponent.winRate >= 50 ? 'is-positive' : 'is-negative'}>{opponent.winRate}%</b>
                           </span>
                         </li>
                       ))}
                     </ol>
-                  </section>
-                )}
-              </div>
+                  )}
+
+                  {detailTab === 'champions' && (
+                    personalDetail.topChampions.length > 0 ? (
+                      <ol className="standings-player-list">
+                        {personalDetail.topChampions.map((champion, index) => (
+                          <li key={champion.name}>
+                            <span className="standings-player-rank">{String(index + 1).padStart(2, '0')}</span>
+                            <strong>{champion.name}</strong>
+                            <span className="standings-player-list-meta">
+                              <span>{champion.games}판</span>
+                              <b className={champion.winRate >= 50 ? 'is-positive' : 'is-negative'}>{champion.winRate}%</b>
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p className="standings-player-empty">기록된 챔피언 정보가 없습니다.</p>
+                    )
+                  )}
+                </div>
+              </section>
             </div>
           </section>
         </div>
@@ -668,7 +735,7 @@ export default function StandingsPage() {
                             <tr key={s.player.id} style={{ borderTop: '1px solid var(--canvas)' }}>
                               <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
                               <td className="w-px whitespace-nowrap px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
-                                <button onClick={() => setSelectedPlayerId(s.player.id)}
+                                <button onClick={() => { setDetailTab('teammates'); setSelectedPlayerId(s.player.id) }}
                                   className="underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
                                   {s.player.real_name}
                                 </button>
