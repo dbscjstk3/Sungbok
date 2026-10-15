@@ -156,25 +156,48 @@ export default function HighlightsPage() {
     }
 
     setUploadStep('uploading')
+    try {
+      const prepareResponse = await fetch('/api/highlights', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          action: 'prepare',
+          uploaderName: cleanName,
+          title: cleanTitle,
+          duration: Number(duration.toFixed(2)),
+          fileSize: file.size,
+          contentType: file.type,
+        }),
+      })
+      if (!prepareResponse.ok) throw new Error('prepare failed')
 
-    const formData = new FormData()
-    formData.set('uploaderName', cleanName)
-    formData.set('title', cleanTitle)
-    formData.set('duration', duration.toFixed(2))
-    formData.set('file', file)
+      const prepared = await prepareResponse.json() as {
+        upload: { url: string; fields: Record<string, string> }
+        token: string
+      }
+      const uploadBody = new FormData()
+      Object.entries(prepared.upload.fields).forEach(([key, value]) => uploadBody.set(key, value))
+      uploadBody.set('file', file)
 
-    const response = await fetch('/api/highlights', {
-      method: 'POST',
-      body: formData,
-    })
+      const uploadResponse = await fetch(prepared.upload.url, {
+        method: 'POST',
+        body: uploadBody,
+      })
+      if (!uploadResponse.ok) throw new Error('storage upload failed')
 
-    if (!response.ok) {
+      setUploadStep('saving')
+      const finalizeResponse = await fetch('/api/highlights', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'finalize', token: prepared.token }),
+      })
+      if (!finalizeResponse.ok) throw new Error('finalize failed')
+    } catch {
       setUploadStep('idle')
       setFormError('영상 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.')
       return
     }
 
-    setUploadStep('saving')
     setUploaderName('')
     setTitle('')
     setFile(null)
