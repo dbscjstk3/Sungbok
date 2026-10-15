@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "player_count": 23,
-    "session_count": 79,
-    "round_count": 760,
+    "player_count": 24,
+    "session_count": 90,
+    "round_count": 875,
     "first_session_at": "2026-06-08T12:43:15.411Z",
-    "last_session_at": "2026-09-29T12:10:45.099Z"
+    "last_session_at": "2026-10-14T14:20:30.258Z"
   },
   "players": [
     {
@@ -144,6 +144,12 @@
       "real_name": "플레이어 23",
       "summoner_name": null,
       "created_at": "2026-07-04T11:52:14.807Z"
+    },
+    {
+      "id": "player-24",
+      "real_name": "플레이어 24",
+      "summoner_name": null,
+      "created_at": "2026-10-03T10:35:16.224Z"
     }
   ],
   "seasons": {
@@ -13913,14 +13919,80 @@
         },
         {
           "id": "s2-session-23",
-          "created_at": "2026-09-29T12:10:03.176Z",
-          "ended_at": "2026-09-29T16:16:41.616Z",
+          "created_at": "2026-09-29T12:10:45.099Z",
+          "ended_at": "2026-09-29T16:16:56.082Z",
           "bet_amount": 3000
         },
         {
           "id": "s2-session-24",
-          "created_at": "2026-09-29T12:10:45.099Z",
-          "ended_at": "2026-09-29T16:16:56.082Z",
+          "created_at": "2026-10-01T12:38:43.524Z",
+          "ended_at": "2026-10-01T15:38:14.115Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-25",
+          "created_at": "2026-10-03T12:34:17.296Z",
+          "ended_at": "2026-10-03T17:57:03.942Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-26",
+          "created_at": "2026-10-04T17:33:25.299Z",
+          "ended_at": "2026-10-04T19:47:04.226Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-27",
+          "created_at": "2026-10-05T10:10:44.405Z",
+          "ended_at": "2026-10-05T13:50:49.175Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-28",
+          "created_at": "2026-10-05T13:54:46.699Z",
+          "ended_at": "2026-10-05T16:06:52.358Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-29",
+          "created_at": "2026-10-08T12:31:22.772Z",
+          "ended_at": "2026-10-08T16:44:11.989Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-30",
+          "created_at": "2026-10-09T14:41:14.407Z",
+          "ended_at": "2026-10-09T15:07:07.869Z",
+          "bet_amount": 1000
+        },
+        {
+          "id": "s2-session-31",
+          "created_at": "2026-10-09T15:08:15.186Z",
+          "ended_at": "2026-10-09T16:16:44.759Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-32",
+          "created_at": "2026-10-10T11:03:03.987Z",
+          "ended_at": "2026-10-10T16:14:28.301Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-33",
+          "created_at": "2026-10-11T12:34:10.625Z",
+          "ended_at": "2026-10-11T16:09:44.135Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-34",
+          "created_at": "2026-10-14T12:05:17.971Z",
+          "ended_at": "2026-10-14T14:18:26.030Z",
+          "bet_amount": 3000
+        },
+        {
+          "id": "s2-session-35",
+          "created_at": "2026-10-14T14:20:30.258Z",
+          "ended_at": "2026-10-14T16:13:39.852Z",
           "bet_amount": 3000
         }
       ],
@@ -14113,7 +14185,7 @@
           "team1_champions": [
             "그레이브즈",
             "피들스틱",
-            "미스포춘",
+            "미스 포츈",
             "케이틀린",
             "라이즈"
           ],
@@ -14188,7 +14260,7 @@
           "team2_champions": [
             "신드라",
             "크산테",
-            "미스포춘",
+            "미스 포츈",
             "베인",
             "케이틀린"
           ]
@@ -14217,7 +14289,7 @@
             "렐",
             "티모",
             "알리스타",
-            "미스포춘"
+            "미스 포츈"
           ],
           "team2_champions": [
             "아크샨",
@@ -14358,7 +14430,7 @@
           "team2_champions": [
             "브랜드",
             "나피리",
-            "미스포춘",
+            "미스 포츈",
             "블리츠크랭크",
             "루시안"
           ]
@@ -14563,7 +14635,7 @@
             "스웨인",
             "그레이브즈",
             "요네",
-            "미스포춘",
+            "미스 포츈",
             "직스"
           ]
         },
@@ -14657,7 +14729,7 @@
           "team1_champions": [
             "초가스",
             "사일러스",
-            "탐켄치",
+            "탐 켄치",
             "나미",
             "코그모"
           ],
@@ -14731,7 +14803,7 @@
           ],
           "team2_champions": [
             "루시안",
-            "탐켄치",
+            "탐 켄치",
             "조이",
             "브랜드",
             "소라카"
@@ -15439,7 +15511,7 @@
           "team1_champions": [
             "제이스",
             "유나라",
-            "탐켄치",
+            "탐 켄치",
             "세주아니",
             "브라이어"
           ],
@@ -15447,7 +15519,7 @@
             "세라핀",
             "세트",
             "루시안",
-            "미스포춘",
+            "미스 포츈",
             "제드"
           ]
         },
@@ -15471,7 +15543,7 @@
           "winner_team": 1,
           "created_at": "2026-09-10T13:33:17.515Z",
           "team1_champions": [
-            "문도박사",
+            "문도 박사",
             "블리츠크랭크",
             "신드라",
             "코그모",
@@ -21025,7 +21097,7 @@
         },
         {
           "id": "s2-round-214",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-05",
             "player-09",
@@ -21051,7 +21123,7 @@
         },
         {
           "id": "s2-round-215",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-05",
             "player-09",
@@ -21121,7 +21193,7 @@
         },
         {
           "id": "s2-round-218",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-02",
             "player-05",
@@ -21147,7 +21219,7 @@
         },
         {
           "id": "s2-round-219",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-05",
@@ -21217,7 +21289,7 @@
         },
         {
           "id": "s2-round-222",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-02",
             "player-04",
@@ -21265,7 +21337,7 @@
         },
         {
           "id": "s2-round-224",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-02",
             "player-05",
@@ -21313,7 +21385,7 @@
         },
         {
           "id": "s2-round-226",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-14",
@@ -21361,7 +21433,7 @@
         },
         {
           "id": "s2-round-228",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-09",
@@ -21409,7 +21481,7 @@
         },
         {
           "id": "s2-round-230",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-02",
             "player-09",
@@ -21457,7 +21529,7 @@
         },
         {
           "id": "s2-round-232",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-05",
             "player-09",
@@ -21505,7 +21577,7 @@
         },
         {
           "id": "s2-round-234",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-05",
@@ -21531,7 +21603,7 @@
         },
         {
           "id": "s2-round-235",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-02",
             "player-05",
@@ -21601,7 +21673,7 @@
         },
         {
           "id": "s2-round-238",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-09",
@@ -21649,7 +21721,7 @@
         },
         {
           "id": "s2-round-240",
-          "session_id": "s2-session-24",
+          "session_id": "s2-session-23",
           "team1_ids": [
             "player-04",
             "player-05",
@@ -21671,6 +21743,3820 @@
             "그레이브즈",
             "카이사",
             "자이라"
+          ]
+        },
+        {
+          "id": "s2-round-241",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-08",
+            "player-17",
+            "player-14",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-04",
+            "player-09",
+            "player-13"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T12:57:57.235Z",
+          "team1_champions": [
+            "자르반 4세",
+            "갈리오",
+            "징크스",
+            "블리츠크랭크",
+            "브랜드"
+          ],
+          "team2_champions": [
+            "애니비아",
+            "나미",
+            "벡스",
+            "샤코",
+            "그레이브즈"
+          ]
+        },
+        {
+          "id": "s2-round-242",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-07",
+            "player-17",
+            "player-09",
+            "player-13",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-08",
+            "player-04",
+            "player-14",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-01T13:11:10.580Z",
+          "team1_champions": [
+            "문도 박사",
+            "소라카",
+            "직스",
+            "스웨인",
+            "유나라"
+          ],
+          "team2_champions": [
+            "잭스",
+            "판테온",
+            "신드라",
+            "카서스",
+            "이즈리얼"
+          ]
+        },
+        {
+          "id": "s2-round-243",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-07",
+            "player-17",
+            "player-04",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-08",
+            "player-09",
+            "player-13",
+            "player-14"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T13:32:54.939Z",
+          "team1_champions": [
+            "타릭",
+            "룰루",
+            "오른",
+            "브랜드",
+            "카이사"
+          ],
+          "team2_champions": [
+            "오공",
+            "리븐",
+            "하이머딩거",
+            "소나",
+            "루시안"
+          ]
+        },
+        {
+          "id": "s2-round-244",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-05",
+            "player-08",
+            "player-04",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-17",
+            "player-09",
+            "player-13",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-01T13:53:59.554Z",
+          "team1_champions": [
+            "블라디미르",
+            "레오나",
+            "로크",
+            "제드",
+            "카시오페아"
+          ],
+          "team2_champions": [
+            "아우렐리온 솔",
+            "룰루",
+            "드레이븐",
+            "니달리",
+            "릴리아"
+          ]
+        },
+        {
+          "id": "s2-round-245",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-08",
+            "player-17",
+            "player-09",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-04",
+            "player-13",
+            "player-14"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T14:15:22.274Z",
+          "team1_champions": [
+            "자헨",
+            "레오나",
+            "세나",
+            "레나타 글라스크",
+            "르블랑"
+          ],
+          "team2_champions": [
+            "암베사",
+            "크산테",
+            "킨드레드",
+            "트런들",
+            "니달리"
+          ]
+        },
+        {
+          "id": "s2-round-246",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-07",
+            "player-08",
+            "player-04",
+            "player-09",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-13",
+            "player-15",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T14:32:38.800Z",
+          "team1_champions": [
+            "일라오이",
+            "아트록스",
+            "소나",
+            "질리언",
+            "코그모"
+          ],
+          "team2_champions": [
+            "그웬",
+            "노틸러스",
+            "모르가나",
+            "제리",
+            "제이스"
+          ]
+        },
+        {
+          "id": "s2-round-247",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-05",
+            "player-08",
+            "player-04",
+            "player-13",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-17",
+            "player-09",
+            "player-15",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T14:45:36.027Z",
+          "team1_champions": [
+            "벨코즈",
+            "사일러스",
+            "제이스",
+            "이즈리얼",
+            "뽀삐"
+          ],
+          "team2_champions": [
+            "케일",
+            "쉔",
+            "마스터 이",
+            "아펠리오스",
+            "카이사"
+          ]
+        },
+        {
+          "id": "s2-round-248",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-07",
+            "player-08",
+            "player-13",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-04",
+            "player-09",
+            "player-14"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-01T15:02:29.634Z",
+          "team1_champions": [
+            "쉔",
+            "탈론",
+            "베인",
+            "세나",
+            "르블랑"
+          ],
+          "team2_champions": [
+            "말자하",
+            "바이",
+            "오로라",
+            "모르가나",
+            "케이틀린"
+          ]
+        },
+        {
+          "id": "s2-round-249",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-09",
+            "player-13",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-17",
+            "player-04",
+            "player-14",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-01T15:19:07.312Z",
+          "team1_champions": [
+            "암베사",
+            "질리언",
+            "이즈리얼",
+            "루시안",
+            "블라디미르"
+          ],
+          "team2_champions": [
+            "세트",
+            "오른",
+            "오로라",
+            "진",
+            "자르반 4세"
+          ]
+        },
+        {
+          "id": "s2-round-250",
+          "session_id": "s2-session-24",
+          "team1_ids": [
+            "player-07",
+            "player-08",
+            "player-04",
+            "player-09",
+            "player-13"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-14",
+            "player-15",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-01T15:38:09.124Z",
+          "team1_champions": [
+            "탐 켄치",
+            "암베사",
+            "레오나",
+            "조이",
+            "제드"
+          ],
+          "team2_champions": [
+            "헤카림",
+            "마오카이",
+            "카이사",
+            "신드라",
+            "베인"
+          ]
+        },
+        {
+          "id": "s2-round-251",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-02",
+            "player-04",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-10",
+            "player-13",
+            "player-24",
+            "player-15",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T12:53:17.994Z",
+          "team1_champions": [
+            "헤카림",
+            "알리스타",
+            "퀸",
+            "니코",
+            "갱플랭크"
+          ],
+          "team2_champions": [
+            "블리츠크랭크",
+            "소나",
+            "",
+            "징크스",
+            "제라스"
+          ]
+        },
+        {
+          "id": "s2-round-252",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-10",
+            "player-13",
+            "player-24",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-02",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T13:15:28.158Z",
+          "team1_champions": [
+            "티모",
+            "모르가나",
+            "",
+            "카이사",
+            "리 신"
+          ],
+          "team2_champions": [
+            "세트",
+            "쓰레쉬",
+            "그레이브즈",
+            "녹턴",
+            "직스"
+          ]
+        },
+        {
+          "id": "s2-round-253",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-10",
+            "player-24",
+            "player-04",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-13",
+            "player-02",
+            "player-14",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T13:36:53.917Z",
+          "team1_champions": [
+            "암베사",
+            "브라이어",
+            "",
+            "트위치",
+            "카이사"
+          ],
+          "team2_champions": [
+            "리븐",
+            "소나",
+            "스몰더",
+            "빅토르",
+            "블리츠크랭크"
+          ]
+        },
+        {
+          "id": "s2-round-254",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-13",
+            "player-24",
+            "player-14",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-10",
+            "player-02",
+            "player-04"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T13:54:58.375Z",
+          "team1_champions": [
+            "그레이브즈",
+            "",
+            "벨코즈",
+            "티모",
+            "진"
+          ],
+          "team2_champions": [
+            "그웬",
+            "일라오이",
+            "비에고",
+            "카사딘",
+            "빅토르"
+          ]
+        },
+        {
+          "id": "s2-round-255",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-07",
+            "player-13",
+            "player-24",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-10",
+            "player-02",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T14:13:51.943Z",
+          "team1_champions": [
+            "나미",
+            "블라디미르",
+            "",
+            "나르",
+            "이즈리얼"
+          ],
+          "team2_champions": [
+            "레오나",
+            "미스 포츈",
+            "케이틀린",
+            "카이사",
+            "세라핀"
+          ]
+        },
+        {
+          "id": "s2-round-256",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-13",
+            "player-24",
+            "player-02",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-10",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T14:31:51.890Z",
+          "team1_champions": [
+            "트위스티드 페이트",
+            "",
+            "퀸",
+            "모데카이저",
+            "아무무"
+          ],
+          "team2_champions": [
+            "갈리오",
+            "잔나",
+            "세라핀",
+            "오로라",
+            "브랜드"
+          ]
+        },
+        {
+          "id": "s2-round-257",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-13",
+            "player-04",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-10",
+            "player-24",
+            "player-02",
+            "player-14",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T14:49:00.259Z",
+          "team1_champions": [
+            "에코",
+            "세트",
+            "유미",
+            "리산드라",
+            "사미라"
+          ],
+          "team2_champions": [
+            "엘리스",
+            "",
+            "트위스티드 페이트",
+            "바루스",
+            "자르반 4세"
+          ]
+        },
+        {
+          "id": "s2-round-258",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-10",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-13",
+            "player-24",
+            "player-02",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T15:03:57.825Z",
+          "team1_champions": [
+            "세트",
+            "카밀",
+            "아무무",
+            "요네",
+            "애쉬"
+          ],
+          "team2_champions": [
+            "애니비아",
+            "",
+            "마스터 이",
+            "바루스",
+            "징크스"
+          ]
+        },
+        {
+          "id": "s2-round-259",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-07",
+            "player-10",
+            "player-13",
+            "player-04",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-24",
+            "player-02",
+            "player-15",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T15:21:16.172Z",
+          "team1_champions": [
+            "신지드",
+            "말파이트",
+            "말자하",
+            "아펠리오스",
+            "블리츠크랭크"
+          ],
+          "team2_champions": [
+            "이렐리아",
+            "",
+            "탈론",
+            "쉔",
+            "트리스타나"
+          ]
+        },
+        {
+          "id": "s2-round-260",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-10",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-13",
+            "player-24",
+            "player-02",
+            "player-04",
+            "player-14"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T15:34:15.437Z",
+          "team1_champions": [
+            "카직스",
+            "파이크",
+            "그라가스",
+            "케일",
+            "이즈리얼"
+          ],
+          "team2_champions": [
+            "소나",
+            "",
+            "케이틀린",
+            "오른",
+            "뽀삐"
+          ]
+        },
+        {
+          "id": "s2-round-261",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-10",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-13",
+            "player-24",
+            "player-02",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T15:51:00.230Z",
+          "team1_champions": [
+            "아칼리",
+            "제이스",
+            "다이애나",
+            "바루스",
+            "시비르"
+          ],
+          "team2_champions": [
+            "멜",
+            "",
+            "징크스",
+            "카직스",
+            "니달리"
+          ]
+        },
+        {
+          "id": "s2-round-262",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-10",
+            "player-13",
+            "player-02",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-24",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T16:10:05.416Z",
+          "team1_champions": [
+            "누누와 윌럼프",
+            "베인",
+            "라이즈",
+            "제드",
+            "리 신"
+          ],
+          "team2_champions": [
+            "트런들",
+            "탐 켄치",
+            "",
+            "제이스",
+            "흐웨이"
+          ]
+        },
+        {
+          "id": "s2-round-263",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-10",
+            "player-13",
+            "player-14",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-24",
+            "player-02",
+            "player-04"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T16:24:25.993Z",
+          "team1_champions": [
+            "베이가",
+            "녹턴",
+            "카이사",
+            "코그모",
+            "세트"
+          ],
+          "team2_champions": [
+            "진",
+            "레나타 글라스크",
+            "",
+            "사미라",
+            "아무무"
+          ]
+        },
+        {
+          "id": "s2-round-264",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-24",
+            "player-02",
+            "player-04",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-10",
+            "player-13",
+            "player-14",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T16:43:42.531Z",
+          "team1_champions": [
+            "암베사",
+            "",
+            "진",
+            "아우렐리온 솔",
+            "나르"
+          ],
+          "team2_champions": [
+            "아트록스",
+            "리 신",
+            "이즈리얼",
+            "바루스",
+            "세라핀"
+          ]
+        },
+        {
+          "id": "s2-round-265",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-07",
+            "player-24",
+            "player-02",
+            "player-04",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-10",
+            "player-13",
+            "player-14",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T17:04:07.632Z",
+          "team1_champions": [
+            "티모",
+            "",
+            "사미라",
+            "레오나",
+            "제라스"
+          ],
+          "team2_champions": [
+            "블라디미르",
+            "세라핀",
+            "애쉬",
+            "케이틀린",
+            "소나"
+          ]
+        },
+        {
+          "id": "s2-round-266",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-07",
+            "player-10",
+            "player-04",
+            "player-14",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-13",
+            "player-24",
+            "player-02",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-03T17:22:38.697Z",
+          "team1_champions": [
+            "아크샨",
+            "에코",
+            "라이즈",
+            "트위스티드 페이트",
+            "쉔"
+          ],
+          "team2_champions": [
+            "오공",
+            "미스 포츈",
+            "",
+            "징크스",
+            "블리츠크랭크"
+          ]
+        },
+        {
+          "id": "s2-round-267",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-02",
+            "player-04",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-10",
+            "player-13",
+            "player-24",
+            "player-14",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T17:40:10.082Z",
+          "team1_champions": [
+            "가렌",
+            "크산테",
+            "릴리아",
+            "소나",
+            "카타리나"
+          ],
+          "team2_champions": [
+            "말파이트",
+            "모르가나",
+            "",
+            "럼블",
+            "아우렐리온 솔"
+          ]
+        },
+        {
+          "id": "s2-round-268",
+          "session_id": "s2-session-25",
+          "team1_ids": [
+            "player-07",
+            "player-13",
+            "player-02",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-10",
+            "player-24",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-03T17:56:54.393Z",
+          "team1_champions": [
+            "뽀삐",
+            "트위스티드 페이트",
+            "카사딘",
+            "트위치",
+            "아우렐리온 솔"
+          ],
+          "team2_champions": [
+            "오공",
+            "누누와 윌럼프",
+            "",
+            "제이스",
+            "제드"
+          ]
+        },
+        {
+          "id": "s2-round-269",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-07",
+            "player-03",
+            "player-18"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-02",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T17:47:58.884Z",
+          "team1_champions": [
+            "일라오이",
+            "람머스",
+            "애니"
+          ],
+          "team2_champions": [
+            "비에고",
+            "제이스",
+            "탐 켄치"
+          ]
+        },
+        {
+          "id": "s2-round-270",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-08",
+            "player-09",
+            "player-18"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-02",
+            "player-03"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-04T18:07:15.760Z",
+          "team1_champions": [
+            "탈론",
+            "샤코",
+            "말자하"
+          ],
+          "team2_champions": [
+            "하이머딩거",
+            "이즈리얼",
+            "카르마"
+          ]
+        },
+        {
+          "id": "s2-round-271",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-07",
+            "player-03",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-02",
+            "player-18"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T18:31:48.515Z",
+          "team1_champions": [
+            "벨베스",
+            "베이가",
+            "신드라"
+          ],
+          "team2_champions": [
+            "사이온",
+            "시비르",
+            "세라핀"
+          ]
+        },
+        {
+          "id": "s2-round-272",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-08",
+            "player-02",
+            "player-18"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-03",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T18:46:10.632Z",
+          "team1_champions": [
+            "오른",
+            "애쉬",
+            "소나"
+          ],
+          "team2_champions": [
+            "크산테",
+            "트위스티드 페이트",
+            "마스터 이"
+          ]
+        },
+        {
+          "id": "s2-round-273",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-07",
+            "player-03",
+            "player-18"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-02",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T18:58:44.034Z",
+          "team1_champions": [
+            "람머스",
+            "로크",
+            "애니비아"
+          ],
+          "team2_champions": [
+            "세트",
+            "리븐",
+            "직스"
+          ]
+        },
+        {
+          "id": "s2-round-274",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-08",
+            "player-03",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-02",
+            "player-18"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T19:16:14.715Z",
+          "team1_champions": [
+            "니코",
+            "티모",
+            "카이사"
+          ],
+          "team2_champions": [
+            "모르가나",
+            "자이라",
+            "쉔"
+          ]
+        },
+        {
+          "id": "s2-round-275",
+          "session_id": "s2-session-26",
+          "team1_ids": [
+            "player-07",
+            "player-09",
+            "player-18"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-02",
+            "player-03"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-04T19:46:45.718Z",
+          "team1_champions": [
+            "스웨인",
+            "코그모",
+            "티모"
+          ],
+          "team2_champions": [
+            "니달리",
+            "마스터 이",
+            "벨코즈"
+          ]
+        },
+        {
+          "id": "s2-round-276",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-17",
+            "player-02",
+            "player-04",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-11",
+            "player-01",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T10:27:24.379Z",
+          "team1_champions": [
+            "파이크",
+            "소나",
+            "시비르",
+            "세주아니",
+            "제라스"
+          ],
+          "team2_champions": [
+            "자헨",
+            "그라가스",
+            "말자하",
+            "이즈리얼",
+            "타릭"
+          ]
+        },
+        {
+          "id": "s2-round-277",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-05",
+            "player-17",
+            "player-02",
+            "player-09",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-11",
+            "player-01",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T10:42:05.146Z",
+          "team1_champions": [
+            "오공",
+            "세라핀",
+            "베인",
+            "조이",
+            "카서스"
+          ],
+          "team2_champions": [
+            "아리",
+            "벨코즈",
+            "잭스",
+            "아우렐리온 솔",
+            "아펠리오스"
+          ]
+        },
+        {
+          "id": "s2-round-278",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-02",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-01",
+            "player-14",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T10:58:15.058Z",
+          "team1_champions": [
+            "오른",
+            "초가스",
+            "베인",
+            "진",
+            "신드라"
+          ],
+          "team2_champions": [
+            "쉔",
+            "카르마",
+            "징크스",
+            "바루스",
+            "질리언"
+          ]
+        },
+        {
+          "id": "s2-round-279",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-17",
+            "player-04",
+            "player-09",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-11",
+            "player-01",
+            "player-02",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T11:19:48.066Z",
+          "team1_champions": [
+            "아무무",
+            "잔나",
+            "브랜드",
+            "제라스",
+            "코그모"
+          ],
+          "team2_champions": [
+            "신 짜오",
+            "세라핀",
+            "신드라",
+            "자야",
+            "타릭"
+          ]
+        },
+        {
+          "id": "s2-round-280",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-11",
+            "player-17",
+            "player-04",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-08",
+            "player-01",
+            "player-02",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T11:35:20.265Z",
+          "team1_champions": [
+            "모데카이저",
+            "직스",
+            "카밀",
+            "세나",
+            "블리츠크랭크"
+          ],
+          "team2_champions": [
+            "잭스",
+            "마오카이",
+            "라이즈",
+            "사미라",
+            "카타리나"
+          ]
+        },
+        {
+          "id": "s2-round-281",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-04",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-01",
+            "player-02",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T11:51:03.105Z",
+          "team1_champions": [
+            "탈론",
+            "말파이트",
+            "릴리아",
+            "일라오이",
+            "탈리야"
+          ],
+          "team2_champions": [
+            "키아나",
+            "마오카이",
+            "아칼리",
+            "제리",
+            "갈리오"
+          ]
+        },
+        {
+          "id": "s2-round-282",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-01",
+            "player-02",
+            "player-14"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T12:05:25.670Z",
+          "team1_champions": [
+            "벨베스",
+            "말자하",
+            "우디르",
+            "이즈리얼",
+            "시비르"
+          ],
+          "team2_champions": [
+            "암베사",
+            "세라핀",
+            "브랜드",
+            "사미라",
+            "그레이브즈"
+          ]
+        },
+        {
+          "id": "s2-round-283",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-05",
+            "player-08",
+            "player-04",
+            "player-09",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-11",
+            "player-17",
+            "player-01",
+            "player-02",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T12:25:28.926Z",
+          "team1_champions": [
+            "암베사",
+            "비에고",
+            "오른",
+            "루시안",
+            "제라스"
+          ],
+          "team2_champions": [
+            "초가스",
+            "룰루",
+            "트런들",
+            "헤카림",
+            "베이가"
+          ]
+        },
+        {
+          "id": "s2-round-284",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-05",
+            "player-11",
+            "player-01",
+            "player-02",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-17",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T12:43:22.761Z",
+          "team1_champions": [
+            "자헨",
+            "스웨인",
+            "트위스티드 페이트",
+            "흐웨이",
+            "미스 포츈"
+          ],
+          "team2_champions": [
+            "진",
+            "세라핀",
+            "오로라",
+            "마스터 이",
+            "베인"
+          ]
+        },
+        {
+          "id": "s2-round-285",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-05",
+            "player-11",
+            "player-02",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-17",
+            "player-01",
+            "player-04",
+            "player-14"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T12:59:41.633Z",
+          "team1_champions": [
+            "피들스틱",
+            "말자하",
+            "그레이브즈",
+            "벡스",
+            "라칸"
+          ],
+          "team2_champions": [
+            "에코",
+            "우르곳",
+            "탈리야",
+            "그웬",
+            "카이사"
+          ]
+        },
+        {
+          "id": "s2-round-286",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-05",
+            "player-08",
+            "player-01",
+            "player-02",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-11",
+            "player-17",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T13:14:52.525Z",
+          "team1_champions": [
+            "신 짜오",
+            "에코",
+            "세트",
+            "아크샨",
+            "징크스"
+          ],
+          "team2_champions": [
+            "노틸러스",
+            "레나타 글라스크",
+            "빅토르",
+            "탐 켄치",
+            "카사딘"
+          ]
+        },
+        {
+          "id": "s2-round-287",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-01",
+            "player-02",
+            "player-14"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T13:32:26.630Z",
+          "team1_champions": [
+            "사일러스",
+            "레오나",
+            "니코",
+            "징크스",
+            "티모"
+          ],
+          "team2_champions": [
+            "알리스타",
+            "세라핀",
+            "잭스",
+            "흐웨이",
+            "이즈리얼"
+          ]
+        },
+        {
+          "id": "s2-round-288",
+          "session_id": "s2-session-27",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-17",
+            "player-01",
+            "player-02",
+            "player-14"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T13:50:39.514Z",
+          "team1_champions": [
+            "피즈",
+            "말자하",
+            "징크스",
+            "칼리스타",
+            "아지르"
+          ],
+          "team2_champions": [
+            "그웬",
+            "사이온",
+            "그레이브즈",
+            "트리스타나",
+            "모르가나"
+          ]
+        },
+        {
+          "id": "s2-round-289",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-04",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-11",
+            "player-02",
+            "player-09",
+            "player-13"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T14:15:10.306Z",
+          "team1_champions": [
+            "사일러스",
+            "갈리오",
+            "올라프",
+            "쉔",
+            "아지르"
+          ],
+          "team2_champions": [
+            "베이가",
+            "마오카이",
+            "흐웨이",
+            "카타리나",
+            "말자하"
+          ]
+        },
+        {
+          "id": "s2-round-290",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-05",
+            "player-07",
+            "player-04",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-08",
+            "player-11",
+            "player-02",
+            "player-09",
+            "player-13"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T14:32:22.242Z",
+          "team1_champions": [
+            "에코",
+            "크산테",
+            "렐",
+            "징크스",
+            "흐웨이"
+          ],
+          "team2_champions": [
+            "요네",
+            "갈리오",
+            "라이즈",
+            "탐 켄치",
+            "릴리아"
+          ]
+        },
+        {
+          "id": "s2-round-291",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-08",
+            "player-11",
+            "player-02",
+            "player-13",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-07",
+            "player-04",
+            "player-09",
+            "player-14"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-05T14:50:13.427Z",
+          "team1_champions": [
+            "세나",
+            "모르가나",
+            "미스 포츈",
+            "카이사",
+            "스몰더"
+          ],
+          "team2_champions": [
+            "아칼리",
+            "리븐",
+            "브랜드",
+            "샤코",
+            "징크스"
+          ]
+        },
+        {
+          "id": "s2-round-292",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-05",
+            "player-11",
+            "player-02",
+            "player-04",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-08",
+            "player-09",
+            "player-13",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T15:09:56.182Z",
+          "team1_champions": [
+            "암베사",
+            "초가스",
+            "애쉬",
+            "세나",
+            "블리츠크랭크"
+          ],
+          "team2_champions": [
+            "벨코즈",
+            "세트",
+            "멜",
+            "트런들",
+            "시비르"
+          ]
+        },
+        {
+          "id": "s2-round-293",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-07",
+            "player-11",
+            "player-04",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-08",
+            "player-02",
+            "player-09",
+            "player-13"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T15:26:36.965Z",
+          "team1_champions": [
+            "티모",
+            "나미",
+            "그라가스",
+            "징크스",
+            "타릭"
+          ],
+          "team2_champions": [
+            "에코",
+            "사일러스",
+            "애쉬",
+            "오로라",
+            "루시안"
+          ]
+        },
+        {
+          "id": "s2-round-294",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-07",
+            "player-08",
+            "player-02",
+            "player-04",
+            "player-14"
+          ],
+          "team2_ids": [
+            "player-05",
+            "player-11",
+            "player-09",
+            "player-13",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T15:47:44.680Z",
+          "team1_champions": [
+            "크산테",
+            "에코",
+            "바루스",
+            "아우렐리온 솔",
+            "트위치"
+          ],
+          "team2_champions": [
+            "케인",
+            "티모",
+            "조이",
+            "트런들",
+            "제이스"
+          ]
+        },
+        {
+          "id": "s2-round-295",
+          "session_id": "s2-session-28",
+          "team1_ids": [
+            "player-05",
+            "player-08",
+            "player-02",
+            "player-14",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-07",
+            "player-11",
+            "player-04",
+            "player-09",
+            "player-13"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-05T16:06:39.084Z",
+          "team1_champions": [
+            "오로라",
+            "레넥톤",
+            "샤코",
+            "애니",
+            "닐라"
+          ],
+          "team2_champions": [
+            "카밀",
+            "베이가",
+            "유나라",
+            "갱플랭크",
+            "베인"
+          ]
+        },
+        {
+          "id": "s2-round-296",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-15",
+            "player-22"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T12:54:14.013Z",
+          "team1_champions": [
+            "나르",
+            "베이가",
+            "신지드",
+            "제리",
+            "카르마"
+          ],
+          "team2_champions": [
+            "흐웨이",
+            "그웬",
+            "케이틀린",
+            "유나라",
+            "잭스"
+          ]
+        },
+        {
+          "id": "s2-round-297",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-03",
+            "player-04",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-01",
+            "player-09",
+            "player-22"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T13:08:48.908Z",
+          "team1_champions": [
+            "케이틀린",
+            "레오나",
+            "다이애나",
+            "신드라",
+            "모르가나"
+          ],
+          "team2_champions": [
+            "트위치",
+            "케넨",
+            "빅토르",
+            "질리언",
+            "오공"
+          ]
+        },
+        {
+          "id": "s2-round-298",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-09",
+            "player-15",
+            "player-22"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-03",
+            "player-04"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T13:23:31.617Z",
+          "team1_champions": [
+            "카서스",
+            "바루스",
+            "마스터 이",
+            "소나",
+            "뽀삐"
+          ],
+          "team2_champions": [
+            "케이틀린",
+            "신 짜오",
+            "자르반 4세",
+            "트위스티드 페이트",
+            "릴리아"
+          ]
+        },
+        {
+          "id": "s2-round-299",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-08",
+            "player-01",
+            "player-03",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-05",
+            "player-04",
+            "player-09",
+            "player-22"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T13:39:45.635Z",
+          "team1_champions": [
+            "샤코",
+            "오른",
+            "탈리야",
+            "람머스",
+            "티모"
+          ],
+          "team2_champions": [
+            "트리스타나",
+            "알리스타",
+            "스카너",
+            "신드라",
+            "비에고"
+          ]
+        },
+        {
+          "id": "s2-round-300",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-22"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T14:01:02.451Z",
+          "team1_champions": [
+            "제이스",
+            "베이가",
+            "문도 박사",
+            "유나라",
+            "그레이브즈"
+          ],
+          "team2_champions": [
+            "트위스티드 페이트",
+            "그웬",
+            "가렌",
+            "샤코",
+            "카직스"
+          ]
+        },
+        {
+          "id": "s2-round-301",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-09",
+            "player-22"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T14:21:23.748Z",
+          "team1_champions": [
+            "드레이븐",
+            "피즈",
+            "쉔",
+            "코그모",
+            "세라핀"
+          ],
+          "team2_champions": [
+            "제이스",
+            "그레이브즈",
+            "브라움",
+            "카타리나",
+            "빅토르"
+          ]
+        },
+        {
+          "id": "s2-round-302",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-05",
+            "player-03",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-08",
+            "player-01",
+            "player-04",
+            "player-22"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T14:36:38.683Z",
+          "team1_champions": [
+            "아리",
+            "오공",
+            "사이온",
+            "럭스",
+            "이즈리얼"
+          ],
+          "team2_champions": [
+            "제드",
+            "비에고",
+            "코그모",
+            "진",
+            "릴리아"
+          ]
+        },
+        {
+          "id": "s2-round-303",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-22"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T14:56:42.751Z",
+          "team1_champions": [
+            "모르가나",
+            "나피리",
+            "로크",
+            "샤코",
+            "제라스"
+          ],
+          "team2_champions": [
+            "카사딘",
+            "말파이트",
+            "자야",
+            "신드라",
+            "세라핀"
+          ]
+        },
+        {
+          "id": "s2-round-304",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-09",
+            "player-22"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T15:12:02.753Z",
+          "team1_champions": [
+            "그레이브즈",
+            "헤카림",
+            "아리",
+            "티모",
+            "자르반 4세"
+          ],
+          "team2_champions": [
+            "카사딘",
+            "블라디미르",
+            "스몰더",
+            "세라핀",
+            "베이가"
+          ]
+        },
+        {
+          "id": "s2-round-305",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-03",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-09",
+            "player-22"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T15:32:13.246Z",
+          "team1_champions": [
+            "사미라",
+            "키아나",
+            "오른",
+            "이블린",
+            "스몰더"
+          ],
+          "team2_champions": [
+            "니달리",
+            "노틸러스",
+            "제이스",
+            "모르가나",
+            "아무무"
+          ]
+        },
+        {
+          "id": "s2-round-306",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-03",
+            "player-15",
+            "player-22"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T15:51:44.321Z",
+          "team1_champions": [
+            "블리츠크랭크",
+            "자이라",
+            "라이즈",
+            "그라가스",
+            "케이틀린"
+          ],
+          "team2_champions": [
+            "자야",
+            "럼블",
+            "녹턴",
+            "모르가나",
+            "오른"
+          ]
+        },
+        {
+          "id": "s2-round-307",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-08",
+            "player-03",
+            "player-15",
+            "player-22"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-08T16:11:10.977Z",
+          "team1_champions": [
+            "코그모",
+            "모데카이저",
+            "다이애나",
+            "그웬",
+            "카르마"
+          ],
+          "team2_champions": [
+            "트위치",
+            "잭스",
+            "자르반 4세",
+            "이즈리얼",
+            "피즈"
+          ]
+        },
+        {
+          "id": "s2-round-308",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-09",
+            "player-22"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T16:28:24.376Z",
+          "team1_champions": [
+            "칼리스타",
+            "갈리오",
+            "신지드",
+            "그라가스",
+            "말자하"
+          ],
+          "team2_champions": [
+            "탈론",
+            "오공",
+            "가렌",
+            "신드라",
+            "문도 박사"
+          ]
+        },
+        {
+          "id": "s2-round-309",
+          "session_id": "s2-session-29",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-15",
+            "player-22"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-09"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-08T16:44:07.713Z",
+          "team1_champions": [
+            "비에고",
+            "브라움",
+            "애쉬",
+            "세라핀",
+            "세나"
+          ],
+          "team2_champions": [
+            "칼리스타",
+            "모데카이저",
+            "누누와 윌럼프",
+            "제이스",
+            "브랜드"
+          ]
+        },
+        {
+          "id": "s2-round-310",
+          "session_id": "s2-session-30",
+          "team1_ids": [
+            "player-01",
+            "player-05",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-09T15:03:03.436Z",
+          "team1_champions": [
+            "카직스",
+            "라이즈",
+            "니코"
+          ],
+          "team2_champions": [
+            "아이번",
+            "초가스",
+            "케인"
+          ]
+        },
+        {
+          "id": "s2-round-311",
+          "session_id": "s2-session-31",
+          "team1_ids": [
+            "player-02",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-01",
+            "player-05",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-09T15:27:31.852Z",
+          "team1_champions": [
+            "리븐",
+            "로크",
+            "신 짜오"
+          ],
+          "team2_champions": [
+            "크산테",
+            "알리스타",
+            "카이사"
+          ]
+        },
+        {
+          "id": "s2-round-312",
+          "session_id": "s2-session-31",
+          "team1_ids": [
+            "player-04",
+            "player-05",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-01",
+            "player-02",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-09T15:40:33.599Z",
+          "team1_champions": [
+            "제라스",
+            "판테온",
+            "렝가"
+          ],
+          "team2_champions": [
+            "자르반 4세",
+            "라이즈",
+            "탐 켄치"
+          ]
+        },
+        {
+          "id": "s2-round-313",
+          "session_id": "s2-session-31",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-01",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-09T15:55:54.306Z",
+          "team1_champions": [
+            "아크샨",
+            "다리우스",
+            "아지르"
+          ],
+          "team2_champions": [
+            "요릭",
+            "다이애나",
+            "일라오이"
+          ]
+        },
+        {
+          "id": "s2-round-314",
+          "session_id": "s2-session-31",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-01",
+            "player-04",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-09T16:16:06.962Z",
+          "team1_champions": [
+            "멜",
+            "잭스",
+            "미스 포츈"
+          ],
+          "team2_champions": [
+            "갱플랭크",
+            "오로라",
+            "피오라"
+          ]
+        },
+        {
+          "id": "s2-round-315",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-09",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-04",
+            "player-15",
+            "player-16"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T11:22:32.072Z",
+          "team1_champions": [
+            "유나라",
+            "잭스",
+            "제이스",
+            "탐 켄치",
+            "스웨인"
+          ],
+          "team2_champions": [
+            "스몰더",
+            "노틸러스",
+            "암베사",
+            "직스",
+            "사일러스"
+          ]
+        },
+        {
+          "id": "s2-round-316",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-04",
+            "player-16",
+            "player-24"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T11:45:36.082Z",
+          "team1_champions": [
+            "일라오이",
+            "트위스티드 페이트",
+            "유나라",
+            "브랜드",
+            "세라핀"
+          ],
+          "team2_champions": [
+            "라이즈",
+            "암베사",
+            "아우렐리온 솔",
+            "블라디미르",
+            "빅토르"
+          ]
+        },
+        {
+          "id": "s2-round-317",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-13",
+            "player-01",
+            "player-09",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-05",
+            "player-04",
+            "player-16",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T12:01:12.062Z",
+          "team1_champions": [
+            "애쉬",
+            "초가스",
+            "헤카림",
+            "티모",
+            "아무무"
+          ],
+          "team2_champions": [
+            "모르가나",
+            "쉬바나",
+            "아펠리오스",
+            "멜",
+            "유미"
+          ]
+        },
+        {
+          "id": "s2-round-318",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-09",
+            "player-15",
+            "player-16"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T12:19:14.520Z",
+          "team1_champions": [
+            "바루스",
+            "룰루",
+            "모르가나",
+            "세라핀",
+            "애쉬"
+          ],
+          "team2_champions": [
+            "카사딘",
+            "오공",
+            "르블랑",
+            "초가스",
+            "비에고"
+          ]
+        },
+        {
+          "id": "s2-round-319",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-13",
+            "player-04",
+            "player-09",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-05",
+            "player-01",
+            "player-15",
+            "player-16"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T12:36:47.814Z",
+          "team1_champions": [
+            "코그모",
+            "아칼리",
+            "빅토르",
+            "자이라",
+            "블리츠크랭크"
+          ],
+          "team2_champions": [
+            "코르키",
+            "쉬바나",
+            "밀리오",
+            "탐 켄치",
+            "파이크"
+          ]
+        },
+        {
+          "id": "s2-round-320",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-13",
+            "player-09",
+            "player-16",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T12:56:03.356Z",
+          "team1_champions": [
+            "신지드",
+            "미스 포츈",
+            "카서스",
+            "스웨인",
+            "시비르"
+          ],
+          "team2_champions": [
+            "애쉬",
+            "소나",
+            "트위스티드 페이트",
+            "사일러스",
+            "파이크"
+          ]
+        },
+        {
+          "id": "s2-round-321",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-04",
+            "player-15",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-09",
+            "player-16"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T13:14:47.044Z",
+          "team1_champions": [
+            "사미라",
+            "에코",
+            "그라가스",
+            "미스 포츈",
+            "레오나"
+          ],
+          "team2_champions": [
+            "아크샨",
+            "세라핀",
+            "오공",
+            "오로라",
+            "소라카"
+          ]
+        },
+        {
+          "id": "s2-round-322",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-05",
+            "player-09",
+            "player-15",
+            "player-16"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-13",
+            "player-01",
+            "player-04",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T13:31:29.182Z",
+          "team1_champions": [
+            "니달리",
+            "야스오",
+            "조이",
+            "애니비아",
+            "제이스"
+          ],
+          "team2_champions": [
+            "아크샨",
+            "쓰레쉬",
+            "니코",
+            "브랜드",
+            "피즈"
+          ]
+        },
+        {
+          "id": "s2-round-323",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-13",
+            "player-01",
+            "player-16",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-05",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T13:53:35.045Z",
+          "team1_champions": [
+            "그레이브즈",
+            "트런들",
+            "갱플랭크",
+            "브라이어",
+            "람머스"
+          ],
+          "team2_champions": [
+            "리 신",
+            "나피리",
+            "아펠리오스",
+            "파이크",
+            "아우렐리온 솔"
+          ]
+        },
+        {
+          "id": "s2-round-324",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-09",
+            "player-16",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T14:09:59.288Z",
+          "team1_champions": [
+            "블리츠크랭크",
+            "제이스",
+            "코그모",
+            "라이즈",
+            "자크"
+          ],
+          "team2_champions": [
+            "아크샨",
+            "잭스",
+            "뽀삐",
+            "소나",
+            "트런들"
+          ]
+        },
+        {
+          "id": "s2-round-325",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-09",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-04",
+            "player-15",
+            "player-16"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T14:23:06.020Z",
+          "team1_champions": [
+            "마스터 이",
+            "잭스",
+            "오른",
+            "카타리나",
+            "갈리오"
+          ],
+          "team2_champions": [
+            "제드",
+            "트런들",
+            "세나",
+            "흐웨이",
+            "카서스"
+          ]
+        },
+        {
+          "id": "s2-round-326",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-15",
+            "player-16",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T14:40:51.781Z",
+          "team1_champions": [
+            "요네",
+            "하이머딩거",
+            "블리츠크랭크",
+            "세나",
+            "말파이트"
+          ],
+          "team2_champions": [
+            "코르키",
+            "야스오",
+            "마오카이",
+            "그라가스",
+            "니달리"
+          ]
+        },
+        {
+          "id": "s2-round-327",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-16",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-04",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T14:57:46.395Z",
+          "team1_champions": [
+            "카서스",
+            "쉬바나",
+            "세트",
+            "제라스",
+            "세라핀"
+          ],
+          "team2_champions": [
+            "진",
+            "레나타 글라스크",
+            "우디르",
+            "알리스타",
+            "리산드라"
+          ]
+        },
+        {
+          "id": "s2-round-328",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-15",
+            "player-16",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T15:14:33.352Z",
+          "team1_champions": [
+            "릴리아",
+            "카서스",
+            "말파이트",
+            "아우렐리온 솔",
+            "알리스타"
+          ],
+          "team2_champions": [
+            "케이틀린",
+            "잭스",
+            "샤코",
+            "문도 박사",
+            "사일러스"
+          ]
+        },
+        {
+          "id": "s2-round-329",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-04",
+            "player-09",
+            "player-16"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-15",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T15:34:22.288Z",
+          "team1_champions": [
+            "카사딘",
+            "암베사",
+            "세라핀",
+            "바이",
+            "브랜드"
+          ],
+          "team2_champions": [
+            "제라스",
+            "트위스티드 페이트",
+            "말파이트",
+            "트위치",
+            "모르가나"
+          ]
+        },
+        {
+          "id": "s2-round-330",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-15",
+            "player-16",
+            "player-24"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-10T15:50:28.207Z",
+          "team1_champions": [
+            "카이사",
+            "르블랑",
+            "마스터 이",
+            "사일러스",
+            "아트록스"
+          ],
+          "team2_champions": [
+            "애쉬",
+            "그웬",
+            "미스 포츈",
+            "탈리야",
+            "티모"
+          ]
+        },
+        {
+          "id": "s2-round-331",
+          "session_id": "s2-session-32",
+          "team1_ids": [
+            "player-02",
+            "player-05",
+            "player-01",
+            "player-04",
+            "player-09"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-15",
+            "player-16",
+            "player-24"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-10T16:14:16.717Z",
+          "team1_champions": [
+            "루시안",
+            "마오카이",
+            "자르반 4세",
+            "니코",
+            "아지르"
+          ],
+          "team2_champions": [
+            "스카너",
+            "벡스",
+            "티모",
+            "케이틀린",
+            "레오나"
+          ]
+        },
+        {
+          "id": "s2-round-332",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-14",
+            "player-13",
+            "player-03",
+            "player-04",
+            "player-05"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-08",
+            "player-01",
+            "player-10",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T12:59:40.306Z",
+          "team1_champions": [
+            "카타리나",
+            "리 신",
+            "신지드",
+            "빅토르",
+            "아트록스"
+          ],
+          "team2_champions": [
+            "신드라",
+            "헤카림",
+            "갱플랭크",
+            "카서스",
+            "렐"
+          ]
+        },
+        {
+          "id": "s2-round-333",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-03",
+            "player-04",
+            "player-10"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-01",
+            "player-05",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T13:17:33.601Z",
+          "team1_champions": [
+            "브랜드",
+            "카사딘",
+            "트리스타나",
+            "세트",
+            "자이라"
+          ],
+          "team2_champions": [
+            "미스 포츈",
+            "탐 켄치",
+            "신드라",
+            "리븐",
+            "레나타 글라스크"
+          ]
+        },
+        {
+          "id": "s2-round-334",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-10",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-03",
+            "player-05"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-11T13:33:12.651Z",
+          "team1_champions": [
+            "케이틀린",
+            "마오카이",
+            "리산드라",
+            "람머스",
+            "소나"
+          ],
+          "team2_champions": [
+            "이즈리얼",
+            "벨코즈",
+            "케일",
+            "알리스타",
+            "키아나"
+          ]
+        },
+        {
+          "id": "s2-round-335",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-20",
+            "player-13",
+            "player-01",
+            "player-04",
+            "player-05"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-03",
+            "player-10",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T13:48:11.168Z",
+          "team1_champions": [
+            "스몰더",
+            "잔나",
+            "럼블",
+            "사이온",
+            "자헨"
+          ],
+          "team2_champions": [
+            "제이스",
+            "베이가",
+            "에코",
+            "브라이어",
+            "레나타 글라스크"
+          ]
+        },
+        {
+          "id": "s2-round-336",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-01",
+            "player-04",
+            "player-10"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-03",
+            "player-05",
+            "player-17"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-11T14:13:53.683Z",
+          "team1_champions": [
+            "바루스",
+            "탐 켄치",
+            "진",
+            "스카너",
+            "베이가"
+          ],
+          "team2_champions": [
+            "아펠리오스",
+            "애니",
+            "초가스",
+            "에코",
+            "소나"
+          ]
+        },
+        {
+          "id": "s2-round-337",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-20",
+            "player-08",
+            "player-04",
+            "player-05",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-13",
+            "player-01",
+            "player-03",
+            "player-10"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T14:35:54.654Z",
+          "team1_champions": [
+            "카이사",
+            "레넥톤",
+            "트위치",
+            "나피리",
+            "레오나"
+          ],
+          "team2_champions": [
+            "베인",
+            "벨코즈",
+            "아우렐리온 솔",
+            "녹턴",
+            "비에고"
+          ]
+        },
+        {
+          "id": "s2-round-338",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-14",
+            "player-13",
+            "player-01",
+            "player-05",
+            "player-10"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-08",
+            "player-03",
+            "player-04",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T15:04:36.039Z",
+          "team1_champions": [
+            "카서스",
+            "브랜드",
+            "이즈리얼",
+            "노틸러스",
+            "세라핀"
+          ],
+          "team2_champions": [
+            "잭스",
+            "신 짜오",
+            "바이",
+            "아우렐리온 솔",
+            "레오나"
+          ]
+        },
+        {
+          "id": "s2-round-339",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-20",
+            "player-08",
+            "player-03",
+            "player-05",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-13",
+            "player-01",
+            "player-04",
+            "player-10"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-11T15:30:42.496Z",
+          "team1_champions": [
+            "빅토르",
+            "이즈리얼",
+            "케이틀린",
+            "자헨",
+            "세라핀"
+          ],
+          "team2_champions": [
+            "카사딘",
+            "아무무",
+            "애쉬",
+            "아우렐리온 솔",
+            "럭스"
+          ]
+        },
+        {
+          "id": "s2-round-340",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-01",
+            "player-05",
+            "player-10"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-13",
+            "player-03",
+            "player-04",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-11T15:47:25.983Z",
+          "team1_champions": [
+            "빅토르",
+            "미스 포츈",
+            "그레이브즈",
+            "쉬바나",
+            "나서스"
+          ],
+          "team2_champions": [
+            "루시안",
+            "케이틀린",
+            "제라스",
+            "세주아니",
+            "럭스"
+          ]
+        },
+        {
+          "id": "s2-round-341",
+          "session_id": "s2-session-33",
+          "team1_ids": [
+            "player-20",
+            "player-08",
+            "player-04",
+            "player-10",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-13",
+            "player-01",
+            "player-03",
+            "player-05"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-11T16:09:33.914Z",
+          "team1_champions": [
+            "스웨인",
+            "레넥톤",
+            "바루스",
+            "신지드",
+            "말파이트"
+          ],
+          "team2_champions": [
+            "르블랑",
+            "베인",
+            "멜",
+            "릴리아",
+            "키아나"
+          ]
+        },
+        {
+          "id": "s2-round-342",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-14",
+            "player-11",
+            "player-05",
+            "player-15",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-08",
+            "player-04",
+            "player-07",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T12:19:59.286Z",
+          "team1_champions": [
+            "카이사",
+            "세트",
+            "사일러스",
+            "징크스",
+            "렐"
+          ],
+          "team2_champions": [
+            "초가스",
+            "다리우스",
+            "유나라",
+            "쓰레쉬",
+            "오로라"
+          ]
+        },
+        {
+          "id": "s2-round-343",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-20",
+            "player-11",
+            "player-05",
+            "player-15",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-07",
+            "player-09"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T12:35:11.035Z",
+          "team1_champions": [
+            "이즈리얼",
+            "쓰레쉬",
+            "렉사이",
+            "베이가",
+            "레나타 글라스크"
+          ],
+          "team2_champions": [
+            "시비르",
+            "자이라",
+            "그웬",
+            "벨코즈",
+            "모르가나"
+          ]
+        },
+        {
+          "id": "s2-round-344",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-05",
+            "player-09",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-11",
+            "player-04",
+            "player-07",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T12:50:17.712Z",
+          "team1_champions": [
+            "카서스",
+            "사일러스",
+            "암베사",
+            "그레이브즈",
+            "바이"
+          ],
+          "team2_champions": [
+            "노틸러스",
+            "초가스",
+            "아펠리오스",
+            "뽀삐",
+            "흐웨이"
+          ]
+        },
+        {
+          "id": "s2-round-345",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-20",
+            "player-08",
+            "player-05",
+            "player-15",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-11",
+            "player-04",
+            "player-07",
+            "player-09"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T13:05:06.287Z",
+          "team1_champions": [
+            "갱플랭크",
+            "판테온",
+            "블라디미르",
+            "말자하",
+            "룰루"
+          ],
+          "team2_champions": [
+            "바루스",
+            "레오나",
+            "그웬",
+            "뽀삐",
+            "트리스타나"
+          ]
+        },
+        {
+          "id": "s2-round-346",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-14",
+            "player-11",
+            "player-04",
+            "player-05",
+            "player-17"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-08",
+            "player-07",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T13:26:01.647Z",
+          "team1_champions": [
+            "시비르",
+            "티모",
+            "올라프",
+            "자헨",
+            "룰루"
+          ],
+          "team2_champions": [
+            "아무무",
+            "아트록스",
+            "나피리",
+            "카타리나",
+            "세라핀"
+          ]
+        },
+        {
+          "id": "s2-round-347",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-20",
+            "player-11",
+            "player-04",
+            "player-05",
+            "player-07"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-09",
+            "player-15",
+            "player-17"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T13:39:59.842Z",
+          "team1_champions": [
+            "니달리",
+            "마오카이",
+            "제이스",
+            "헤카림",
+            "키아나"
+          ],
+          "team2_champions": [
+            "바루스",
+            "에코",
+            "샤코",
+            "알리스타",
+            "카르마"
+          ]
+        },
+        {
+          "id": "s2-round-348",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-05",
+            "player-07"
+          ],
+          "team2_ids": [
+            "player-20",
+            "player-11",
+            "player-09",
+            "player-15",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T13:59:11.590Z",
+          "team1_champions": [
+            "유나라",
+            "시비르",
+            "오로라",
+            "암베사",
+            "노틸러스"
+          ],
+          "team2_champions": [
+            "질리언",
+            "모데카이저",
+            "바루스",
+            "블리츠크랭크",
+            "마오카이"
+          ]
+        },
+        {
+          "id": "s2-round-349",
+          "session_id": "s2-session-34",
+          "team1_ids": [
+            "player-20",
+            "player-11",
+            "player-04",
+            "player-05",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-07",
+            "player-09",
+            "player-17"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T14:18:10.074Z",
+          "team1_champions": [
+            "베인",
+            "초가스",
+            "제이스",
+            "갈리오",
+            "카사딘"
+          ],
+          "team2_champions": [
+            "아펠리오스",
+            "비에고",
+            "럭스",
+            "모르가나",
+            "오공"
+          ]
+        },
+        {
+          "id": "s2-round-350",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-02",
+            "player-11",
+            "player-07",
+            "player-09",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-05",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T14:39:45.134Z",
+          "team1_champions": [
+            "징크스",
+            "잭스",
+            "일라오이",
+            "아지르",
+            "모데카이저"
+          ],
+          "team2_champions": [
+            "제라스",
+            "자야",
+            "멜",
+            "애니비아",
+            "라칸"
+          ]
+        },
+        {
+          "id": "s2-round-351",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-07",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-11",
+            "player-04",
+            "player-05",
+            "player-09"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T14:58:07.596Z",
+          "team1_champions": [
+            "르블랑",
+            "판테온",
+            "아크샨",
+            "오로라",
+            "아무무"
+          ],
+          "team2_champions": [
+            "드레이븐",
+            "소라카",
+            "세트",
+            "자헨",
+            "탐 켄치"
+          ]
+        },
+        {
+          "id": "s2-round-352",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-02",
+            "player-08",
+            "player-04",
+            "player-15",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-11",
+            "player-05",
+            "player-07",
+            "player-09"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T15:10:16.207Z",
+          "team1_champions": [
+            "세나",
+            "리 신",
+            "로크",
+            "신지드",
+            "바드"
+          ],
+          "team2_champions": [
+            "징크스",
+            "문도 박사",
+            "에코",
+            "쓰레쉬",
+            "파이크"
+          ]
+        },
+        {
+          "id": "s2-round-353",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-07",
+            "player-20"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-11",
+            "player-05",
+            "player-09",
+            "player-15"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T15:29:54.153Z",
+          "team1_champions": [
+            "카이사",
+            "에코",
+            "세라핀",
+            "탐 켄치",
+            "제드"
+          ],
+          "team2_champions": [
+            "트리스타나",
+            "세주아니",
+            "렝가",
+            "직스",
+            "릴리아"
+          ]
+        },
+        {
+          "id": "s2-round-354",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-02",
+            "player-11",
+            "player-04",
+            "player-05",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-14",
+            "player-08",
+            "player-07",
+            "player-09",
+            "player-20"
+          ],
+          "winner_team": 1,
+          "created_at": "2026-10-14T15:54:11.836Z",
+          "team1_champions": [
+            "야스오",
+            "레오나",
+            "아우렐리온 솔",
+            "오로라",
+            "리산드라"
+          ],
+          "team2_champions": [
+            "럼블",
+            "파이크",
+            "일라오이",
+            "마스터 이",
+            "우디르"
+          ]
+        },
+        {
+          "id": "s2-round-355",
+          "session_id": "s2-session-35",
+          "team1_ids": [
+            "player-14",
+            "player-08",
+            "player-04",
+            "player-05",
+            "player-15"
+          ],
+          "team2_ids": [
+            "player-02",
+            "player-11",
+            "player-07",
+            "player-09",
+            "player-20"
+          ],
+          "winner_team": 2,
+          "created_at": "2026-10-14T16:13:37.470Z",
+          "team1_champions": [
+            "유나라",
+            "말자하",
+            "알리스타",
+            "잭스",
+            "신드라"
+          ],
+          "team2_champions": [
+            "징크스",
+            "레오나",
+            "신지드",
+            "오로라",
+            "헤카림"
           ]
         }
       ]
