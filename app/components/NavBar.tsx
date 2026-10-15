@@ -11,6 +11,7 @@ const NAV_LINKS = [
   ['/history', '기록'],
   ['/standings', '전적'],
   ['/champions', '챔피언'],
+  ['/highlights', '하이라이트'],
 ] as const
 
 export default function NavBar() {
