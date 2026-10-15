@@ -611,9 +611,9 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 .highlights-section-heading h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 820; letter-spacing: -.045em; }
 .highlights-section-heading span { color: var(--muted); font-size: .74rem; }
 .highlights-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, .72fr); gap: 1rem; padding: clamp(1rem, 3vw, 2rem); background: var(--surface); }
-.highlights-fields { display: grid; grid-template-columns: minmax(8rem, .42fr) minmax(0, 1fr); gap: 1rem; }
+.highlights-fields { display: grid; grid-template-columns: minmax(8rem, .42fr) minmax(0, 1fr) minmax(10rem, .55fr); gap: 1rem; }
 .highlights-form label { display: flex; min-width: 0; flex-direction: column; gap: .55rem; color: var(--muted); font-size: .72rem; font-weight: 700; }
-.highlights-form input[type="text"], .highlights-form input:not([type]) { width: 100%; min-height: 3.25rem; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 0; background: var(--canvas); color: var(--ink); font: inherit; font-size: .9rem; font-weight: 600; outline: none; }
+.highlights-form input:not([type="file"]) { width: 100%; min-height: 3.25rem; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: 0; background: var(--canvas); color: var(--ink); font: inherit; font-size: .9rem; font-weight: 600; outline: none; }
 .highlights-form input::placeholder { color: color-mix(in srgb, var(--muted) 82%, transparent); }
 .highlights-form input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px var(--accent); }
 .highlights-file { position: relative; min-height: 5.2rem; justify-content: center; padding: 1rem 1.15rem; border: 1px dashed color-mix(in srgb, var(--ink) 32%, transparent); background: var(--canvas); cursor: pointer; }
@@ -632,6 +632,16 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 .highlight-caption h3 { margin: 0; overflow: hidden; font-size: 1.05rem; font-weight: 780; letter-spacing: -.025em; text-overflow: ellipsis; white-space: nowrap; }
 .highlight-caption p { margin: .35rem 0 0; color: var(--muted); font-size: .76rem; }
 .highlight-meta { display: flex; flex: none; align-items: flex-end; flex-direction: column; gap: .35rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .63rem; font-variant-numeric: tabular-nums; }
+.highlight-meta button { padding: 0; border: 0; background: transparent; color: var(--muted); font: inherit; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+.highlight-manage { display: grid; grid-template-columns: .55fr 1fr .7fr; gap: .75rem; margin-top: 1rem; padding: 1rem; background: var(--surface); }
+.highlight-manage label { display: flex; min-width: 0; flex-direction: column; gap: .4rem; color: var(--muted); font-size: .68rem; font-weight: 700; }
+.highlight-manage input { width: 100%; min-height: 2.8rem; padding: .65rem .75rem; border: 1px solid var(--line); border-radius: 0; background: var(--canvas); color: var(--ink); font: inherit; outline: none; }
+.highlight-manage input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px var(--accent); }
+.highlight-manage .highlights-error, .highlight-manage-actions { grid-column: 1 / -1; }
+.highlight-manage-actions { display: flex; gap: .5rem; }
+.highlight-manage-actions button { min-height: 2.5rem; padding: .55rem .9rem; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: .72rem; font-weight: 750; cursor: pointer; }
+.highlight-manage-actions button:first-child { background: var(--ink); color: var(--on-ink); }
+.highlight-manage-actions button:disabled { cursor: wait; opacity: .5; }
 .highlight-skeleton { aspect-ratio: 16 / 10; background: linear-gradient(100deg, var(--surface) 30%, var(--surface-strong) 50%, var(--surface) 70%); background-size: 240% 100%; animation: highlight-loading 1.4s ease infinite; }
 .highlights-state { display: grid; min-height: 16rem; place-items: center; align-content: center; gap: .6rem; background: var(--surface); text-align: center; }
 .highlights-state strong, .highlights-state p { margin: 0; }
@@ -654,6 +664,7 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   .highlights-limits { width: 100%; }
   .highlights-form { grid-template-columns: 1fr; }
   .highlights-fields { grid-template-columns: 1fr; }
+  .highlight-manage { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {

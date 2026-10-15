@@ -4,12 +4,19 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react'
 import NavBar from '@/app/components/NavBar'
 import { Highlight, insforge } from '@/lib/insforge'
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024
-const MAX_DURATION_SECONDS = 30
+const MAX_FILE_SIZE = 50 * 1024 * 1024
+const MAX_DURATION_SECONDS = 60
 const PAGE_SIZE = 8
 const ACCEPTED_TYPES = ['video/mp4', 'video/webm']
 
 type UploadStep = 'idle' | 'checking' | 'uploading' | 'saving'
+
+interface ManageDraft {
+  id: string
+  uploaderName: string
+  title: string
+  password: string
+}
 
 function getVideoDuration(file: File) {
   return new Promise<number>((resolve, reject) => {
@@ -40,7 +47,9 @@ function formatFileSize(bytes: number) {
 
 function formatDuration(seconds: number) {
   const rounded = Math.max(1, Math.round(seconds))
-  return `0:${String(rounded).padStart(2, '0')}`
+  const minutes = Math.floor(rounded / 60)
+  const remainingSeconds = rounded % 60
+  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`
 }
 
 function formatDate(date: string) {
@@ -68,10 +77,14 @@ export default function HighlightsPage() {
   const [listError, setListError] = useState('')
   const [uploaderName, setUploaderName] = useState('')
   const [title, setTitle] = useState('')
+  const [password, setPassword] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [duration, setDuration] = useState<number | null>(null)
   const [formError, setFormError] = useState('')
   const [uploadStep, setUploadStep] = useState<UploadStep>('idle')
+  const [manageDraft, setManageDraft] = useState<ManageDraft | null>(null)
+  const [manageError, setManageError] = useState('')
+  const [managePending, setManagePending] = useState(false)
 
   async function fetchHighlights(limit = PAGE_SIZE) {
     const { data, error, count } = await queryHighlights(limit)
@@ -116,7 +129,7 @@ export default function HighlightsPage() {
       return
     }
     if (selectedFile.size > MAX_FILE_SIZE) {
-      setFormError('영상 용량은 25MB 이하여야 합니다.')
+      setFormError('영상 용량은 50MB 이하여야 합니다.')
       event.target.value = ''
       return
     }
@@ -125,7 +138,7 @@ export default function HighlightsPage() {
     try {
       const videoDuration = await getVideoDuration(selectedFile)
       if (videoDuration > MAX_DURATION_SECONDS) {
-        setFormError('영상 길이는 30초 이하여야 합니다.')
+        setFormError('영상 길이는 1분 이하여야 합니다.')
         event.target.value = ''
         return
       }
@@ -154,6 +167,10 @@ export default function HighlightsPage() {
       setFormError('이름과 제목을 입력해주세요.')
       return
     }
+    if (password.length < 4 || password.length > 64) {
+      setFormError('비밀번호는 4~64자로 입력해주세요.')
+      return
+    }
 
     setUploadStep('uploading')
     try {
@@ -167,6 +184,7 @@ export default function HighlightsPage() {
           duration: Number(duration.toFixed(2)),
           fileSize: file.size,
           contentType: file.type,
+          password,
         }),
       })
       if (!prepareResponse.ok) throw new Error('prepare failed')
@@ -200,11 +218,66 @@ export default function HighlightsPage() {
 
     setUploaderName('')
     setTitle('')
+    setPassword('')
     setFile(null)
     setDuration(null)
     setUploadStep('idle')
     if (fileInputRef.current) fileInputRef.current.value = ''
     await fetchHighlights()
+  }
+
+  function openManage(highlight: Highlight) {
+    setManageError('')
+    setManageDraft({
+      id: highlight.id,
+      uploaderName: highlight.uploader_name,
+      title: highlight.title,
+      password: '',
+    })
+  }
+
+  async function handleUpdate() {
+    if (!manageDraft) return
+    setManageError('')
+    setManagePending(true)
+
+    try {
+      const response = await fetch('/api/highlights', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(manageDraft),
+      })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(result.error ?? '수정에 실패했습니다.')
+      setManageDraft(null)
+      await fetchHighlights(Math.max(PAGE_SIZE, highlights.length))
+    } catch (error) {
+      setManageError(error instanceof Error ? error.message : '수정에 실패했습니다.')
+    } finally {
+      setManagePending(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!manageDraft || !window.confirm('이 하이라이트를 삭제할까요?')) return
+    setManageError('')
+    setManagePending(true)
+
+    try {
+      const response = await fetch('/api/highlights', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: manageDraft.id, password: manageDraft.password }),
+      })
+      const result = await response.json() as { error?: string }
+      if (!response.ok) throw new Error(result.error ?? '삭제에 실패했습니다.')
+      setManageDraft(null)
+      await fetchHighlights(Math.max(PAGE_SIZE, highlights.length - 1))
+    } catch (error) {
+      setManageError(error instanceof Error ? error.message : '삭제에 실패했습니다.')
+    } finally {
+      setManagePending(false)
+    }
   }
 
   const isUploading = uploadStep === 'uploading' || uploadStep === 'saving'
@@ -225,8 +298,8 @@ export default function HighlightsPage() {
             <h1>하이라이트</h1>
           </div>
           <dl className="highlights-limits" aria-label="업로드 제한">
-            <div><dt>길이</dt><dd>30초</dd></div>
-            <div><dt>용량</dt><dd>25MB</dd></div>
+            <div><dt>길이</dt><dd>1분</dd></div>
+            <div><dt>용량</dt><dd>50MB</dd></div>
           </dl>
         </header>
 
@@ -255,6 +328,20 @@ export default function HighlightsPage() {
                   onChange={(event) => setTitle(event.target.value)}
                   maxLength={80}
                   placeholder="어떤 장면인가요?"
+                  disabled={isUploading}
+                  required
+                />
+              </label>
+              <label>
+                <span>수정/삭제 비밀번호</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  minLength={4}
+                  maxLength={64}
+                  autoComplete="new-password"
+                  placeholder="4자 이상"
                   disabled={isUploading}
                   required
                 />
@@ -316,7 +403,7 @@ export default function HighlightsPage() {
                       src={highlight.video_url}
                       controls
                       playsInline
-                      preload="metadata"
+                      preload="none"
                       aria-label={`${highlight.title} 영상`}
                     />
                     <div className="highlight-caption">
@@ -327,8 +414,49 @@ export default function HighlightsPage() {
                       <div className="highlight-meta">
                         <span>{formatDuration(Number(highlight.duration_seconds))}</span>
                         <time dateTime={highlight.created_at}>{formatDate(highlight.created_at)}</time>
+                        <button type="button" onClick={() => openManage(highlight)}>수정·삭제</button>
                       </div>
                     </div>
+                    {manageDraft?.id === highlight.id && (
+                      <div className="highlight-manage">
+                        <label>
+                          <span>올린 사람</span>
+                          <input
+                            value={manageDraft.uploaderName}
+                            onChange={(event) => setManageDraft({ ...manageDraft, uploaderName: event.target.value })}
+                            maxLength={30}
+                            disabled={managePending}
+                          />
+                        </label>
+                        <label>
+                          <span>영상 제목</span>
+                          <input
+                            value={manageDraft.title}
+                            onChange={(event) => setManageDraft({ ...manageDraft, title: event.target.value })}
+                            maxLength={80}
+                            disabled={managePending}
+                          />
+                        </label>
+                        <label>
+                          <span>업로드 비밀번호</span>
+                          <input
+                            type="password"
+                            value={manageDraft.password}
+                            onChange={(event) => setManageDraft({ ...manageDraft, password: event.target.value })}
+                            minLength={4}
+                            maxLength={64}
+                            autoComplete="current-password"
+                            disabled={managePending}
+                          />
+                        </label>
+                        {manageError && <p className="highlights-error" role="alert">{manageError}</p>}
+                        <div className="highlight-manage-actions">
+                          <button type="button" onClick={() => void handleUpdate()} disabled={managePending}>수정</button>
+                          <button type="button" onClick={() => void handleDelete()} disabled={managePending}>삭제</button>
+                          <button type="button" onClick={() => setManageDraft(null)} disabled={managePending}>취소</button>
+                        </div>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>
