@@ -73,7 +73,7 @@ interface PersonalDetail {
 }
 
 type SortKey = 'total' | 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
-type Season = 1 | 2
+type Season = 'all' | 1 | 2
 type DetailTab = 'teammates' | 'opponents' | 'champions'
 
 const MORE_LEAGUE_MAX_GAMES = 30
@@ -291,6 +291,7 @@ export default function StandingsPage() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const [detailTab, setDetailTab] = useState<DetailTab>('teammates')
   const [season, setSeason] = useState<Season>(2)
+  const seasonLabel = season === 'all' ? '전체' : `시즌 ${season}`
 
   const givingPickStats = useMemo(() => computeGivingPickStats(allRounds), [allRounds])
 
@@ -358,10 +359,14 @@ export default function StandingsPage() {
       if (IS_MOCK) {
         const mockPlayers = IS_PORTFOLIO ? portfolioPlayers : samplePlayers
         const mockSessions = IS_PORTFOLIO
-          ? (season === 1 ? portfolioSeason1Sessions : portfolioSeason2Sessions)
+          ? (season === 'all'
+            ? [...portfolioSeason1Sessions, ...portfolioSeason2Sessions]
+            : season === 1 ? portfolioSeason1Sessions : portfolioSeason2Sessions)
           : sampleSessions
         const mockRounds = IS_PORTFOLIO
-          ? (season === 1 ? portfolioSeason1Rounds : portfolioSeason2Rounds)
+          ? (season === 'all'
+            ? [...portfolioSeason1Rounds, ...portfolioSeason2Rounds]
+            : season === 1 ? portfolioSeason1Rounds : portfolioSeason2Rounds)
           : sampleRounds
         setAllPlayers(mockPlayers)
         setAllSessions(mockSessions)
@@ -409,8 +414,12 @@ export default function StandingsPage() {
           insforge.database.from('rounds').select('id, session_id, team1_ids, team2_ids, winner_team, team1_champions, team2_champions, created_at'),
         ])
         if (!currentSessions || !currentRounds) { setLoading(false); return }
-        sessions = currentSessions as Session[]
-        rounds = currentRounds as Round[]
+        sessions = season === 'all'
+          ? [...season1Standings.sessions as Session[], ...currentSessions as Session[]]
+          : currentSessions as Session[]
+        rounds = season === 'all'
+          ? [...season1Standings.rounds as unknown as Round[], ...currentRounds as Round[]]
+          : currentRounds as Round[]
       }
 
       setAllPlayers(players as Player[])
@@ -472,7 +481,7 @@ export default function StandingsPage() {
                 <div>
                   <p className="standings-player-kicker">PLAYER RECORD</p>
                   <h2 id="standings-player-title" className="standings-player-name">{personalDetail.player.real_name}</h2>
-                  <p className="standings-player-subtitle">시즌 {season} 개인 전적</p>
+                  <p className="standings-player-subtitle">{seasonLabel} 개인 전적</p>
                 </div>
                 <button
                   type="button"
@@ -621,7 +630,7 @@ export default function StandingsPage() {
         <div className="flex items-center justify-between gap-4 mb-2">
           <h1 className="text-3xl font-bold">전적</h1>
           <div className="flex gap-2" aria-label="시즌 선택">
-            {([2, 1] as const).map(value => (
+            {(['all', 2, 1] as const).map(value => (
               <button
                 key={value}
                 onClick={() => setSeason(value)}
@@ -631,14 +640,14 @@ export default function StandingsPage() {
                   color: season === value ? 'var(--on-ink)' : 'var(--ink)',
                 }}
               >
-                시즌 {value}
+                {value === 'all' ? '전체' : `시즌 ${value}`}
               </button>
             ))}
           </div>
         </div>
         <p className="text-sm mb-6" style={{ opacity: 0.5 }}>
           {IS_PORTFOLIO && `실제 운영 기록 ${portfolioMetadata.session_count}개 세션 · ${portfolioMetadata.round_count}라운드 · `}
-          시즌 {season} · {{ total: '총 판수', profit: IS_PORTFOLIO ? '누적 점수' : '누적 수익', rate: '승률', tank: '대줌 정도', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
+          {seasonLabel} · {{ total: '총 판수', profit: IS_PORTFOLIO ? '누적 점수' : '누적 수익', rate: '승률', tank: '대줌 정도', wins: '승리 수', losses: '패배 수' }[sortBy]} 순으로 정렬됩니다.
         </p>
 
         <div className="flex gap-2 mb-8 flex-wrap">
@@ -661,7 +670,7 @@ export default function StandingsPage() {
 
         {!loading && stats.length === 0 && (
           <div className="py-20 text-center">
-            <p className="text-base font-medium" style={{ opacity: 0.4 }}>시즌 {season} 기록이 없습니다.</p>
+            <p className="text-base font-medium" style={{ opacity: 0.4 }}>{seasonLabel} 기록이 없습니다.</p>
           </div>
         )}
 
