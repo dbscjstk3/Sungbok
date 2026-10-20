@@ -2,15 +2,14 @@ import { readFile, writeFile } from 'node:fs/promises'
 
 const sourcePath = new URL('../backups/portfolio-source.json', import.meta.url)
 const season1Path = new URL('../data/season1-standings.json', import.meta.url)
+const season2Path = new URL('../data/season2-standings.json', import.meta.url)
 const outputPath = new URL('../data/portfolio-data.json', import.meta.url)
 
 const source = JSON.parse(await readFile(sourcePath, 'utf8'))
 const season1 = JSON.parse(await readFile(season1Path, 'utf8'))
+const season2 = JSON.parse(await readFile(season2Path, 'utf8'))
 const tables = source.data.tables
 const livePlayers = tables.players.rows
-const season2Sessions = tables.sessions.rows.filter(session => session.ended_at)
-const season2SessionIds = new Set(season2Sessions.map(session => session.id))
-const season2Rounds = tables.rounds.rows.filter(round => season2SessionIds.has(round.session_id))
 
 const createdAtByPlayer = new Map(livePlayers.map(player => [player.id, player.created_at]))
 const orderedPlayerIds = livePlayers.map(player => player.id).sort((left, right) => {
@@ -66,7 +65,7 @@ function sanitizeSeason(seasonNumber, sessions, rounds) {
 }
 
 const sanitizedSeason1 = sanitizeSeason(1, season1.sessions, season1.rounds)
-const sanitizedSeason2 = sanitizeSeason(2, season2Sessions, season2Rounds)
+const sanitizedSeason2 = sanitizeSeason(2, season2.sessions, season2.rounds)
 const allSessions = [...sanitizedSeason1.sessions, ...sanitizedSeason2.sessions]
 
 const output = {

@@ -18,6 +18,7 @@ import {
 import { IS_PORTFOLIO } from '@/lib/appMode'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import season1Standings from '@/data/season1-standings.json'
+import season2Standings from '@/data/season2-standings.json'
 
 interface Session {
   id: string
@@ -73,10 +74,11 @@ interface PersonalDetail {
 }
 
 type SortKey = 'total' | 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
-type Season = 'all' | 1 | 2
+type Season = 'all' | 1 | 2 | 3
 type DetailTab = 'teammates' | 'opponents' | 'champions'
 
 const MORE_LEAGUE_MAX_GAMES = 30
+const SEASON_OPTIONS: Season[] = IS_PORTFOLIO ? ['all', 2, 1] : ['all', 3, 2, 1]
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'profit', label: IS_PORTFOLIO ? '점수' : '수익' },
@@ -290,7 +292,7 @@ export default function StandingsPage() {
   const [sortBy, setSortBy] = useState<SortKey>('profit')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const [detailTab, setDetailTab] = useState<DetailTab>('teammates')
-  const [season, setSeason] = useState<Season>(2)
+  const [season, setSeason] = useState<Season>(IS_PORTFOLIO ? 2 : 3)
   const seasonLabel = season === 'all' ? '전체' : `시즌 ${season}`
 
   const givingPickStats = useMemo(() => computeGivingPickStats(allRounds), [allRounds])
@@ -408,6 +410,9 @@ export default function StandingsPage() {
       if (season === 1) {
         sessions = season1Standings.sessions as Session[]
         rounds = season1Standings.rounds as unknown as Round[]
+      } else if (season === 2) {
+        sessions = season2Standings.sessions as Session[]
+        rounds = season2Standings.rounds as unknown as Round[]
       } else {
         const [{ data: currentSessions }, { data: currentRounds }] = await Promise.all([
           insforge.database.from('sessions').select('id, bet_amount, created_at').not('ended_at', 'is', null),
@@ -415,10 +420,10 @@ export default function StandingsPage() {
         ])
         if (!currentSessions || !currentRounds) { setLoading(false); return }
         sessions = season === 'all'
-          ? [...season1Standings.sessions as Session[], ...currentSessions as Session[]]
+          ? [...season1Standings.sessions as Session[], ...season2Standings.sessions as Session[], ...currentSessions as Session[]]
           : currentSessions as Session[]
         rounds = season === 'all'
-          ? [...season1Standings.rounds as unknown as Round[], ...currentRounds as Round[]]
+          ? [...season1Standings.rounds as unknown as Round[], ...season2Standings.rounds as unknown as Round[], ...currentRounds as Round[]]
           : currentRounds as Round[]
       }
 
@@ -630,7 +635,7 @@ export default function StandingsPage() {
         <div className="flex items-center justify-between gap-4 mb-2">
           <h1 className="text-3xl font-bold">전적</h1>
           <div className="flex gap-2" aria-label="시즌 선택">
-            {(['all', 2, 1] as const).map(value => (
+            {SEASON_OPTIONS.map(value => (
               <button
                 key={value}
                 onClick={() => setSeason(value)}

@@ -13,6 +13,7 @@ import {
 } from '@/lib/sampleData'
 import { IS_PORTFOLIO } from '@/lib/appMode'
 import season1Standings from '@/data/season1-standings.json'
+import season2Standings from '@/data/season2-standings.json'
 
 interface Round {
   team1_ids: string[]
@@ -50,7 +51,9 @@ interface ChampionStat {
 }
 
 type SortKey = 'games' | 'wins' | 'rate'
-type Season = 1 | 2
+type Season = 1 | 2 | 3
+
+const SEASON_OPTIONS: Season[] = IS_PORTFOLIO ? [2, 1] : [3, 2, 1]
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'games', label: '픽' },
@@ -132,7 +135,7 @@ export default function ChampionsPage() {
   const [query, setQuery] = useState('')
   const [minimumGames, setMinimumGames] = useState(1)
   const [sortBy, setSortBy] = useState<SortKey>('games')
-  const [season, setSeason] = useState<Season>(2)
+  const [season, setSeason] = useState<Season>(IS_PORTFOLIO ? 2 : 3)
   const [selectedChampionName, setSelectedChampionName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -167,6 +170,8 @@ export default function ChampionsPage() {
 
       if (season === 1) {
         nextRounds = season1Standings.rounds as unknown as Round[]
+      } else if (season === 2) {
+        nextRounds = season2Standings.rounds as unknown as Round[]
       } else {
         const roundResult = await insforge.database
           .from('rounds')
@@ -328,7 +333,7 @@ export default function ChampionsPage() {
         <div className="mb-2 flex items-center justify-between gap-4">
           <h1 className="text-3xl font-bold">챔피언 통계</h1>
           <div className="flex gap-2" aria-label="시즌 선택">
-            {([2, 1] as const).map(value => (
+            {SEASON_OPTIONS.map(value => (
               <button
                 key={value}
                 type="button"
