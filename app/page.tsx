@@ -24,7 +24,7 @@ export default function Home() {
           <h1 id="home-title">장미반부터 나래반까지,<br /><em>{IS_PORTFOLIO ? '함께 쌓아온 치열한 경쟁' : '따고 따이는 치열한 경쟁'}</em></h1>
           <Link className="home-primary" href="/match">내전 시작 <span aria-hidden="true">↗</span></Link>
         </div>
-        <div className="home-issue" aria-hidden="true"><span>ARCHIVE</span><strong>NO. 02</strong></div>
+        <div className="home-issue" aria-hidden="true"><span>ARCHIVE</span><strong>NO. 03</strong></div>
       </section>
 
       <section className="home-directory" aria-label="빠른 메뉴">
