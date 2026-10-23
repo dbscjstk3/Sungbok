@@ -19,6 +19,7 @@ import { IS_PORTFOLIO } from '@/lib/appMode'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import season1Standings from '@/data/season1-standings.json'
 import season2Standings from '@/data/season2-standings.json'
+import { computeDivisionOnePlayerIds } from '@/lib/league'
 
 interface Session {
   id: string
@@ -77,7 +78,6 @@ type SortKey = 'total' | 'profit' | 'wins' | 'losses' | 'rate' | 'tank'
 type Season = 'all' | 1 | 2 | 3
 type DetailTab = 'teammates' | 'opponents' | 'champions'
 
-const MORE_LEAGUE_MAX_GAMES = 30
 const SEASON_OPTIONS: Season[] = IS_PORTFOLIO ? ['all', 2, 1] : ['all', 3, 2, 1]
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
@@ -294,6 +294,7 @@ export default function StandingsPage() {
   const [detailTab, setDetailTab] = useState<DetailTab>('teammates')
   const [season, setSeason] = useState<Season>(IS_PORTFOLIO ? 2 : 3)
   const seasonLabel = season === 'all' ? '전체' : `시즌 ${season}`
+  const usesDivisionLeagues = season === 3
 
   const givingPickStats = useMemo(() => computeGivingPickStats(allRounds), [allRounds])
 
@@ -314,14 +315,23 @@ export default function StandingsPage() {
     }
   }), [stats, sortBy, givingPickStats])
 
-  const mainLeagueStats = useMemo(
-    () => sortedStats.filter(s => s.wins + s.losses > MORE_LEAGUE_MAX_GAMES),
-    [sortedStats]
+  const divisionOnePlayerIds = useMemo(
+    () => usesDivisionLeagues
+      ? computeDivisionOnePlayerIds(allRounds, allSessions)
+      : new Set<string>(),
+    [allRounds, allSessions, usesDivisionLeagues]
   )
-  const moreLeagueStats = useMemo(
-    () => sortedStats.filter(s => s.wins + s.losses <= MORE_LEAGUE_MAX_GAMES),
-    [sortedStats]
-  )
+
+  const leagueSections = useMemo(() => {
+    if (usesDivisionLeagues) {
+      return [
+        { title: '1부 리그', description: '시즌 손실 5만원 초과 시 2부 강등', list: sortedStats.filter(s => divisionOnePlayerIds.has(s.player.id)) },
+        { title: '2부 리그', description: '시즌 수익 5만원 초과 시 1부 승급', list: sortedStats.filter(s => !divisionOnePlayerIds.has(s.player.id)) },
+      ]
+    }
+
+    return [{ title: '전체 전적', description: '참가 선수 전체', list: sortedStats }]
+  }, [sortedStats, divisionOnePlayerIds, usesDivisionLeagues])
 
   const recentForm = useMemo(() => {
     const map = new Map<string, boolean[]>()
@@ -704,82 +714,81 @@ export default function StandingsPage() {
             </div>
 
             {/* 리그별 전적 테이블 */}
-            {[
-              { title: '메인 리그', description: `총 ${MORE_LEAGUE_MAX_GAMES + 1}판 이상`, list: mainLeagueStats },
-              { title: '더보기 리그', description: `총 ${MORE_LEAGUE_MAX_GAMES}판 이하`, list: moreLeagueStats },
-            ].map(({ title, description, list }, leagueIndex) => (
-              <section key={title} className={leagueIndex === 0 ? '' : 'mt-12'} aria-labelledby={`league-title-${leagueIndex}`}>
-                <div className="mb-4 flex items-end justify-between gap-4">
-                  <div>
-                    <h2 id={`league-title-${leagueIndex}`} className="text-lg font-bold">{title}</h2>
-                    <p className="mt-1 text-sm" style={{ opacity: 0.5 }}>{description}</p>
+            <div className={usesDivisionLeagues ? 'grid grid-cols-1 gap-12 xl:grid-cols-2 xl:gap-6' : ''}>
+              {leagueSections.map(({ title, description, list }, leagueIndex) => (
+                <section key={title} aria-labelledby={`league-title-${leagueIndex}`}>
+                  <div className="mb-4 flex items-end justify-between gap-4">
+                    <div>
+                      <h2 id={`league-title-${leagueIndex}`} className="text-lg font-bold">{title}</h2>
+                      <p className="mt-1 text-sm" style={{ opacity: 0.5 }}>{description}</p>
+                    </div>
+                    <span className="text-sm font-medium tabular-nums" style={{ opacity: 0.45 }}>{list.length}명</span>
                   </div>
-                  <span className="text-sm font-medium tabular-nums" style={{ opacity: 0.45 }}>{list.length}명</span>
-                </div>
 
-                {list.length === 0 ? (
-                  <div className="rounded-2xl px-6 py-10 text-center text-sm" style={{ backgroundColor: 'var(--surface)', opacity: 0.55 }}>
-                    해당 리그에 표시할 선수가 없습니다.
-                  </div>
-                ) : (
-                  <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: 'var(--surface)' }}>
-                    <table className="w-full min-w-[620px] text-xs sm:text-sm">
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
-                          <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
-                          <th className="w-px whitespace-nowrap text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
-                          {([['total', '전적'], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', IS_PORTFOLIO ? '점수' : '수익']] as [SortKey, string][]).map(([key, label]) => (
-                            <th key={key}
-                              onClick={() => setSortBy(key)}
-                              className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
-                              style={{ opacity: sortBy === key ? 1 : 0.5 }}
-                            >
-                              {label}{sortBy === key && ' ↓'}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {list.map((s, i) => {
-                          const total = s.wins + s.losses
-                          const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
-                          const givingRate = getGivingRate(givingPickStats.get(s.player.id))
-                          const profitColor = s.profit > 0 ? 'var(--positive)' : s.profit < 0 ? 'var(--negative)' : 'var(--ink)'
-                          return (
-                            <tr key={s.player.id} style={{ borderTop: '1px solid var(--canvas)' }}>
-                              <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
-                              <td className="w-px whitespace-nowrap px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
-                                <button onClick={() => { setDetailTab('teammates'); setSelectedPlayerId(s.player.id) }}
-                                  className="underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
-                                  {s.player.real_name}
-                                </button>
-                                {recentForm.has(s.player.id) && (
-                                  <span className="ml-2 inline-flex gap-0.5 align-middle">
-                                    {recentForm.get(s.player.id)!.map((won, j) => (
-                                      <span key={j} className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: won ? '#2d7a3a' : '#c0392b' }} />
-                                    ))}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{total}</td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold whitespace-nowrap">
-                                {givingRate === null ? '-' : `${Math.round(givingRate * 100)}%`}
-                              </td>
-                              <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
-                                {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </section>
-            ))}
+                  {list.length === 0 ? (
+                    <div className="rounded-2xl px-6 py-10 text-center text-sm" style={{ backgroundColor: 'var(--surface)', opacity: 0.55 }}>
+                      해당 리그에 표시할 선수가 없습니다.
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl overflow-x-auto" style={{ backgroundColor: 'var(--surface)' }}>
+                      <table className={usesDivisionLeagues ? 'w-full min-w-[540px] text-xs' : 'w-full min-w-[620px] text-xs sm:text-sm'}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid var(--canvas)' }}>
+                            <th className="text-center px-2 sm:px-5 py-3 sm:py-4 font-semibold w-8 sm:w-12" style={{ opacity: 0.5 }}>#</th>
+                            <th className="w-px whitespace-nowrap text-left px-2 sm:px-5 py-3 sm:py-4 font-semibold" style={{ opacity: 0.5 }}>이름</th>
+                            {([['total', '전적'], ['wins', '승'], ['losses', '패'], ['rate', '승률'], ['tank', '대줌 정도'], ['profit', IS_PORTFOLIO ? '점수' : '수익']] as [SortKey, string][]).map(([key, label]) => (
+                              <th key={key}
+                                onClick={() => setSortBy(key)}
+                                className="text-center px-2 sm:px-4 py-3 sm:py-4 font-semibold cursor-pointer select-none transition-opacity hover:opacity-100"
+                                style={{ opacity: sortBy === key ? 1 : 0.5 }}
+                              >
+                                {label}{sortBy === key && ' ↓'}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {list.map((s, i) => {
+                            const total = s.wins + s.losses
+                            const rate = total > 0 ? Math.round((s.wins / total) * 100) : 0
+                            const givingRate = getGivingRate(givingPickStats.get(s.player.id))
+                            const profitColor = s.profit > 0 ? 'var(--positive)' : s.profit < 0 ? 'var(--negative)' : 'var(--ink)'
+                            return (
+                              <tr key={s.player.id} style={{ borderTop: '1px solid var(--canvas)' }}>
+                                <td className="text-center px-2 sm:px-5 py-2.5 sm:py-4 font-medium" style={{ opacity: 0.35 }}>{i + 1}</td>
+                                <td className="w-px whitespace-nowrap px-2 sm:px-5 py-2.5 sm:py-4 font-bold">
+                                  <button onClick={() => { setDetailTab('teammates'); setSelectedPlayerId(s.player.id) }}
+                                    className="underline decoration-dotted underline-offset-2 transition-opacity hover:opacity-60">
+                                    {s.player.real_name}
+                                  </button>
+                                  {recentForm.has(s.player.id) && (
+                                    <span className="ml-2 inline-flex gap-0.5 align-middle">
+                                      {recentForm.get(s.player.id)!.map((won, j) => (
+                                        <span key={j} className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: won ? '#2d7a3a' : '#c0392b' }} />
+                                      ))}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{total}</td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.wins}</td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold">{s.losses}</td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4" style={{ opacity: 0.7 }}>{rate}%</td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold whitespace-nowrap">
+                                  {givingRate === null ? '-' : `${Math.round(givingRate * 100)}%`}
+                                </td>
+                                <td className="text-center px-2 sm:px-4 py-2.5 sm:py-4 font-bold" style={{ color: profitColor }}>
+                                  {s.profit > 0 ? '+' : ''}{s.profit.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
 
             {/* 듀오 승률 랭킹 */}
             {duoStats.length > 0 && (
