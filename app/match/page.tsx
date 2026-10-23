@@ -47,6 +47,7 @@ function computeStats(players: Player[], rounds: Round[]): Stat[] {
 type Phase = 'select' | 'assign' | 'playing' | 'ended'
 
 const STORAGE_KEY = 'sungbok_match_session'
+const FIXED_BET_AMOUNT = 3_000
 const PARTICIPANT_OPTIONS = [6, 8, 10] as const
 const MAX_PARTICIPANTS = PARTICIPANT_OPTIONS[PARTICIPANT_OPTIONS.length - 1]
 
@@ -139,7 +140,7 @@ export default function MatchPage() {
   const [team1, setTeam1] = useState<Player[]>([])
   const [team2, setTeam2] = useState<Player[]>([])
   const [stats, setStats] = useState<Stat[]>([])
-  const [betAmount, setBetAmount] = useState<number | ''>('')
+  const [sessionBetAmount, setSessionBetAmount] = useState(FIXED_BET_AMOUNT)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
@@ -171,6 +172,10 @@ export default function MatchPage() {
     () => computeDivisionOnePlayerIds(seasonRounds, seasonSessions),
     [seasonRounds, seasonSessions]
   )
+  const orderedPlayers = useMemo(() => [...allPlayers].sort((a, b) => {
+    const divisionDifference = Number(!divisionOnePlayerIds.has(a.id)) - Number(!divisionOnePlayerIds.has(b.id))
+    return divisionDifference || a.real_name.localeCompare(b.real_name, 'ko-KR')
+  }), [allPlayers, divisionOnePlayerIds])
 
   useEffect(() => { assignmentsRef.current = assignments }, [assignments])
   useEffect(() => { divisionOnePlayerIdsRef.current = divisionOnePlayerIds }, [divisionOnePlayerIds])
@@ -253,7 +258,7 @@ export default function MatchPage() {
           setStats(computeStats(pool, fetchedRounds))
           setTeam1(t1)
           setTeam2(t2)
-          setBetAmount(stored.betAmount || '')
+          setSessionBetAmount(stored.betAmount || FIXED_BET_AMOUNT)
           setPhase(stored.phase)
           logAppEvent({
             eventType: 'session_restore',
@@ -405,7 +410,7 @@ export default function MatchPage() {
         sid = 'mock-session-' + window.crypto.randomUUID()
       } else {
         const { data, error } = await insforge.database.from('sessions').insert([{
-          bet_amount: betAmount === '' ? 0 : betAmount,
+          bet_amount: FIXED_BET_AMOUNT,
         }]).select()
         if (error) {
           console.error('내전 세션 생성 실패:', error)
@@ -419,6 +424,7 @@ export default function MatchPage() {
         sid = (data[0] as { id: string }).id
       }
       setSessionId(sid)
+      setSessionBetAmount(FIXED_BET_AMOUNT)
       sessionPlayersRef.current = pool
       setRounds([])
       setStats(pool.map(p => ({ player: p, wins: 0, losses: 0 })))
@@ -429,7 +435,7 @@ export default function MatchPage() {
         sessionPlayerIds: pool.map(p => p.id),
         team1Ids: directTeam1?.map(p => p.id) ?? [],
         team2Ids: directTeam2?.map(p => p.id) ?? [],
-        betAmount: betAmount === '' ? 0 : betAmount,
+        betAmount: FIXED_BET_AMOUNT,
         fixedTeam1Ids: fixed1.map(p => p.id),
         fixedTeam2Ids: fixed2.map(p => p.id),
       })
@@ -1007,7 +1013,7 @@ export default function MatchPage() {
           phase: 'playing',
           sessionId,
           sessionPlayerIds: pool.map(player => player.id),
-          betAmount: betAmount === '' ? 0 : betAmount,
+          betAmount: sessionBetAmount,
           fixedTeam1Ids,
           fixedTeam2Ids,
           team1Ids: t1.map(player => player.id),
@@ -1056,7 +1062,7 @@ export default function MatchPage() {
       setStats(computeStats(sessionPlayersRef.current, rounds))
       setSeasonSessions(previous => [
         ...previous.filter(session => session.id !== sessionId),
-        { id: sessionId, bet_amount: betAmount === '' ? 0 : betAmount },
+        { id: sessionId, bet_amount: sessionBetAmount },
       ])
       setSeasonRounds(previous => [
         ...previous.filter(round => round.session_id !== sessionId),
@@ -1080,6 +1086,7 @@ export default function MatchPage() {
     setSaveMessage('')
     setPhase('select')
     setSessionId(null)
+    setSessionBetAmount(FIXED_BET_AMOUNT)
     setSelected(new Set())
     setAssignments(new Map())
     assignmentsRef.current = new Map()
@@ -1179,7 +1186,7 @@ export default function MatchPage() {
                 {PARTICIPANT_OPTIONS.map(count => (
                   <button
                     key={count}
-                    onClick={() => setSelected(new Set(allPlayers.slice(0, count).map(p => p.id)))}
+                    onClick={() => setSelected(new Set(orderedPlayers.slice(0, count).map(p => p.id)))}
                     className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
                     style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
                     상위 {count}명
@@ -1188,7 +1195,7 @@ export default function MatchPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-8">
-              {allPlayers.map(p => {
+              {orderedPlayers.map(p => {
                 const on = selected.has(p.id)
                 const off = !on && selected.size >= MAX_PARTICIPANTS
                 return (
@@ -1206,30 +1213,9 @@ export default function MatchPage() {
               })}
             </div>
 
-            <div className="flex flex-col gap-2 mb-8">
-              <label className="text-sm font-medium" style={{ opacity: 0.6 }}>{IS_PORTFOLIO ? '라운드 포인트' : '판당 금액'}</label>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    value={betAmount}
-                    onChange={e => setBetAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="w-32 pl-4 pr-9 py-2 rounded-xl text-sm font-medium text-right outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none" style={{ opacity: 0.4 }}>{IS_PORTFOLIO ? 'P' : '원'}</span>
-                </div>
-                {(IS_PORTFOLIO ? [10, 20, 30, 50] : [1000, 2000, 3000, 5000]).map(v => (
-                  <button key={v} onClick={() => setBetAmount(v)}
-                    className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{ backgroundColor: betAmount === v ? 'var(--ink)' : 'var(--surface)', color: betAmount === v ? 'var(--on-ink)' : 'var(--ink)' }}>
-                    {v.toLocaleString()}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p className="text-sm font-medium mb-8" style={{ opacity: 0.6 }}>
+              판당 금액 {FIXED_BET_AMOUNT.toLocaleString()}원 고정
+            </p>
 
             <button onClick={goToAssign} disabled={!canStart}
               className="px-10 py-4 rounded-full text-base font-bold transition-opacity hover:opacity-85 disabled:opacity-30"
@@ -1435,7 +1421,7 @@ export default function MatchPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">내전 종료</h1>
             <p className="text-sm mb-8" style={{ opacity: 0.5 }}>총 {roundCount}판 진행</p>
-            <Standings stats={stats} showSettlement betAmount={betAmount === '' ? 0 : betAmount} />
+            <Standings stats={stats} showSettlement betAmount={sessionBetAmount} />
             <button onClick={reset}
               className="mt-8 px-8 py-3 rounded-full text-sm font-semibold transition-opacity hover:opacity-80"
               style={{ backgroundColor: 'var(--surface)', color: 'var(--ink)' }}>
