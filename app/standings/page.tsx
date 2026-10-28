@@ -325,8 +325,8 @@ export default function StandingsPage() {
   const leagueSections = useMemo(() => {
     if (usesDivisionLeagues) {
       return [
-        { title: '1부 리그', description: '시즌 손실 5만원 초과 시 2부 강등', list: sortedStats.filter(s => divisionOnePlayerIds.has(s.player.id)) },
-        { title: '2부 리그', description: '시즌 수익 5만원 초과 시 1부 승급', list: sortedStats.filter(s => !divisionOnePlayerIds.has(s.player.id)) },
+        { title: '1부 리그', description: '시즌 누적 손익 0원 미만 시 강등 · 기존 1부 6명 제외 · 0원은 소속 유지', list: sortedStats.filter(s => divisionOnePlayerIds.has(s.player.id)) },
+        { title: '2부 리그', description: '시즌 누적 손익 +5만원 초과 시 1부 승급', list: sortedStats.filter(s => !divisionOnePlayerIds.has(s.player.id)) },
       ]
     }
 
