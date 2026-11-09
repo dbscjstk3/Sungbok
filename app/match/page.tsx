@@ -1363,7 +1363,9 @@ export default function MatchPage() {
                             )}
                             <span className="ml-auto inline-flex gap-3 whitespace-nowrap text-sm font-bold tabular-nums" style={{ color: '#ffffff' }}>
                               <span>{stat?.wins ?? 0}승 {stat?.losses ?? 0}패</span>
-                              <span>{money > 0 ? '+' : ''}{money.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}</span>
+                              <span style={{ color: money > 0 ? '#86efac' : money < 0 ? '#fca5a5' : '#ffffff' }}>
+                                {money > 0 ? '+' : ''}{money.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}
+                              </span>
                             </span>
                           </li>
                         )
