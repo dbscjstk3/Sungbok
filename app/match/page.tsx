@@ -1349,17 +1349,25 @@ export default function MatchPage() {
                     style={{ backgroundColor: num === 1 ? '#1e3a8a' : '#991b1b' }}>
                     <h2 className="text-base font-bold mb-4" style={{ color: '#ffffff' }}>{num}팀</h2>
                     <ul className="flex flex-col gap-2">
-                      {team.map(p => (
-                        <li key={p.id} className="flex items-center gap-2">
-                          <span className="text-lg font-bold" style={{ color: '#ffffff' }}>{p.real_name}</span>
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.16)', color: '#ffffff' }}>
-                            {divisionOnePlayerIds.has(p.id) ? '1부' : '2부'}
-                          </span>
-                          {champions.get(p.id) && (
-                            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{champions.get(p.id)}</span>
-                          )}
-                        </li>
-                      ))}
+                      {team.map(p => {
+                        const stat = stats.find(s => s.player.id === p.id)
+                        const money = ((stat?.wins ?? 0) - (stat?.losses ?? 0)) * FIXED_BET_AMOUNT
+                        return (
+                          <li key={p.id} className="flex flex-wrap items-center gap-2">
+                            <span className="text-lg font-bold" style={{ color: '#ffffff' }}>{p.real_name}</span>
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.16)', color: '#ffffff' }}>
+                              {divisionOnePlayerIds.has(p.id) ? '1부' : '2부'}
+                            </span>
+                            {champions.get(p.id) && (
+                              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{champions.get(p.id)}</span>
+                            )}
+                            <span className="ml-auto inline-flex gap-3 whitespace-nowrap text-sm font-bold tabular-nums" style={{ color: '#ffffff' }}>
+                              <span>{stat?.wins ?? 0}승 {stat?.losses ?? 0}패</span>
+                              <span>{money > 0 ? '+' : ''}{money.toLocaleString()}{IS_PORTFOLIO ? 'P' : '원'}</span>
+                            </span>
+                          </li>
+                        )
+                      })}
                     </ul>
                   </div>
                 ))}
