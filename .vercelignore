@@ -1,0 +1,3 @@
+# Keep local environment files and database backups out of deployment uploads.
+.env*
+/backups/

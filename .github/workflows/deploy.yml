@@ -40,6 +40,12 @@ jobs:
             exit 1
           fi
 
+      - name: Log in to InsForge
+        run: >-
+          npx --yes @insforge/cli@0.2.8 login
+          --user-api-key "$INSFORGE_ACCESS_TOKEN"
+          --json
+
       - name: Install dependencies
         run: npm ci
 
@@ -58,3 +64,4 @@ jobs:
         run: >-
           npx --yes @insforge/cli@0.2.8 deployments deploy .
           --meta '{"source":"github-actions","commit":"${{ github.sha }}"}'
+          --json
