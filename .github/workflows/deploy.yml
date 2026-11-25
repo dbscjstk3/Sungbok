@@ -21,6 +21,7 @@ jobs:
     env:
       INSFORGE_PROJECT_ID: fb135011-88fe-472d-bd8b-aedbca3a86aa
       INSFORGE_ORG_ID: 7a5056ef-943d-4100-b1e8-be96b214ceac
+      INSFORGE_ACCESS_TOKEN: ${{ secrets.INSFORGE_ACCESS_TOKEN }}
 
     steps:
       - name: Check out repository
@@ -32,35 +33,12 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Configure InsForge credentials
-        env:
-          INSFORGE_ACCESS_TOKEN: ${{ secrets.INSFORGE_ACCESS_TOKEN }}
-          INSFORGE_REFRESH_TOKEN: ${{ secrets.INSFORGE_REFRESH_TOKEN }}
+      - name: Validate InsForge credentials
         run: |
-          if [ -z "$INSFORGE_ACCESS_TOKEN" ]; then
-            echo "::error::Add INSFORGE_ACCESS_TOKEN to the repository's Actions secrets."
+          if [[ "$INSFORGE_ACCESS_TOKEN" != uak_?* ]]; then
+            echo "::error::Set INSFORGE_ACCESS_TOKEN in Actions secrets to a user API key (uak_...) from InsForge Profile > API Keys. Session access/refresh tokens are not supported by this workflow."
             exit 1
           fi
-          if [ -z "$INSFORGE_REFRESH_TOKEN" ]; then
-            echo "::error::Add INSFORGE_REFRESH_TOKEN to the repository's Actions secrets."
-            exit 1
-          fi
-          node <<'NODE'
-          const fs = require('node:fs')
-          const os = require('node:os')
-          const path = require('node:path')
-
-          const credentialsDirectory = path.join(os.homedir(), '.insforge')
-          fs.mkdirSync(credentialsDirectory, { recursive: true })
-          fs.writeFileSync(
-            path.join(credentialsDirectory, 'credentials.json'),
-            JSON.stringify({
-              access_token: process.env.INSFORGE_ACCESS_TOKEN,
-              refresh_token: process.env.INSFORGE_REFRESH_TOKEN
-            }),
-            { mode: 0o600 }
-          )
-          NODE
 
       - name: Install dependencies
         run: npm ci

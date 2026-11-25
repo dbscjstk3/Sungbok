@@ -96,3 +96,11 @@ InsForge 프로젝트 연결과 CLI 인증을 마친 뒤 다음 명령을 실행
 ```bash
 npm run deploy
 ```
+
+GitHub Actions 배포는 InsForge 사용자 API 키로 인증합니다.
+
+1. InsForge 대시보드의 **Profile → API Keys**에서 사용자 API 키(`uak_...`)를 생성합니다.
+2. GitHub 저장소의 **Settings → Secrets and variables → Actions**에서 `INSFORGE_ACCESS_TOKEN` 값을 해당 키로 설정합니다.
+3. 변경된 워크플로를 `main`에 반영한 뒤 **Deploy to InsForge**를 실행합니다.
+
+세션 access token과 refresh token은 CI에서 재사용하지 않습니다. 기존 `INSFORGE_REFRESH_TOKEN` 시크릿은 더 이상 사용하지 않습니다.
