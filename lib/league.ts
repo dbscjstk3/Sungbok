@@ -38,7 +38,7 @@ export function computeDivisionOnePlayerIds(
 
     if (divisionOnePlayerIds.has(playerId) && profit < 0) {
       divisionOnePlayerIds.delete(playerId)
-    } else if (!divisionOnePlayerIds.has(playerId) && profit > 50_000) {
+    } else if (!divisionOnePlayerIds.has(playerId) && profit > 70_000) {
       divisionOnePlayerIds.add(playerId)
     }
   }
