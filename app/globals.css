@@ -150,6 +150,51 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   vertical-align: .08em;
 }
 
+.history-calendar { --calendar-sunday: #dc2626; --calendar-sunday-selected: #fca5a5; --calendar-saturday: #2563eb; --calendar-saturday-selected: #93c5fd; margin-bottom: 2.5rem; }
+:root[data-theme="dark"] .history-calendar { --calendar-sunday: #fca5a5; --calendar-sunday-selected: #b91c1c; --calendar-saturday: #93c5fd; --calendar-saturday-selected: #1d4ed8; }
+.history-calendar-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.5rem; }
+.history-calendar-header h2 { margin: 0 0 .5rem; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.history-calendar-header p { margin: 0; color: var(--muted); font-size: .875rem; }
+.history-calendar-header p span { white-space: nowrap; }
+.history-calendar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.history-calendar-month-picker { display: flex; align-items: center; gap: .5rem; margin-right: .5rem; color: var(--muted); font-size: .875rem; }
+.history-calendar-month-picker input { width: 10rem; min-height: 2.75rem; padding: .5rem .65rem; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font: inherit; }
+.history-calendar-controls button { min-height: 2.75rem; padding: .6rem .9rem; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: .875rem; font-weight: 650; cursor: pointer; }
+.history-calendar-controls button:hover { background: var(--surface); }
+.history-calendar-weekdays, .history-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.history-calendar-weekdays { border: 1px solid var(--line); border-bottom: 0; }
+.history-calendar-weekdays span { padding: .75rem; color: var(--muted); font-size: .875rem; font-weight: 650; }
+.history-calendar-weekdays span:first-child { color: var(--calendar-sunday); }
+.history-calendar-weekdays span:last-child { color: var(--calendar-saturday); }
+.history-calendar-days { gap: 1px; padding: 1px; background: var(--line); }
+.history-calendar-day { display: flex; min-width: 0; min-height: 6.4rem; flex-direction: column; gap: .85rem; padding: .75rem; border: 0; background: var(--canvas); color: var(--ink); text-align: left; font-variant-numeric: tabular-nums; cursor: pointer; }
+.history-calendar-day[data-recorded] { background: var(--surface); }
+.history-calendar-day:hover { background: var(--surface-strong); }
+.history-calendar-day[data-outside] { color: var(--muted); }
+.history-calendar-day[data-outside] .history-calendar-record { opacity: .55; }
+.history-calendar-day[data-selected] { background: var(--ink); color: var(--on-ink); }
+.history-calendar-day:focus-visible { position: relative; z-index: 1; outline-offset: -3px; }
+.history-calendar-date { display: flex; align-items: center; justify-content: space-between; gap: .25rem; min-height: 1.7rem; }
+.history-calendar-date time { display: inline-grid; min-width: 1.7rem; height: 1.7rem; place-items: center; font-size: 1rem; font-weight: 700; }
+.history-calendar-day:nth-child(7n + 1) time { color: var(--calendar-sunday); }
+.history-calendar-day[data-selected]:nth-child(7n + 1) time { color: var(--calendar-sunday-selected); }
+.history-calendar-day:nth-child(7n) time { color: var(--calendar-saturday); }
+.history-calendar-day[data-selected]:nth-child(7n) time { color: var(--calendar-saturday-selected); }
+.history-calendar-day[aria-current="date"] time { border-radius: 50%; box-shadow: 0 0 0 1px currentColor; }
+.history-calendar-selection { color: var(--positive); font-size: .75rem; font-weight: 700; }
+.history-calendar-day[data-selected] .history-calendar-selection { color: var(--accent); }
+.history-calendar-record { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .6rem; }
+.history-calendar-record strong { font-size: .875rem; font-weight: 750; }
+.history-calendar-record > span { font-size: .75rem; opacity: .65; }
+.history-day-heading { display: flex; align-items: baseline; gap: .75rem; margin-bottom: 1.25rem; scroll-margin-top: 7rem; }
+.history-day-heading h2 { margin: 0; font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.history-day-heading p { margin: 0; color: var(--muted); font-size: .875rem; }
+.history-day-empty { padding: 3.5rem 1rem; border: 1px solid var(--line); text-align: center; }
+.history-day-empty p { margin: 0 0 1rem; color: var(--muted); font-size: .875rem; }
+.history-day-empty button { min-height: 2.75rem; padding: .6rem 1rem; border: 1px solid var(--ink); background: var(--ink); color: var(--on-ink); font-size: .875rem; font-weight: 650; cursor: pointer; }
+.history-merge-dates { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+.history-merge-dates button { min-height: 2rem; padding: .3rem .5rem; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: .75rem; font-variant-numeric: tabular-nums; cursor: pointer; }
+
 .history-champion-overlay,
 .standings-player-overlay {
   background: rgba(15, 17, 13, .76);
@@ -684,6 +729,19 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   .highlights-section-heading { align-items: flex-start; flex-direction: column; gap: .35rem; }
   .highlights-grid { grid-template-columns: 1fr; }
   .highlights-form { padding: 1rem; }
+
+  .history-calendar-header { flex-wrap: wrap; gap: 1rem; }
+  .history-calendar-controls { width: 100%; justify-content: space-between; }
+  .history-calendar-month-picker { width: 100%; margin: 0 0 .35rem; }
+  .history-calendar-month-picker input { flex: 1; width: 0; }
+  .history-calendar-controls button { flex: 1; }
+  .history-calendar-weekdays span { padding: .65rem .35rem; text-align: center; }
+  .history-calendar-day { min-height: 5.5rem; gap: .65rem; padding: .5rem .25rem; }
+  .history-calendar-date { flex-wrap: wrap; }
+  .history-calendar-selection { font-size: .65rem; }
+  .history-calendar-record { flex-direction: column; align-items: flex-start; gap: .1rem; padding-left: .15rem; }
+  .history-calendar-record strong { font-size: .75rem; }
+  .history-calendar-record > span { font-size: .7rem; }
 
   .history-champion-modal {
     max-height: 92dvh;

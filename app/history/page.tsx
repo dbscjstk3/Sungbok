@@ -45,9 +45,26 @@ interface SessionDetail {
   stats: PlayerStat[]
 }
 
+const historyDateFormatter = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+})
+
+function getDateKey(iso: string) {
+  return historyDateFormatter.format(new Date(iso))
+}
+
 function formatDate(iso: string) {
-  const d = new Date(iso)
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`
+  return getDateKey(iso).replaceAll('-', '.')
+}
+
+function getCalendarDays(monthKey: string) {
+  const [year, month] = monthKey.split('-').map(Number)
+  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay()
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7
+  return Array.from({ length: cellCount }, (_, index) =>
+    new Date(Date.UTC(year, month - 1, index - firstWeekday + 1)).toISOString().slice(0, 10)
+  )
 }
 
 function getDisplayedRoundCount(rounds: Round[]) {
@@ -94,7 +111,10 @@ function getPlayerChampions(playerId: string, rounds: Round[]): { champion: stri
 export default function HistoryPage() {
   const [details, setDetails] = useState<SessionDetail[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [visibleMonth, setVisibleMonth] = useState<string | null>(null)
   const [championModal, setChampionModal] = useState<{ playerName: string; champions: { champion: string; won: boolean }[] } | null>(null)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null)
   const [editBetAmount, setEditBetAmount] = useState<number | ''>('')
@@ -104,6 +124,22 @@ export default function HistoryPage() {
   const [mergeTargetId, setMergeTargetId] = useState<string | null>(null)
   const [merging, setMerging] = useState(false)
   const [mergeError, setMergeError] = useState('')
+
+  const sessionsByDate = new Map<string, SessionDetail[]>()
+  for (const detail of details) {
+    const date = getDateKey(detail.session.created_at)
+    const sessions = sessionsByDate.get(date) ?? []
+    sessions.push(detail)
+    sessionsByDate.set(date, sessions)
+  }
+  const recordedDates = [...sessionsByDate.keys()].sort()
+  const today = getDateKey(new Date().toISOString())
+  const activeDate = selectedDate ?? today
+  const activeMonth = visibleMonth ?? activeDate.slice(0, 7)
+  const [calendarYear, calendarMonth] = activeMonth.split('-').map(Number)
+  const monthDates = recordedDates.filter(date => date.startsWith(activeMonth))
+  const monthSessionCount = monthDates.reduce((count, date) => count + sessionsByDate.get(date)!.length, 0)
+  const visibleDetails = sessionsByDate.get(activeDate) ?? []
 
   const championModalWins = championModal?.champions.filter(champion => champion.won).length ?? 0
   const championModalGames = championModal?.champions.length ?? 0
@@ -127,11 +163,12 @@ export default function HistoryPage() {
           return { session, rounds: sessionRounds as Round[], stats: computeStats(sessionPlayers, sessionRounds as Round[]) }
         })
         setDetails(result)
+        setExpanded(new Set(result.map(detail => detail.session.id)))
         setLoading(false)
         return
       }
 
-      const [{ data: sessions }, { data: rounds }, { data: players }] = await Promise.all([
+      const [{ data: sessions, error: sessionsError }, { data: rounds, error: roundsError }, { data: players, error: playersError }] = await Promise.all([
         insforge.database.from('sessions').select('id, created_at, ended_at, bet_amount')
           .not('ended_at', 'is', null).order('created_at', { ascending: false }),
         insforge.database.from('rounds')
@@ -140,7 +177,11 @@ export default function HistoryPage() {
         insforge.database.from('players').select('id, real_name, created_at'),
       ])
 
-      if (!sessions || !rounds || !players) { setLoading(false); return }
+      if (sessionsError || roundsError || playersError || !sessions || !rounds || !players) {
+        setLoadError('내전 기록을 불러오지 못했습니다. 연결 상태를 확인한 후 다시 시도해 주세요.')
+        setLoading(false)
+        return
+      }
 
       const playerMap = new Map((players as Player[]).map(p => [p.id, p]))
 
@@ -153,9 +194,13 @@ export default function HistoryPage() {
       })
 
       setDetails(result)
+      setExpanded(new Set(result.map(detail => detail.session.id)))
       setLoading(false)
     }
-    load()
+    load().catch(() => {
+      setLoadError('내전 기록을 불러오지 못했습니다. 연결 상태를 확인한 후 다시 시도해 주세요.')
+      setLoading(false)
+    })
   }, [])
 
   function toggleExpand(id: string) {
@@ -164,6 +209,23 @@ export default function HistoryPage() {
       if (next.has(id)) { next.delete(id) } else { next.add(id) }
       return next
     })
+  }
+
+  function selectDate(date: string) {
+    setSelectedDate(date)
+    setVisibleMonth(date.slice(0, 7))
+    setExpanded(previous => new Set([
+      ...previous,
+      ...(sessionsByDate.get(date) ?? []).map(detail => detail.session.id),
+    ]))
+  }
+
+  function selectMonth(month: string) {
+    selectDate(recordedDates.filter(date => date.startsWith(month)).at(-1) ?? `${month}-01`)
+  }
+
+  function changeMonth(offset: number) {
+    selectMonth(new Date(Date.UTC(calendarYear, calendarMonth - 1 + offset, 1)).toISOString().slice(0, 7))
   }
 
   function startAmountEdit(session: Session) {
@@ -282,6 +344,8 @@ export default function HistoryPage() {
       }
 
       applyMergedDetails(mergeTargetId, mergeSelection)
+      setSelectedDate(getDateKey(target.session.created_at))
+      setVisibleMonth(getDateKey(target.session.created_at).slice(0, 7))
       setExpanded(previous => {
         const next = new Set(previous)
         sourceIds.forEach(id => next.delete(id))
@@ -379,8 +443,75 @@ export default function HistoryPage() {
         <p className="text-sm mb-10" style={{ opacity: 0.5 }}>
           {IS_PORTFOLIO
             ? `실제 운영 기록 ${portfolioMetadata.session_count}개 세션 · ${portfolioMetadata.round_count}라운드 · 개인정보 비식별 처리`
-            : '완료된 내전 목록입니다.'}
+            : '달력에서 날짜를 선택해 완료된 내전 기록을 확인하세요.'}
         </p>
+
+        <section className="history-calendar" aria-label="내전 기록 달력" aria-busy={loading}>
+          <header className="history-calendar-header">
+            <div>
+              <h2 id="history-calendar-month" aria-live="polite">{calendarYear}년 {calendarMonth}월</h2>
+              <p>
+                {loading ? '기록 불러오는 중...' : loadError ? '기록을 불러오지 못했습니다.' : `내전 ${monthSessionCount}회 · ${monthDates.length}일 진행`}
+                <span> · 한국 시간 기준</span>
+              </p>
+            </div>
+            <div className="history-calendar-controls">
+              <label className="history-calendar-month-picker">
+                연월 선택
+                <input
+                  type="month"
+                  value={activeMonth}
+                  onChange={event => { if (event.target.value) selectMonth(event.target.value) }}
+                  aria-label="이동할 연월"
+                />
+              </label>
+              <button type="button" onClick={() => changeMonth(-1)} aria-label="이전 달">이전 달</button>
+              <button type="button" onClick={() => selectDate(today)}>오늘</button>
+              <button type="button" onClick={() => changeMonth(1)} aria-label="다음 달">다음 달</button>
+            </div>
+          </header>
+          <div className="history-calendar-weekdays" aria-hidden="true">
+            {['일', '월', '화', '수', '목', '금', '토'].map(day => <span key={day}>{day}</span>)}
+          </div>
+          <div className="history-calendar-days" role="group" aria-labelledby="history-calendar-month">
+            {getCalendarDays(activeMonth).map(date => {
+              const daySessions = sessionsByDate.get(date) ?? []
+              const rounds = daySessions.reduce((count, detail) => count + getDisplayedRoundCount(detail.rounds), 0)
+              const selectionCount = daySessions.filter(detail => mergeSelection.has(detail.session.id)).length
+              return (
+                <button
+                  type="button"
+                  key={date}
+                  className="history-calendar-day"
+                  data-outside={date.slice(0, 7) !== activeMonth || undefined}
+                  data-recorded={daySessions.length > 0 || undefined}
+                  data-selected={date === activeDate || undefined}
+                  aria-pressed={date === activeDate}
+                  aria-current={date === today ? 'date' : undefined}
+                  aria-controls="history-day-records"
+                  aria-label={`${date.replaceAll('-', '.')} ${date === today ? '오늘, ' : ''}내전 ${daySessions.length}회, ${rounds}판${selectionCount ? `, 합칠 기록 ${selectionCount}개 선택됨` : ''}`}
+                  onClick={() => selectDate(date)}
+                >
+                  <span className="history-calendar-date">
+                    <time dateTime={date}>{Number(date.slice(-2))}</time>
+                    {selectionCount > 0 && <span className="history-calendar-selection">선택</span>}
+                  </span>
+                  {daySessions.length > 0 && (
+                    <span className="history-calendar-record">
+                      <strong>내전 {daySessions.length}회</strong>
+                      <span>{rounds}판</span>
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </section>
+
+        <div className="history-day-heading" id="history-day-records" aria-live="polite">
+          <h2>{activeDate.replaceAll('-', '.')}</h2>
+          <p>{loading ? '불러오는 중...' : loadError ? '조회 실패' : `내전 ${visibleDetails.length}회`}</p>
+        </div>
 
         {!loading && details.length >= 2 && (
           <div className="mb-6 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -388,8 +519,17 @@ export default function HistoryPage() {
             <div>
               <p className="text-sm font-semibold">기록 합치기</p>
               <p className="text-xs mt-0.5" style={{ opacity: 0.55 }}>
-                기록을 2개 이상 선택하고 유지할 기준 기록을 지정하세요.
+                기록을 2개 이상 선택하고 유지할 기준 기록을 지정하세요. 다른 날짜로 이동해도 선택은 유지됩니다.
               </p>
+              {mergeSelection.size > 0 && (
+                <div className="history-merge-dates">
+                  {details.filter(detail => mergeSelection.has(detail.session.id)).map(({ session }) => (
+                    <button key={session.id} type="button" onClick={() => selectDate(getDateKey(session.created_at))}>
+                      {formatDate(session.created_at)}{mergeTargetId === session.id ? ' · 기준' : ''}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               {mergeSelection.size > 0 && (
@@ -415,19 +555,29 @@ export default function HistoryPage() {
           </p>
         )}
 
-        {loading && (
-          <p className="text-sm" style={{ opacity: 0.4 }}>불러오는 중...</p>
+        {loadError && (
+          <div className="history-day-empty" role="alert">
+            <p>{loadError}</p>
+            <button type="button" onClick={() => window.location.reload()}>다시 불러오기</button>
+          </div>
         )}
 
-        {!loading && details.length === 0 && (
+        {!loading && !loadError && details.length === 0 && (
           <div className="py-20 text-center">
             <p className="text-base font-medium mb-2" style={{ opacity: 0.4 }}>아직 기록이 없습니다.</p>
             <a href="/match" className="text-sm underline" style={{ opacity: 0.4 }}>내전 시작하기</a>
           </div>
         )}
 
+        {!loading && details.length > 0 && visibleDetails.length === 0 && (
+          <div className="history-day-empty">
+            <p>선택한 날짜에는 내전 기록이 없습니다.</p>
+            <button type="button" onClick={() => selectDate(recordedDates.at(-1)!)}>최근 기록 보기</button>
+          </div>
+        )}
+
         <div className="flex flex-col gap-4">
-          {details.map(({ session, rounds, stats }) => {
+          {visibleDetails.map(({ session, rounds, stats }) => {
             const isOpen = expanded.has(session.id)
             const totalRounds = getDisplayedRoundCount(rounds)
             const showMoney = session.bet_amount > 0
