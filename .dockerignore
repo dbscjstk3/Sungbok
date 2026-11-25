@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.github
+.env*
+.insforge
+.agents
+.codex
+.claude
+.aws
+.idea
+backups
+docs
+*.log
+*.tsbuildinfo
+fly.toml
