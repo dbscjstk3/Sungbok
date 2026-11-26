@@ -195,6 +195,27 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
 .history-merge-dates { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
 .history-merge-dates button { min-height: 2rem; padding: .3rem .5rem; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: .75rem; font-variant-numeric: tabular-nums; cursor: pointer; }
 
+.history-attendance { margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1.5rem; }
+.history-attendance-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; margin-bottom: 1.25rem; }
+.history-attendance-header h2 { margin: 0 0 .5rem; font-size: 1.5rem; font-weight: 800; }
+.history-attendance-header p, .history-attendance-header > span { margin: 0; color: var(--muted); font-size: .875rem; }
+.history-attendance-scroll { max-height: 25rem; overflow: auto; border: 1px solid var(--line); }
+.history-attendance-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.history-attendance-table thead { position: sticky; top: 0; z-index: 1; background: var(--surface) !important; }
+.history-attendance-table th, .history-attendance-table td { padding: .9rem 1rem; text-align: left; }
+.history-attendance-table thead th { color: var(--muted); font-weight: 650; }
+.history-attendance-table tbody tr + tr { border-top: 1px solid var(--line); }
+.history-attendance-table tbody th { font-weight: 650; }
+.history-attendance-table td:nth-child(2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.history-attendance-table td:nth-child(2) > span { color: var(--muted); }
+.history-attendance-table th:last-child { width: 40%; }
+.history-attendance-rate { display: flex; align-items: center; gap: 1rem; }
+.history-attendance-rate strong { min-width: 3rem; text-align: right; font-variant-numeric: tabular-nums; }
+.history-attendance-track { display: block; flex: 1; height: .45rem; background: var(--surface-strong); }
+.history-attendance-track > span { display: block; height: 100%; background: var(--positive); }
+.history-attendance-note { margin: .75rem 0 0; color: var(--muted); font-size: .8125rem; line-height: 1.6; }
+.history-attendance-empty { margin: 0; padding: 2rem 1rem; background: var(--surface); color: var(--muted); text-align: center; font-size: .875rem; }
+
 .history-champion-overlay,
 .standings-player-overlay {
   background: rgba(15, 17, 13, .76);
@@ -742,6 +763,9 @@ button:active, a:active { transform: translateY(1px) scale(0.985); }
   .history-calendar-record { flex-direction: column; align-items: flex-start; gap: .1rem; padding-left: .15rem; }
   .history-calendar-record strong { font-size: .75rem; }
   .history-calendar-record > span { font-size: .7rem; }
+  .history-attendance-table th, .history-attendance-table td { padding: .8rem .6rem; }
+  .history-attendance-rate { gap: .5rem; }
+  .history-attendance-table th:last-child { width: 38%; }
 
   .history-champion-modal {
     max-height: 92dvh;

@@ -99,6 +99,12 @@ npm run deploy
 
 현재 웹 배포는 InsForge Compute의 `sungbok-web` 컨테이너를 사용합니다. `npm run deploy`는 로컬 빌드를 확인한 뒤 원격에서 Docker 이미지를 빌드하고 배포합니다. 로컬에는 `flyctl`이 필요하며, GitHub Actions에서는 고정된 버전을 자동으로 설치합니다.
 
+기존 `sungboktime.insforge.site` 사이트 호스팅 경로로 배포하려면 아래 명령을 사용합니다. 이 명령은 Compute 배포와 별개이며, 기존 호스팅의 내부 인증 오류가 계속되면 실패할 수 있습니다.
+
+```bash
+npm run deploy:site
+```
+
 클라이언트용 URL과 anon 키는 연결된 InsForge 프로젝트에서 가져와 빌드에 사용합니다. 서버 환경변수는 첫 배포 때 `.insforge/compute-runtime.env`로 전달하며, 파일이 없는 이후 배포에서는 기존 서비스의 환경변수를 유지합니다. 이 파일에는 `NEXT_PUBLIC_INSFORGE_URL`, `NEXT_PUBLIC_INSFORGE_ANON_KEY`, `INSFORGE_API_KEY`, `RIOT_API_KEY`를 설정합니다. 비밀값은 Git에 커밋하거나 Docker 이미지에 포함하지 않습니다.
 
 GitHub Actions 배포는 InsForge 사용자 API 키로 인증합니다.

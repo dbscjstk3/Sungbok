@@ -77,6 +77,32 @@ function getDisplayedRoundCount(rounds: Round[]) {
   return Math.max(0, ...countsByPlayerCount.values())
 }
 
+function computeMonthlyAttendance(players: Player[], sessionsByDate: Map<string, SessionDetail[]>, dates: string[]) {
+  const attendedDates = new Map(players.map(player => [player.id, new Set<string>()]))
+  let totalDays = 0
+
+  for (const date of dates) {
+    const participants = new Set<string>()
+    for (const detail of sessionsByDate.get(date) ?? []) {
+      for (const round of detail.rounds) {
+        if (round.winner_team === null) continue
+        round.team1_ids.forEach(id => participants.add(id))
+        round.team2_ids.forEach(id => participants.add(id))
+      }
+    }
+    if (participants.size === 0) continue
+    totalDays += 1
+    participants.forEach(id => attendedDates.get(id)?.add(date))
+  }
+
+  const rows = players.map(player => {
+    const days = attendedDates.get(player.id)!.size
+    return { player, days, rate: totalDays > 0 ? Math.round(days / totalDays * 100) : null }
+  }).sort((a, b) => b.days - a.days || a.player.real_name.localeCompare(b.player.real_name, 'ko'))
+
+  return { totalDays, rows }
+}
+
 function computeStats(players: Player[], rounds: Round[]): PlayerStat[] {
   return players.map(p => {
     const decided = rounds.filter(r => r.winner_team !== null)
@@ -110,6 +136,7 @@ function getPlayerChampions(playerId: string, rounds: Round[]): { champion: stri
 
 export default function HistoryPage() {
   const [details, setDetails] = useState<SessionDetail[]>([])
+  const [allPlayers, setAllPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -140,6 +167,7 @@ export default function HistoryPage() {
   const monthDates = recordedDates.filter(date => date.startsWith(activeMonth))
   const monthSessionCount = monthDates.reduce((count, date) => count + sessionsByDate.get(date)!.length, 0)
   const visibleDetails = sessionsByDate.get(activeDate) ?? []
+  const attendance = computeMonthlyAttendance(allPlayers, sessionsByDate, monthDates)
 
   const championModalWins = championModal?.champions.filter(champion => champion.won).length ?? 0
   const championModalGames = championModal?.champions.length ?? 0
@@ -163,6 +191,7 @@ export default function HistoryPage() {
           return { session, rounds: sessionRounds as Round[], stats: computeStats(sessionPlayers, sessionRounds as Round[]) }
         })
         setDetails(result)
+        setAllPlayers(mockPlayers)
         setExpanded(new Set(result.map(detail => detail.session.id)))
         setLoading(false)
         return
@@ -194,6 +223,7 @@ export default function HistoryPage() {
       })
 
       setDetails(result)
+      setAllPlayers(players as Player[])
       setExpanded(new Set(result.map(detail => detail.session.id)))
       setLoading(false)
     }
@@ -724,6 +754,55 @@ export default function HistoryPage() {
             )
           })}
         </div>
+
+        <section className="history-attendance" aria-labelledby="history-attendance-title" aria-busy={loading}>
+          <header className="history-attendance-header">
+            <div>
+              <h2 id="history-attendance-title">{calendarYear}년 {calendarMonth}월 참여율</h2>
+              <p>참여일수 ÷ 내전 진행일수 · 승패가 확정된 경기 기준</p>
+            </div>
+            {!loading && !loadError && <span>내전 {attendance.totalDays}일 기준</span>}
+          </header>
+          {loading ? (
+            <p className="history-attendance-empty" role="status">참여율을 불러오는 중...</p>
+          ) : loadError ? (
+            <p className="history-attendance-empty">기록을 불러온 후 참여율을 확인할 수 있습니다.</p>
+          ) : attendance.totalDays === 0 ? (
+            <p className="history-attendance-empty">이달에는 집계할 완료 경기가 없습니다.</p>
+          ) : (
+            <>
+              <div className="history-attendance-scroll">
+                <table className="history-attendance-table">
+                  <caption className="sr-only">{calendarYear}년 {calendarMonth}월 등록 선수별 내전 참여율</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">선수</th>
+                      <th scope="col">참여일수</th>
+                      <th scope="col">참여율</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attendance.rows.map(({ player, days, rate }) => (
+                      <tr key={player.id}>
+                        <th scope="row">{player.real_name}</th>
+                        <td>{days}<span> / {attendance.totalDays}일</span></td>
+                        <td>
+                          <div className="history-attendance-rate">
+                            <span className="history-attendance-track" aria-hidden="true">
+                              <span style={{ width: `${rate ?? 0}%` }} />
+                            </span>
+                            <strong>{rate}%</strong>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="history-attendance-note">같은 날 여러 기록에 참여해도 1일로 계산합니다. 날짜는 달력과 동일하게 한국 시간 기준입니다.</p>
+            </>
+          )}
+        </section>
       </div>
     </main>
   )
